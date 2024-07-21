@@ -12,18 +12,174 @@ type ProgramErrorConstructor = new (program: Program, cause?: Error) => ProgramE
 const codeToErrorMap: Map<number, ProgramErrorConstructor> = new Map();
 const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
 
-/** InvalidInstructionData: Invalid instruction data */
-export class InvalidInstructionDataError extends ProgramError {
-  override readonly name: string = 'InvalidInstructionData';
+/** AlreadyInitialized: Global Already Initialized */
+export class AlreadyInitializedError extends ProgramError {
+  override readonly name: string = 'AlreadyInitialized';
 
   readonly code: number = 0x1770; // 6000
   
   constructor(program: Program, cause?: Error) {
-    super('Invalid instruction data', program, cause);
+    super('Global Already Initialized', program, cause);
   }
 }
-codeToErrorMap.set(0x1770, InvalidInstructionDataError);
-nameToErrorMap.set('InvalidInstructionData', InvalidInstructionDataError);
+codeToErrorMap.set(0x1770, AlreadyInitializedError);
+nameToErrorMap.set('AlreadyInitialized', AlreadyInitializedError);
+
+/** NotInitialized: Global Not Initialized */
+export class NotInitializedError extends ProgramError {
+  override readonly name: string = 'NotInitialized';
+
+  readonly code: number = 0x1771; // 6001
+  
+  constructor(program: Program, cause?: Error) {
+    super('Global Not Initialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x1771, NotInitializedError);
+nameToErrorMap.set('NotInitialized', NotInitializedError);
+
+/** InvalidAuthority: Invalid Authority */
+export class InvalidAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidAuthority';
+
+  readonly code: number = 0x1772; // 6002
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x1772, InvalidAuthorityError);
+nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
+
+/** BondingCurveComplete: Bonding Curve Complete */
+export class BondingCurveCompleteError extends ProgramError {
+  override readonly name: string = 'BondingCurveComplete';
+
+  readonly code: number = 0x1773; // 6003
+  
+  constructor(program: Program, cause?: Error) {
+    super('Bonding Curve Complete', program, cause);
+  }
+}
+codeToErrorMap.set(0x1773, BondingCurveCompleteError);
+nameToErrorMap.set('BondingCurveComplete', BondingCurveCompleteError);
+
+/** BondingCurveNotComplete: Bonding Curve Not Complete */
+export class BondingCurveNotCompleteError extends ProgramError {
+  override readonly name: string = 'BondingCurveNotComplete';
+
+  readonly code: number = 0x1774; // 6004
+  
+  constructor(program: Program, cause?: Error) {
+    super('Bonding Curve Not Complete', program, cause);
+  }
+}
+codeToErrorMap.set(0x1774, BondingCurveNotCompleteError);
+nameToErrorMap.set('BondingCurveNotComplete', BondingCurveNotCompleteError);
+
+/** InsufficientTokens: Insufficient Tokens */
+export class InsufficientTokensError extends ProgramError {
+  override readonly name: string = 'InsufficientTokens';
+
+  readonly code: number = 0x1775; // 6005
+  
+  constructor(program: Program, cause?: Error) {
+    super('Insufficient Tokens', program, cause);
+  }
+}
+codeToErrorMap.set(0x1775, InsufficientTokensError);
+nameToErrorMap.set('InsufficientTokens', InsufficientTokensError);
+
+/** InsufficientSOL: Insufficient SOL */
+export class InsufficientSOLError extends ProgramError {
+  override readonly name: string = 'InsufficientSOL';
+
+  readonly code: number = 0x1776; // 6006
+  
+  constructor(program: Program, cause?: Error) {
+    super('Insufficient SOL', program, cause);
+  }
+}
+codeToErrorMap.set(0x1776, InsufficientSOLError);
+nameToErrorMap.set('InsufficientSOL', InsufficientSOLError);
+
+/** MaxSOLCostExceeded: Max SOL Cost Exceeded */
+export class MaxSOLCostExceededError extends ProgramError {
+  override readonly name: string = 'MaxSOLCostExceeded';
+
+  readonly code: number = 0x1777; // 6007
+  
+  constructor(program: Program, cause?: Error) {
+    super('Max SOL Cost Exceeded', program, cause);
+  }
+}
+codeToErrorMap.set(0x1777, MaxSOLCostExceededError);
+nameToErrorMap.set('MaxSOLCostExceeded', MaxSOLCostExceededError);
+
+/** MinSOLOutputExceeded: Min SOL Output Exceeded */
+export class MinSOLOutputExceededError extends ProgramError {
+  override readonly name: string = 'MinSOLOutputExceeded';
+
+  readonly code: number = 0x1778; // 6008
+  
+  constructor(program: Program, cause?: Error) {
+    super('Min SOL Output Exceeded', program, cause);
+  }
+}
+codeToErrorMap.set(0x1778, MinSOLOutputExceededError);
+nameToErrorMap.set('MinSOLOutputExceeded', MinSOLOutputExceededError);
+
+/** MinBuy: Min buy is 1 Token */
+export class MinBuyError extends ProgramError {
+  override readonly name: string = 'MinBuy';
+
+  readonly code: number = 0x1779; // 6009
+  
+  constructor(program: Program, cause?: Error) {
+    super('Min buy is 1 Token', program, cause);
+  }
+}
+codeToErrorMap.set(0x1779, MinBuyError);
+nameToErrorMap.set('MinBuy', MinBuyError);
+
+/** MinSell: Min sell is 1 Token */
+export class MinSellError extends ProgramError {
+  override readonly name: string = 'MinSell';
+
+  readonly code: number = 0x177a; // 6010
+  
+  constructor(program: Program, cause?: Error) {
+    super('Min sell is 1 Token', program, cause);
+  }
+}
+codeToErrorMap.set(0x177a, MinSellError);
+nameToErrorMap.set('MinSell', MinSellError);
+
+/** InvalidFeeRecipient: Invalid Fee Recipient */
+export class InvalidFeeRecipientError extends ProgramError {
+  override readonly name: string = 'InvalidFeeRecipient';
+
+  readonly code: number = 0x177b; // 6011
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Fee Recipient', program, cause);
+  }
+}
+codeToErrorMap.set(0x177b, InvalidFeeRecipientError);
+nameToErrorMap.set('InvalidFeeRecipient', InvalidFeeRecipientError);
+
+/** InvalidWithdrawAuthority: Invalid Withdraw Authority */
+export class InvalidWithdrawAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidWithdrawAuthority';
+
+  readonly code: number = 0x177c; // 6012
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Withdraw Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x177c, InvalidWithdrawAuthorityError);
+nameToErrorMap.set('InvalidWithdrawAuthority', InvalidWithdrawAuthorityError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

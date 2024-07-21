@@ -7,19 +7,19 @@
  */
 
 import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, publicKey as publicKeySerializer, string, struct, u32, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, array, bool, mapSerializer, publicKey as publicKeySerializer, string, struct, u32, u64, u8 } from '@metaplex-foundation/umi/serializers';
 import { ProgramStatus, ProgramStatusArgs, getProgramStatusSerializer } from '../types';
 
   
   export type Global = Account<GlobalAccountData>;
 
-  export type GlobalAccountData = { discriminator: Array<number>; status: ProgramStatus; authority: PublicKey; feeRecipient: PublicKey; withdrawAuthority: PublicKey; initialVirtualTokenReserves: bigint; initialVirtualSolReserves: bigint; initialRealTokenReserves: bigint; initialRealSolReserves: bigint; initialTokenSupply: bigint; solLaunchThreshold: bigint; feeBasisPoints: number;  };
+  export type GlobalAccountData = { discriminator: Array<number>; status: ProgramStatus; initialized: boolean; globalAuthority: PublicKey; feeRecipient: PublicKey; withdrawAuthority: PublicKey; initialVirtualTokenReserves: bigint; initialVirtualSolReserves: bigint; initialRealTokenReserves: bigint; initialRealSolReserves: bigint; initialTokenSupply: bigint; solLaunchThreshold: bigint; feeBasisPoints: number;  };
 
-export type GlobalAccountDataArgs = { status: ProgramStatusArgs; authority: PublicKey; feeRecipient: PublicKey; withdrawAuthority: PublicKey; initialVirtualTokenReserves: number | bigint; initialVirtualSolReserves: number | bigint; initialRealTokenReserves: number | bigint; initialRealSolReserves: number | bigint; initialTokenSupply: number | bigint; solLaunchThreshold: number | bigint; feeBasisPoints: number;  };
+export type GlobalAccountDataArgs = { status: ProgramStatusArgs; initialized: boolean; globalAuthority: PublicKey; feeRecipient: PublicKey; withdrawAuthority: PublicKey; initialVirtualTokenReserves: number | bigint; initialVirtualSolReserves: number | bigint; initialRealTokenReserves: number | bigint; initialRealSolReserves: number | bigint; initialTokenSupply: number | bigint; solLaunchThreshold: number | bigint; feeBasisPoints: number;  };
 
 
   export function getGlobalAccountDataSerializer(): Serializer<GlobalAccountDataArgs, GlobalAccountData> {
-  return mapSerializer<GlobalAccountDataArgs, any, GlobalAccountData>(struct<GlobalAccountData>([['discriminator', array(u8(), { size: 8 })], ['status', getProgramStatusSerializer()], ['authority', publicKeySerializer()], ['feeRecipient', publicKeySerializer()], ['withdrawAuthority', publicKeySerializer()], ['initialVirtualTokenReserves', u64()], ['initialVirtualSolReserves', u64()], ['initialRealTokenReserves', u64()], ['initialRealSolReserves', u64()], ['initialTokenSupply', u64()], ['solLaunchThreshold', u64()], ['feeBasisPoints', u32()]], { description: 'GlobalAccountData' }), (value) => ({ ...value, discriminator: [167, 232, 232, 177, 200, 108, 114, 127] }) ) as Serializer<GlobalAccountDataArgs, GlobalAccountData>;
+  return mapSerializer<GlobalAccountDataArgs, any, GlobalAccountData>(struct<GlobalAccountData>([['discriminator', array(u8(), { size: 8 })], ['status', getProgramStatusSerializer()], ['initialized', bool()], ['globalAuthority', publicKeySerializer()], ['feeRecipient', publicKeySerializer()], ['withdrawAuthority', publicKeySerializer()], ['initialVirtualTokenReserves', u64()], ['initialVirtualSolReserves', u64()], ['initialRealTokenReserves', u64()], ['initialRealSolReserves', u64()], ['initialTokenSupply', u64()], ['solLaunchThreshold', u64()], ['feeBasisPoints', u32()]], { description: 'GlobalAccountData' }), (value) => ({ ...value, discriminator: [167, 232, 232, 177, 200, 108, 114, 127] }) ) as Serializer<GlobalAccountDataArgs, GlobalAccountData>;
 }
 
 
@@ -74,13 +74,13 @@ export async function safeFetchAllGlobal(
 export function getGlobalGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('bondingCurve', 'E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'status': ProgramStatusArgs, 'authority': PublicKey, 'feeRecipient': PublicKey, 'withdrawAuthority': PublicKey, 'initialVirtualTokenReserves': number | bigint, 'initialVirtualSolReserves': number | bigint, 'initialRealTokenReserves': number | bigint, 'initialRealSolReserves': number | bigint, 'initialTokenSupply': number | bigint, 'solLaunchThreshold': number | bigint, 'feeBasisPoints': number }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'status': [8, getProgramStatusSerializer()], 'authority': [9, publicKeySerializer()], 'feeRecipient': [41, publicKeySerializer()], 'withdrawAuthority': [73, publicKeySerializer()], 'initialVirtualTokenReserves': [105, u64()], 'initialVirtualSolReserves': [113, u64()], 'initialRealTokenReserves': [121, u64()], 'initialRealSolReserves': [129, u64()], 'initialTokenSupply': [137, u64()], 'solLaunchThreshold': [145, u64()], 'feeBasisPoints': [153, u32()] })
+    .registerFields<{ 'discriminator': Array<number>, 'status': ProgramStatusArgs, 'initialized': boolean, 'globalAuthority': PublicKey, 'feeRecipient': PublicKey, 'withdrawAuthority': PublicKey, 'initialVirtualTokenReserves': number | bigint, 'initialVirtualSolReserves': number | bigint, 'initialRealTokenReserves': number | bigint, 'initialRealSolReserves': number | bigint, 'initialTokenSupply': number | bigint, 'solLaunchThreshold': number | bigint, 'feeBasisPoints': number }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'status': [8, getProgramStatusSerializer()], 'initialized': [9, bool()], 'globalAuthority': [10, publicKeySerializer()], 'feeRecipient': [42, publicKeySerializer()], 'withdrawAuthority': [74, publicKeySerializer()], 'initialVirtualTokenReserves': [106, u64()], 'initialVirtualSolReserves': [114, u64()], 'initialRealTokenReserves': [122, u64()], 'initialRealSolReserves': [130, u64()], 'initialTokenSupply': [138, u64()], 'solLaunchThreshold': [146, u64()], 'feeBasisPoints': [154, u32()] })
     .deserializeUsing<Global>((account) => deserializeGlobal(account))      .whereField('discriminator', [167, 232, 232, 177, 200, 108, 114, 127])
     ;
 }
 
 export function getGlobalSize(): number {
-  return 157;
+  return 158;
 }
 
 export function findGlobalPda(

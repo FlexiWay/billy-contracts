@@ -7,24 +7,25 @@
  */
 
 import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, struct, u32, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
+import { GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalSettingsInputSerializer } from '../types';
 
 // Accounts.
 export type InitializeInstructionAccounts = {
-    authority?: Signer;
+    globalAuthority: Signer;
     global: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
 };
 
   // Data.
-  export type InitializeInstructionData = { discriminator: Array<number>; initialTokenSupply: bigint; initialRealSolReserves: bigint; initialRealTokenReserves: bigint; initialVirtualSolReserves: bigint; initialVirtualTokenReserves: bigint; solLaunchThreshold: bigint; feeBasisPoints: number;  };
+  export type InitializeInstructionData = { discriminator: Array<number>; params: GlobalSettingsInput;  };
 
-export type InitializeInstructionDataArgs = { initialTokenSupply: number | bigint; initialRealSolReserves: number | bigint; initialRealTokenReserves: number | bigint; initialVirtualSolReserves: number | bigint; initialVirtualTokenReserves: number | bigint; solLaunchThreshold: number | bigint; feeBasisPoints: number;  };
+export type InitializeInstructionDataArgs = { params: GlobalSettingsInputArgs;  };
 
 
   export function getInitializeInstructionDataSerializer(): Serializer<InitializeInstructionDataArgs, InitializeInstructionData> {
-  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['initialTokenSupply', u64()], ['initialRealSolReserves', u64()], ['initialRealTokenReserves', u64()], ['initialVirtualSolReserves', u64()], ['initialVirtualTokenReserves', u64()], ['solLaunchThreshold', u64()], ['feeBasisPoints', u32()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
+  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['params', getGlobalSettingsInputSerializer()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 
 
@@ -36,7 +37,7 @@ export type InitializeInstructionDataArgs = { initialTokenSupply: number | bigin
   
 // Instruction.
 export function initialize(
-  context: Pick<Context, "identity" | "programs">,
+  context: Pick<Context, "programs">,
                         input: InitializeInstructionAccounts & InitializeInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
@@ -44,7 +45,7 @@ export function initialize(
 
   // Accounts.
   const resolvedAccounts = {
-          authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
+          globalAuthority: { index: 0, isWritable: true as boolean, value: input.globalAuthority ?? null },
           global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
           systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
       } satisfies ResolvedAccountsWithIndices;
@@ -53,10 +54,7 @@ export function initialize(
     const resolvedArgs: InitializeInstructionArgs = { ...input };
   
     // Default values.
-  if (!resolvedAccounts.authority.value) {
-        resolvedAccounts.authority.value = context.identity;
-      }
-      if (!resolvedAccounts.systemProgram.value) {
+  if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
 resolvedAccounts.systemProgram.isWritable = false
       }

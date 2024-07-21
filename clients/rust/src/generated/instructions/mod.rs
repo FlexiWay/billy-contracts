@@ -6,5 +6,7 @@
 //!
 
 pub(crate) mod r#initialize;
+pub(crate) mod r#set_params;
 
 pub use self::r#initialize::*;
+pub use self::r#set_params::*;

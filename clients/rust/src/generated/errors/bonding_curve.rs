@@ -10,9 +10,45 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum BondingCurveError {
-    /// 6000 (0x1770) - Invalid instruction data
-    #[error("Invalid instruction data")]
-    InvalidInstructionData,
+    /// 6000 (0x1770) - Global Already Initialized
+    #[error("Global Already Initialized")]
+    AlreadyInitialized,
+    /// 6001 (0x1771) - Global Not Initialized
+    #[error("Global Not Initialized")]
+    NotInitialized,
+    /// 6002 (0x1772) - Invalid Authority
+    #[error("Invalid Authority")]
+    InvalidAuthority,
+    /// 6003 (0x1773) - Bonding Curve Complete
+    #[error("Bonding Curve Complete")]
+    BondingCurveComplete,
+    /// 6004 (0x1774) - Bonding Curve Not Complete
+    #[error("Bonding Curve Not Complete")]
+    BondingCurveNotComplete,
+    /// 6005 (0x1775) - Insufficient Tokens
+    #[error("Insufficient Tokens")]
+    InsufficientTokens,
+    /// 6006 (0x1776) - Insufficient SOL
+    #[error("Insufficient SOL")]
+    InsufficientSOL,
+    /// 6007 (0x1777) - Max SOL Cost Exceeded
+    #[error("Max SOL Cost Exceeded")]
+    MaxSOLCostExceeded,
+    /// 6008 (0x1778) - Min SOL Output Exceeded
+    #[error("Min SOL Output Exceeded")]
+    MinSOLOutputExceeded,
+    /// 6009 (0x1779) - Min buy is 1 Token
+    #[error("Min buy is 1 Token")]
+    MinBuy,
+    /// 6010 (0x177A) - Min sell is 1 Token
+    #[error("Min sell is 1 Token")]
+    MinSell,
+    /// 6011 (0x177B) - Invalid Fee Recipient
+    #[error("Invalid Fee Recipient")]
+    InvalidFeeRecipient,
+    /// 6012 (0x177C) - Invalid Withdraw Authority
+    #[error("Invalid Withdraw Authority")]
+    InvalidWithdrawAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for BondingCurveError {

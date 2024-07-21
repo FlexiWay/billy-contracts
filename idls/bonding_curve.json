@@ -6,7 +6,7 @@
       "name": "initialize",
       "accounts": [
         {
-          "name": "authority",
+          "name": "globalAuthority",
           "isMut": true,
           "isSigner": true
         },
@@ -29,6 +29,56 @@
           }
         }
       ]
+    },
+    {
+      "name": "setParams",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "settingsParams",
+          "type": {
+            "defined": "GlobalSettingsInput"
+          }
+        },
+        {
+          "name": "authorityParams",
+          "type": {
+            "defined": "GlobalAuthorityInput"
+          }
+        },
+        {
+          "name": "status",
+          "type": {
+            "defined": "ProgramStatus"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -44,7 +94,11 @@
             }
           },
           {
-            "name": "authority",
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "globalAuthority",
             "type": "publicKey"
           },
           {
@@ -130,7 +184,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "authority",
+            "name": "globalAuthority",
             "type": "publicKey"
           },
           {
@@ -163,13 +217,126 @@
           }
         ]
       }
+    },
+    {
+      "name": "ContractError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidInstructionData"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "SetParamsEvent",
+      "fields": [
+        {
+          "name": "feeRecipient",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "initialVirtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialVirtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialRealTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialTokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeBasisPoints",
+          "type": "u32",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidInstructionData",
-      "msg": "Invalid instruction data"
+      "name": "AlreadyInitialized",
+      "msg": "Global Already Initialized"
+    },
+    {
+      "code": 6001,
+      "name": "NotInitialized",
+      "msg": "Global Not Initialized"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAuthority",
+      "msg": "Invalid Authority"
+    },
+    {
+      "code": 6003,
+      "name": "BondingCurveComplete",
+      "msg": "Bonding Curve Complete"
+    },
+    {
+      "code": 6004,
+      "name": "BondingCurveNotComplete",
+      "msg": "Bonding Curve Not Complete"
+    },
+    {
+      "code": 6005,
+      "name": "InsufficientTokens",
+      "msg": "Insufficient Tokens"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientSOL",
+      "msg": "Insufficient SOL"
+    },
+    {
+      "code": 6007,
+      "name": "MaxSOLCostExceeded",
+      "msg": "Max SOL Cost Exceeded"
+    },
+    {
+      "code": 6008,
+      "name": "MinSOLOutputExceeded",
+      "msg": "Min SOL Output Exceeded"
+    },
+    {
+      "code": 6009,
+      "name": "MinBuy",
+      "msg": "Min buy is 1 Token"
+    },
+    {
+      "code": 6010,
+      "name": "MinSell",
+      "msg": "Min sell is 1 Token"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidFeeRecipient",
+      "msg": "Invalid Fee Recipient"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidWithdrawAuthority",
+      "msg": "Invalid Withdraw Authority"
     }
   ],
   "metadata": {

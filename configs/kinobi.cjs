@@ -20,6 +20,9 @@ kinobi.update(
     global: {
       seeds: [k.constantPdaSeedNodeFromString("global")],
     },
+    eventAuthority: {
+      seeds: [k.constantPdaSeedNodeFromString("__event_authority")],
+    },
   })
 );
 

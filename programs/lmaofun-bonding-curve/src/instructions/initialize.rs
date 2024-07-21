@@ -1,18 +1,18 @@
-use crate::global::{Global, GlobalAuthorityInput, GlobalSettingsInput, ProgramStatus};
+use crate::{errors::CurveLaunchpadError, state::global::*};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 #[instruction(params: GlobalSettingsInput)]
 pub struct Initialize<'info> {
     #[account(mut)]
-    authority: Signer<'info>,
+    global_authority: Signer<'info>,
 
     #[account(
         init,
         space = 8 + Global::INIT_SPACE,
         seeds = [Global::SEED_PREFIX],
         bump,
-        payer = authority,
+        payer = global_authority,
     )]
     global: Box<Account<'info, Global>>,
 
@@ -22,17 +22,19 @@ pub struct Initialize<'info> {
 impl Initialize<'_> {
     pub fn handler(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
         let global = &mut ctx.accounts.global;
-        msg!("Initialize");
 
-        let authority_key = *ctx.accounts.authority.to_account_info().key;
+        require!(!global.initialized, CurveLaunchpadError::AlreadyInitialized);
+
+        let authority_key = *ctx.accounts.global_authority.to_account_info().key;
         global.update_authority(GlobalAuthorityInput {
-            authority: authority_key,
+            global_authority: authority_key,
             fee_recipient: authority_key,
             withdraw_authority: authority_key,
         });
         global.update_settings(params);
-        global.status = ProgramStatus::Running;
 
+        global.status = ProgramStatus::Running;
+        global.initialized = true;
         msg!("Initialized global state");
 
         Ok(())

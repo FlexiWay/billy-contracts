@@ -19,11 +19,12 @@ use solana_program::pubkey::Pubkey;
 pub struct Global {
     pub discriminator: [u8; 8],
     pub status: ProgramStatus,
+    pub initialized: bool,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    pub authority: Pubkey,
+    pub global_authority: Pubkey,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
@@ -44,7 +45,7 @@ pub struct Global {
 }
 
 impl Global {
-    pub const LEN: usize = 157;
+    pub const LEN: usize = 158;
 
     /// Prefix values used to generate a PDA for this account.
     ///

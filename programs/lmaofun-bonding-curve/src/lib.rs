@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
 
+pub mod errors;
+pub mod events;
 pub mod instructions;
 pub mod state;
 
-use global::GlobalSettingsInput;
-use instructions::initialize::*;
-use state::*;
+use instructions::{initialize::*, set_params::*};
+use state::global::*;
 
 #[error_code]
 pub enum ContractError {
@@ -21,5 +22,13 @@ pub mod bonding_curve {
 
     pub fn initialize(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
         Initialize::handler(ctx, params)
+    }
+    pub fn set_params(
+        ctx: Context<SetParams>,
+        settings_params: GlobalSettingsInput,
+        authority_params: GlobalAuthorityInput,
+        status: ProgramStatus,
+    ) -> Result<()> {
+        SetParams::handler(ctx, settings_params, authority_params, status)
     }
 }

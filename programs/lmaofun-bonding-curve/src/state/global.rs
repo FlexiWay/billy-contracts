@@ -14,7 +14,7 @@ pub struct GlobalSettingsInput {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
-    pub authority: Pubkey,
+    pub global_authority: Pubkey,
     pub fee_recipient: Pubkey,
     pub withdraw_authority: Pubkey,
 }
@@ -31,8 +31,9 @@ pub enum ProgramStatus {
 #[derive(InitSpace, Debug)]
 pub struct Global {
     pub status: ProgramStatus,
+    pub initialized: bool,
 
-    pub authority: Pubkey,
+    pub global_authority: Pubkey,
     pub fee_recipient: Pubkey,
     pub withdraw_authority: Pubkey,
 
@@ -61,7 +62,7 @@ impl Global {
     }
 
     pub fn update_authority(&mut self, params: GlobalAuthorityInput) {
-        self.authority = params.authority;
+        self.global_authority = params.global_authority;
         self.fee_recipient = params.fee_recipient;
         self.withdraw_authority = params.withdraw_authority;
     }
