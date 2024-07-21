@@ -14,9 +14,9 @@ pub struct GlobalSettingsInput {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
-    pub global_authority: Pubkey,
-    pub fee_recipient: Pubkey,
-    pub withdraw_authority: Pubkey,
+    pub global_authority: Option<Pubkey>,
+    pub fee_recipient: Option<Pubkey>,
+    pub withdraw_authority: Option<Pubkey>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug)]
@@ -62,8 +62,14 @@ impl Global {
     }
 
     pub fn update_authority(&mut self, params: GlobalAuthorityInput) {
-        self.global_authority = params.global_authority;
-        self.fee_recipient = params.fee_recipient;
-        self.withdraw_authority = params.withdraw_authority;
+        if let Some(global_authority) = params.global_authority {
+            self.global_authority = global_authority;
+        }
+        if let Some(fee_recipient) = params.fee_recipient {
+            self.fee_recipient = fee_recipient;
+        }
+        if let Some(withdraw_authority) = params.withdraw_authority {
+            self.withdraw_authority = withdraw_authority;
+        }
     }
 }

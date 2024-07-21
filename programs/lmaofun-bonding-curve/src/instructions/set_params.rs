@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 
 #[event_cpi]
 #[derive(Accounts)]
-#[instruction(settings_params: GlobalSettingsInput, authority_params: GlobalAuthorityInput, status: ProgramStatus)]
+#[instruction( authority_params: GlobalAuthorityInput,settings_params: GlobalSettingsInput, status: ProgramStatus)]
 pub struct SetParams<'info> {
     #[account(mut,
     constraint = authority.key() == global.global_authority.key() @ CurveLaunchpadError::InvalidAuthority
@@ -26,8 +26,8 @@ pub struct SetParams<'info> {
 impl SetParams<'_> {
     pub fn handler(
         ctx: Context<SetParams>,
-        settings_params: GlobalSettingsInput,
         authority_params: GlobalAuthorityInput,
+        settings_params: GlobalSettingsInput,
         status: ProgramStatus,
     ) -> Result<()> {
         let global = &mut ctx.accounts.global;

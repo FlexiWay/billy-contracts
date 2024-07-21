@@ -4,7 +4,6 @@ pub mod errors;
 pub mod events;
 pub mod instructions;
 pub mod state;
-
 use instructions::{initialize::*, set_params::*};
 use state::global::*;
 
@@ -20,8 +19,12 @@ pub mod bonding_curve {
 
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
-        Initialize::handler(ctx, params)
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        authority_params: GlobalAuthorityInput,
+        settings_params: GlobalSettingsInput,
+    ) -> Result<()> {
+        Initialize::handler(ctx, authority_params, settings_params)
     }
     pub fn set_params(
         ctx: Context<SetParams>,
@@ -29,6 +32,6 @@ pub mod bonding_curve {
         authority_params: GlobalAuthorityInput,
         status: ProgramStatus,
     ) -> Result<()> {
-        SetParams::handler(ctx, settings_params, authority_params, status)
+        SetParams::handler(ctx, authority_params, settings_params, status)
     }
 }

@@ -7,5 +7,6 @@
  */
 
 export * from './contractError';
+export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';

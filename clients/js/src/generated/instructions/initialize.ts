@@ -9,23 +9,23 @@
 import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
 import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalSettingsInputSerializer } from '../types';
+import { GlobalAuthorityInput, GlobalAuthorityInputArgs, GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalAuthorityInputSerializer, getGlobalSettingsInputSerializer } from '../types';
 
 // Accounts.
 export type InitializeInstructionAccounts = {
-    globalAuthority: Signer;
+    authority?: Signer;
     global: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
 };
 
   // Data.
-  export type InitializeInstructionData = { discriminator: Array<number>; params: GlobalSettingsInput;  };
+  export type InitializeInstructionData = { discriminator: Array<number>; authorityParams: GlobalAuthorityInput; settingsParams: GlobalSettingsInput;  };
 
-export type InitializeInstructionDataArgs = { params: GlobalSettingsInputArgs;  };
+export type InitializeInstructionDataArgs = { authorityParams: GlobalAuthorityInputArgs; settingsParams: GlobalSettingsInputArgs;  };
 
 
   export function getInitializeInstructionDataSerializer(): Serializer<InitializeInstructionDataArgs, InitializeInstructionData> {
-  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['params', getGlobalSettingsInputSerializer()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
+  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['authorityParams', getGlobalAuthorityInputSerializer()], ['settingsParams', getGlobalSettingsInputSerializer()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 
 
@@ -37,7 +37,7 @@ export type InitializeInstructionDataArgs = { params: GlobalSettingsInputArgs;  
   
 // Instruction.
 export function initialize(
-  context: Pick<Context, "programs">,
+  context: Pick<Context, "identity" | "programs">,
                         input: InitializeInstructionAccounts & InitializeInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
@@ -45,7 +45,7 @@ export function initialize(
 
   // Accounts.
   const resolvedAccounts = {
-          globalAuthority: { index: 0, isWritable: true as boolean, value: input.globalAuthority ?? null },
+          authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
           global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
           systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
       } satisfies ResolvedAccountsWithIndices;
@@ -54,7 +54,10 @@ export function initialize(
     const resolvedArgs: InitializeInstructionArgs = { ...input };
   
     // Default values.
-  if (!resolvedAccounts.systemProgram.value) {
+  if (!resolvedAccounts.authority.value) {
+        resolvedAccounts.authority.value = context.identity;
+      }
+      if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
 resolvedAccounts.systemProgram.isWritable = false
       }

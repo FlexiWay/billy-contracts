@@ -51,6 +51,7 @@ import {
 } from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
 import { BondingCurve } from "../target/types/bonding_curve";
+import { findEvtAuthoritylPda } from "../clients/js/src/utils";
 import {
   setParams,
   SetParamsInstructionAccounts,
@@ -73,11 +74,11 @@ describe("lmaofun-bonding", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const program = anchor.workspace.BondingCurve as Program<BondingCurve>;
-
+  const bondingCurveProgram = createBondingCurveProgram();
   let umi = createUmi(rpcUrl);
   umi.programs.add(createSplAssociatedTokenProgram());
   umi.programs.add(createSplTokenProgram());
-  umi.programs.add(createBondingCurveProgram());
+  umi.programs.add(bondingCurveProgram);
   const connection = new Connection(rpcUrl, {
     commitment: "finalized",
   });
@@ -85,9 +86,18 @@ describe("lmaofun-bonding", () => {
   umi.use(keypairIdentity(fromWeb3JsKeypair(keypair)));
 
   let globalPda = findGlobalPda(umi);
-  let eventAuthorityPda = findEventAuthorityPda(umi);
+  let eventAuthorityPda = findEvtAuthoritylPda(umi);
+  let eventAuthority = eventAuthorityPda[0];
+  const evtAuthorityAccs = {
+    eventAuthority,
+    program: umi.programs.getPublicKey(bondingCurveProgram.name),
+  };
   const quoteMintDecimals = 6;
-
+  const initAccs = {
+    globalAuthority: umi.identity.publicKey,
+    feeRecipient: umi.identity.publicKey,
+    withdrawAuthority: umi.identity.publicKey,
+  };
   before(async () => {
     try {
       await umi.rpc.airdrop(
@@ -101,15 +111,12 @@ describe("lmaofun-bonding", () => {
   });
 
   it("is initialized", async () => {
-    const initAccs: InitializeInstructionAccounts = {
-      global: globalPda[0],
-    };
-
     const txBuilder = new TransactionBuilder();
     txBuilder.add(
       initialize(umi, {
-        ...INIT_DEFAULTS,
-        ...initAccs,
+        global: globalPda[0],
+        settingsParams: INIT_DEFAULTS,
+        authorityParams: initAccs,
       })
     );
 
@@ -145,15 +152,16 @@ describe("lmaofun-bonding", () => {
   });
 
   it("set_params in SwapOnly", async () => {
-    const initAccs: SetParamsInstructionAccounts = {
-      global: globalPda[0],
-    };
-
     const txBuilder = new TransactionBuilder();
     txBuilder.add(
       setParams(umi, {
-        // ...INIT_DEFAULTS,
-        // ...initAccs,
+        global: globalPda[0],
+        status: ProgramStatus.SwapOnly,
+
+        settingsParams: INIT_DEFAULTS,
+        authorityParams: initAccs,
+
+        ...evtAuthorityAccs,
       })
     );
 
@@ -167,5 +175,30 @@ describe("lmaofun-bonding", () => {
     console.log({ global });
 
     assert.equal(global.status, ProgramStatus.SwapOnly);
+  });
+
+  it("set_params back", async () => {
+    const txBuilder = new TransactionBuilder();
+    txBuilder.add(
+      setParams(umi, {
+        global: globalPda[0],
+        status: ProgramStatus.Running,
+
+        settingsParams: INIT_DEFAULTS,
+        authorityParams: initAccs,
+        ...evtAuthorityAccs,
+      })
+    );
+
+    const tx = await txBuilder.buildAndSign(umi);
+    const _tx = toWeb3JsTransaction(tx);
+    const simRes = await connection.simulateTransaction(_tx);
+    console.log(simRes);
+    const { ...a } = await txBuilder.sendAndConfirm(umi);
+    console.log(a);
+    const global = await safeFetchGlobal(umi, globalPda);
+    console.log({ global });
+
+    assert.equal(global.status, ProgramStatus.Running);
   });
 });

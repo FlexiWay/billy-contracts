@@ -6,7 +6,7 @@
       "name": "initialize",
       "accounts": [
         {
-          "name": "globalAuthority",
+          "name": "authority",
           "isMut": true,
           "isSigner": true
         },
@@ -23,7 +23,13 @@
       ],
       "args": [
         {
-          "name": "params",
+          "name": "authorityParams",
+          "type": {
+            "defined": "GlobalAuthorityInput"
+          }
+        },
+        {
+          "name": "settingsParams",
           "type": {
             "defined": "GlobalSettingsInput"
           }
@@ -185,15 +191,21 @@
         "fields": [
           {
             "name": "globalAuthority",
-            "type": "publicKey"
+            "type": {
+              "option": "publicKey"
+            }
           },
           {
             "name": "feeRecipient",
-            "type": "publicKey"
+            "type": {
+              "option": "publicKey"
+            }
           },
           {
             "name": "withdrawAuthority",
-            "type": "publicKey"
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -287,56 +299,6 @@
       "code": 6002,
       "name": "InvalidAuthority",
       "msg": "Invalid Authority"
-    },
-    {
-      "code": 6003,
-      "name": "BondingCurveComplete",
-      "msg": "Bonding Curve Complete"
-    },
-    {
-      "code": 6004,
-      "name": "BondingCurveNotComplete",
-      "msg": "Bonding Curve Not Complete"
-    },
-    {
-      "code": 6005,
-      "name": "InsufficientTokens",
-      "msg": "Insufficient Tokens"
-    },
-    {
-      "code": 6006,
-      "name": "InsufficientSOL",
-      "msg": "Insufficient SOL"
-    },
-    {
-      "code": 6007,
-      "name": "MaxSOLCostExceeded",
-      "msg": "Max SOL Cost Exceeded"
-    },
-    {
-      "code": 6008,
-      "name": "MinSOLOutputExceeded",
-      "msg": "Min SOL Output Exceeded"
-    },
-    {
-      "code": 6009,
-      "name": "MinBuy",
-      "msg": "Min buy is 1 Token"
-    },
-    {
-      "code": 6010,
-      "name": "MinSell",
-      "msg": "Min sell is 1 Token"
-    },
-    {
-      "code": 6011,
-      "name": "InvalidFeeRecipient",
-      "msg": "Invalid Fee Recipient"
-    },
-    {
-      "code": 6012,
-      "name": "InvalidWithdrawAuthority",
-      "msg": "Invalid Withdraw Authority"
     }
   ],
   "metadata": {
