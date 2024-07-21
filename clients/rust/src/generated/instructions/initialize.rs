@@ -12,24 +12,43 @@ use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
 pub struct Initialize {
-    pub state: solana_program::pubkey::Pubkey,
+    pub authority: solana_program::pubkey::Pubkey,
+
+    pub global: solana_program::pubkey::Pubkey,
+
+    pub system_program: solana_program::pubkey::Pubkey,
 }
 
 impl Initialize {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+    pub fn instruction(
+        &self,
+        args: InitializeInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: InitializeInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.state, false,
+            self.authority,
+            true,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.global,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.system_program,
+            false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let mut data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::BONDING_CURVE_ID,
@@ -53,14 +72,39 @@ impl InitializeInstructionData {
     }
 }
 
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InitializeInstructionArgs {
+    pub initial_token_supply: u64,
+    pub initial_real_sol_reserves: u64,
+    pub initial_real_token_reserves: u64,
+    pub initial_virtual_sol_reserves: u64,
+    pub initial_virtual_token_reserves: u64,
+    pub sol_launch_threshold: u64,
+    pub fee_basis_points: u32,
+}
+
 /// Instruction builder for `Initialize`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` state
+///   0. `[writable, signer]` authority
+///   1. `[writable]` global
+///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
 pub struct InitializeBuilder {
-    state: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
+    global: Option<solana_program::pubkey::Pubkey>,
+    system_program: Option<solana_program::pubkey::Pubkey>,
+    initial_token_supply: Option<u64>,
+    initial_real_sol_reserves: Option<u64>,
+    initial_real_token_reserves: Option<u64>,
+    initial_virtual_sol_reserves: Option<u64>,
+    initial_virtual_token_reserves: Option<u64>,
+    sol_launch_threshold: Option<u64>,
+    fee_basis_points: Option<u32>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -69,8 +113,57 @@ impl InitializeBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn state(&mut self, state: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.state = Some(state);
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn global(&mut self, global: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.global = Some(global);
+        self
+    }
+    /// `[optional account, default to '11111111111111111111111111111111']`
+    #[inline(always)]
+    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.system_program = Some(system_program);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_token_supply(&mut self, initial_token_supply: u64) -> &mut Self {
+        self.initial_token_supply = Some(initial_token_supply);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_real_sol_reserves(&mut self, initial_real_sol_reserves: u64) -> &mut Self {
+        self.initial_real_sol_reserves = Some(initial_real_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_real_token_reserves(&mut self, initial_real_token_reserves: u64) -> &mut Self {
+        self.initial_real_token_reserves = Some(initial_real_token_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_virtual_sol_reserves(&mut self, initial_virtual_sol_reserves: u64) -> &mut Self {
+        self.initial_virtual_sol_reserves = Some(initial_virtual_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_virtual_token_reserves(
+        &mut self,
+        initial_virtual_token_reserves: u64,
+    ) -> &mut Self {
+        self.initial_virtual_token_reserves = Some(initial_virtual_token_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
+        self.sol_launch_threshold = Some(sol_launch_threshold);
+        self
+    }
+    #[inline(always)]
+    pub fn fee_basis_points(&mut self, fee_basis_points: u32) -> &mut Self {
+        self.fee_basis_points = Some(fee_basis_points);
         self
     }
     /// Add an aditional account to the instruction.
@@ -94,16 +187,54 @@ impl InitializeBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Initialize {
-            state: self.state.expect("state is not set"),
+            authority: self.authority.expect("authority is not set"),
+            global: self.global.expect("global is not set"),
+            system_program: self
+                .system_program
+                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+        };
+        let args = InitializeInstructionArgs {
+            initial_token_supply: self
+                .initial_token_supply
+                .clone()
+                .expect("initial_token_supply is not set"),
+            initial_real_sol_reserves: self
+                .initial_real_sol_reserves
+                .clone()
+                .expect("initial_real_sol_reserves is not set"),
+            initial_real_token_reserves: self
+                .initial_real_token_reserves
+                .clone()
+                .expect("initial_real_token_reserves is not set"),
+            initial_virtual_sol_reserves: self
+                .initial_virtual_sol_reserves
+                .clone()
+                .expect("initial_virtual_sol_reserves is not set"),
+            initial_virtual_token_reserves: self
+                .initial_virtual_token_reserves
+                .clone()
+                .expect("initial_virtual_token_reserves is not set"),
+            sol_launch_threshold: self
+                .sol_launch_threshold
+                .clone()
+                .expect("sol_launch_threshold is not set"),
+            fee_basis_points: self
+                .fee_basis_points
+                .clone()
+                .expect("fee_basis_points is not set"),
         };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
 /// `initialize` CPI accounts.
 pub struct InitializeCpiAccounts<'a, 'b> {
-    pub state: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub global: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `initialize` CPI instruction.
@@ -111,17 +242,27 @@ pub struct InitializeCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub state: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub global: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The arguments for the instruction.
+    pub __args: InitializeInstructionArgs,
 }
 
 impl<'a, 'b> InitializeCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
         accounts: InitializeCpiAccounts<'a, 'b>,
+        args: InitializeInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
-            state: accounts.state,
+            authority: accounts.authority,
+            global: accounts.global,
+            system_program: accounts.system_program,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -157,9 +298,17 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.state.key,
+            *self.authority.key,
+            true,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.global.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.system_program.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -169,16 +318,20 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let mut data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::BONDING_CURVE_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(1 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.state.clone());
+        account_infos.push(self.authority.clone());
+        account_infos.push(self.global.clone());
+        account_infos.push(self.system_program.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -195,7 +348,9 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` state
+///   0. `[writable, signer]` authority
+///   1. `[writable]` global
+///   2. `[]` system_program
 pub struct InitializeCpiBuilder<'a, 'b> {
     instruction: Box<InitializeCpiBuilderInstruction<'a, 'b>>,
 }
@@ -204,14 +359,80 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(InitializeCpiBuilderInstruction {
             __program: program,
-            state: None,
+            authority: None,
+            global: None,
+            system_program: None,
+            initial_token_supply: None,
+            initial_real_sol_reserves: None,
+            initial_real_token_reserves: None,
+            initial_virtual_sol_reserves: None,
+            initial_virtual_token_reserves: None,
+            sol_launch_threshold: None,
+            fee_basis_points: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
     #[inline(always)]
-    pub fn state(&mut self, state: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.state = Some(state);
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn global(
+        &mut self,
+        global: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.global = Some(global);
+        self
+    }
+    #[inline(always)]
+    pub fn system_program(
+        &mut self,
+        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.system_program = Some(system_program);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_token_supply(&mut self, initial_token_supply: u64) -> &mut Self {
+        self.instruction.initial_token_supply = Some(initial_token_supply);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_real_sol_reserves(&mut self, initial_real_sol_reserves: u64) -> &mut Self {
+        self.instruction.initial_real_sol_reserves = Some(initial_real_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_real_token_reserves(&mut self, initial_real_token_reserves: u64) -> &mut Self {
+        self.instruction.initial_real_token_reserves = Some(initial_real_token_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_virtual_sol_reserves(&mut self, initial_virtual_sol_reserves: u64) -> &mut Self {
+        self.instruction.initial_virtual_sol_reserves = Some(initial_virtual_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn initial_virtual_token_reserves(
+        &mut self,
+        initial_virtual_token_reserves: u64,
+    ) -> &mut Self {
+        self.instruction.initial_virtual_token_reserves = Some(initial_virtual_token_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
+        self.instruction.sol_launch_threshold = Some(sol_launch_threshold);
+        self
+    }
+    #[inline(always)]
+    pub fn fee_basis_points(&mut self, fee_basis_points: u32) -> &mut Self {
+        self.instruction.fee_basis_points = Some(fee_basis_points);
         self
     }
     /// Add an additional account to the instruction.
@@ -255,10 +476,55 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
+        let args = InitializeInstructionArgs {
+            initial_token_supply: self
+                .instruction
+                .initial_token_supply
+                .clone()
+                .expect("initial_token_supply is not set"),
+            initial_real_sol_reserves: self
+                .instruction
+                .initial_real_sol_reserves
+                .clone()
+                .expect("initial_real_sol_reserves is not set"),
+            initial_real_token_reserves: self
+                .instruction
+                .initial_real_token_reserves
+                .clone()
+                .expect("initial_real_token_reserves is not set"),
+            initial_virtual_sol_reserves: self
+                .instruction
+                .initial_virtual_sol_reserves
+                .clone()
+                .expect("initial_virtual_sol_reserves is not set"),
+            initial_virtual_token_reserves: self
+                .instruction
+                .initial_virtual_token_reserves
+                .clone()
+                .expect("initial_virtual_token_reserves is not set"),
+            sol_launch_threshold: self
+                .instruction
+                .sol_launch_threshold
+                .clone()
+                .expect("sol_launch_threshold is not set"),
+            fee_basis_points: self
+                .instruction
+                .fee_basis_points
+                .clone()
+                .expect("fee_basis_points is not set"),
+        };
         let instruction = InitializeCpi {
             __program: self.instruction.__program,
 
-            state: self.instruction.state.expect("state is not set"),
+            authority: self.instruction.authority.expect("authority is not set"),
+
+            global: self.instruction.global.expect("global is not set"),
+
+            system_program: self
+                .instruction
+                .system_program
+                .expect("system_program is not set"),
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -269,7 +535,16 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
 
 struct InitializeCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    state: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    initial_token_supply: Option<u64>,
+    initial_real_sol_reserves: Option<u64>,
+    initial_real_token_reserves: Option<u64>,
+    initial_virtual_sol_reserves: Option<u64>,
+    initial_virtual_token_reserves: Option<u64>,
+    sol_launch_threshold: Option<u64>,
+    fee_basis_points: Option<u32>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

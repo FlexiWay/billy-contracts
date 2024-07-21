@@ -6,43 +6,61 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Context, Pda, PublicKey, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
+import { Serializer, array, mapSerializer, struct, u32, u64, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
 
 // Accounts.
 export type InitializeInstructionAccounts = {
-    state: PublicKey | Pda;
+    authority?: Signer;
+    global: PublicKey | Pda;
+    systemProgram?: PublicKey | Pda;
 };
 
   // Data.
-  export type InitializeInstructionData = { discriminator: Array<number>;  };
+  export type InitializeInstructionData = { discriminator: Array<number>; initialTokenSupply: bigint; initialRealSolReserves: bigint; initialRealTokenReserves: bigint; initialVirtualSolReserves: bigint; initialVirtualTokenReserves: bigint; solLaunchThreshold: bigint; feeBasisPoints: number;  };
 
-export type InitializeInstructionDataArgs = {  };
+export type InitializeInstructionDataArgs = { initialTokenSupply: number | bigint; initialRealSolReserves: number | bigint; initialRealTokenReserves: number | bigint; initialVirtualSolReserves: number | bigint; initialVirtualTokenReserves: number | bigint; solLaunchThreshold: number | bigint; feeBasisPoints: number;  };
 
 
   export function getInitializeInstructionDataSerializer(): Serializer<InitializeInstructionDataArgs, InitializeInstructionData> {
-  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
+  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['initialTokenSupply', u64()], ['initialRealSolReserves', u64()], ['initialRealTokenReserves', u64()], ['initialVirtualSolReserves', u64()], ['initialVirtualTokenReserves', u64()], ['solLaunchThreshold', u64()], ['feeBasisPoints', u32()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 
 
 
-
+  
+  // Args.
+      export type InitializeInstructionArgs =           InitializeInstructionDataArgs
+      ;
+  
 // Instruction.
 export function initialize(
-  context: Pick<Context, "programs">,
-                        input: InitializeInstructionAccounts,
+  context: Pick<Context, "identity" | "programs">,
+                        input: InitializeInstructionAccounts & InitializeInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey('bondingCurve', 'E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb');
 
   // Accounts.
   const resolvedAccounts = {
-          state: { index: 0, isWritable: true as boolean, value: input.state ?? null },
+          authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
+          global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
+          systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
+      // Arguments.
+    const resolvedArgs: InitializeInstructionArgs = { ...input };
   
-  
+    // Default values.
+  if (!resolvedAccounts.authority.value) {
+        resolvedAccounts.authority.value = context.identity;
+      }
+      if (!resolvedAccounts.systemProgram.value) {
+        resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
+resolvedAccounts.systemProgram.isWritable = false
+      }
+      
   // Accounts in order.
       const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
   
@@ -51,7 +69,7 @@ export function initialize(
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
-      const data = getInitializeInstructionDataSerializer().serialize({});
+      const data = getInitializeInstructionDataSerializer().serialize(resolvedArgs as InitializeInstructionDataArgs);
   
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;

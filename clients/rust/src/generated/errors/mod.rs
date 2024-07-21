@@ -4,3 +4,7 @@
 //!
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
+
+pub(crate) mod bonding_curve;
+
+pub use self::bonding_curve::BondingCurveError;

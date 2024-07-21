@@ -5,10 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub mod accounts;
-pub mod errors;
-pub mod instructions;
-pub mod programs;
-pub mod types;
+pub(crate) mod r#global_authority_input;
+pub(crate) mod r#program_status;
 
-pub(crate) use programs::*;
+pub use self::r#global_authority_input::*;
+pub use self::r#program_status::*;

@@ -5,44 +5,66 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::ProgramStatus;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::pubkey::Pubkey;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TestState {
+pub struct Global {
     pub discriminator: [u8; 8],
-    pub name: u8,
-    pub symbol: u8,
-    pub decimals: u8,
+    pub status: ProgramStatus,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub authority: Pubkey,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub fee_recipient: Pubkey,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub withdraw_authority: Pubkey,
+    pub initial_virtual_token_reserves: u64,
+    pub initial_virtual_sol_reserves: u64,
+    pub initial_real_token_reserves: u64,
+    pub initial_real_sol_reserves: u64,
+    pub initial_token_supply: u64,
+    pub sol_launch_threshold: u64,
+    pub fee_basis_points: u32,
 }
 
-impl TestState {
-    pub const LEN: usize = 11;
+impl Global {
+    pub const LEN: usize = 157;
 
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:
     ///
-    ///   0. `TestState::PREFIX`
-    pub const PREFIX: &'static [u8] = "test-state".as_bytes();
+    ///   0. `Global::PREFIX`
+    pub const PREFIX: &'static [u8] = "global".as_bytes();
 
     pub fn create_pda(
         bump: u8,
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
-            &["test-state".as_bytes(), &[bump]],
+            &["global".as_bytes(), &[bump]],
             &crate::BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda() -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &["test-state".as_bytes()],
+            &["global".as_bytes()],
             &crate::BONDING_CURVE_ID,
         )
     }
@@ -54,7 +76,7 @@ impl TestState {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for TestState {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Global {
     type Error = std::io::Error;
 
     fn try_from(

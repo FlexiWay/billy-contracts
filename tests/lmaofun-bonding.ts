@@ -1,55 +1,76 @@
 import {
   keypairIdentity,
-  Pda,
-  PublicKey,
-  publicKey,
-  TransactionBuilder,
   createAmount,
-  some,
+  TransactionBuilder,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   createAssociatedToken,
   createSplAssociatedTokenProgram,
   createSplTokenProgram,
-  findAssociatedTokenPda,
-  safeFetchMint,
-  safeFetchToken,
-  SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@metaplex-foundation/mpl-toolbox";
 import {
   Connection,
   Keypair,
+  LAMPORTS_PER_SOL,
   sendAndConfirmTransaction,
+  SystemProgram,
   Transaction,
+  TransactionMessage,
+  VersionedTransaction,
   PublicKey as Web3JsPublicKey,
 } from "@solana/web3.js";
 import {
-  BONDING_CURVE_PROGRAM_ID,
   createBondingCurveProgram,
-  fetchTestState,
-  fetchTestStateFromSeeds,
+  findGlobalPda,
+  initialize,
+  InitializeInstructionAccounts,
+  ProgramStatus,
+  safeFetchGlobal,
+  safeFetchGlobalFromSeeds,
 } from "../clients/js/src";
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   createMint,
   createMintToInstruction,
   getOrCreateAssociatedTokenAccount,
-  mintTo,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import {
   fromWeb3JsKeypair,
   fromWeb3JsPublicKey,
   toWeb3JsKeypair,
+  toWeb3JsPublicKey,
+  toWeb3JsTransaction,
 } from "@metaplex-foundation/umi-web3js-adapters";
 import assert from "assert";
+import * as anchor from "@coral-xyz/anchor";
+import {
+  DECIMALS_MULTIPLIER,
+  DEFAULT_TOKEN_SUPPLY,
+  INIT_DEFAULTS,
+} from "../clients/js/src/constants";
+import { Program } from "@coral-xyz/anchor";
+import { BondingCurve } from "../target/types/bonding_curve";
+const kp = Keypair.generate();
+
 describe("lmaofun-bonding", () => {
-  let umi = createUmi("http://127.0.0.1:8899");
+  let rpcUrl;
+  if (process.env.ANCHOR_PROVIDER_URL) {
+    rpcUrl = process.env.ANCHOR_PROVIDER_URL;
+  } else {
+    rpcUrl = "http://127.0.0.1:8899";
+    process.env.ANCHOR_PROVIDER_URL = rpcUrl;
+    process.env.ANCHOR_WALLET = "./keys/test-kp.json";
+  }
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider);
+
+  const program = anchor.workspace.BondingCurve as Program<BondingCurve>;
+  let umi = createUmi(rpcUrl);
   umi.programs.add(createSplAssociatedTokenProgram());
   umi.programs.add(createSplTokenProgram());
   umi.programs.add(createBondingCurveProgram());
-  const connection = new Connection("http://127.0.0.1:8899", {
+  const connection = new Connection(rpcUrl, {
     commitment: "finalized",
   });
 
@@ -58,6 +79,9 @@ describe("lmaofun-bonding", () => {
   );
 
   umi.use(keypairIdentity(fromWeb3JsKeypair(keypair)));
+
+  let globalPda = findGlobalPda(umi);
+
   const quoteMintDecimals = 6;
 
   before(async () => {
@@ -65,54 +89,54 @@ describe("lmaofun-bonding", () => {
       await umi.rpc.airdrop(
         umi.identity.publicKey,
         createAmount(100_000 * 10 ** 9, "SOL", 9),
-        { commitment: "finalized" }
+        { commitment: "confirmed" }
       );
-
-      const quoteMintWeb3js = await createMint(
-        connection,
-        keypair,
-        keypair.publicKey,
-        keypair.publicKey,
-        quoteMintDecimals // Decimals
-      );
-
-      console.log("Created USDC: ", quoteMintWeb3js.toBase58());
-
-      const userUsdcInfo = await getOrCreateAssociatedTokenAccount(
-        connection,
-        keypair,
-        quoteMintWeb3js,
-        keypair.publicKey,
-        false,
-        "confirmed"
-      );
-      console.log(
-        keypair,
-        quoteMintWeb3js,
-        userUsdcInfo.address,
-        keypair.publicKey
-      );
-
-      const mintToIx = createMintToInstruction(
-        quoteMintWeb3js,
-        userUsdcInfo.address,
-        keypair.publicKey,
-        100_000_000 * 10 ** quoteMintDecimals,
-        [],
-        TOKEN_PROGRAM_ID
-      );
-
-      const tx = new Transaction().add(mintToIx);
-      const sig = await sendAndConfirmTransaction(connection, tx, [keypair]);
-      console.log({ sig });
-      const userQuote = fromWeb3JsPublicKey(userUsdcInfo.address);
-      const quoteMint = fromWeb3JsPublicKey(quoteMintWeb3js);
     } catch (error) {
       console.log(error);
     }
   });
 
-  it("passes", async () => {
-    assert.equal(1, 1);
+  it("is initialized", async () => {
+    const initAccs: InitializeInstructionAccounts = {
+      global: globalPda[0],
+    };
+
+    const txBuilder = new TransactionBuilder();
+    txBuilder.add(
+      initialize(umi, {
+        ...INIT_DEFAULTS,
+        ...initAccs,
+      })
+    );
+
+    const tx = await txBuilder.buildAndSign(umi);
+    const _tx = toWeb3JsTransaction(tx);
+    const simRes = await connection.simulateTransaction(_tx);
+    console.log(simRes);
+    const { ...a } = await txBuilder.sendAndConfirm(umi);
+    console.log(a);
+    const global = await safeFetchGlobal(umi, globalPda);
+    console.log({ global });
+    assert.equal(
+      global.initialRealSolReserves,
+      INIT_DEFAULTS.initialRealSolReserves
+    );
+    assert.equal(
+      global.initialRealTokenReserves,
+      INIT_DEFAULTS.initialRealTokenReserves
+    );
+    assert.equal(
+      global.initialVirtualSolReserves,
+      INIT_DEFAULTS.initialVirtualSolReserves
+    );
+    assert.equal(
+      global.initialVirtualTokenReserves,
+      INIT_DEFAULTS.initialVirtualTokenReserves
+    );
+    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
+    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
+    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
+
+    assert.equal(global.status, ProgramStatus.Running);
   });
 });

@@ -1,32 +1,25 @@
 use anchor_lang::prelude::*;
 
-declare_id!("898RNYePTRDQaQCdvVfZdPo82vekCJXyLfc2XsWUZVx5");
+pub mod instructions;
+pub mod state;
+
+use global::GlobalSettingsInput;
+use instructions::initialize::*;
+use state::*;
+
+#[error_code]
+pub enum ContractError {
+    #[msg("Invalid instruction data")]
+    InvalidInstructionData,
+}
+declare_id!("E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb");
 
 #[program]
 pub mod bonding_curve {
+
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        Ok(())
+    pub fn initialize(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
+        Initialize::handler(ctx, params)
     }
-}
-
-#[account]
-#[derive(InitSpace)]
-pub struct TestState {
-    pub name: u8,
-    pub symbol: u8,
-    pub decimals: u8,
-}
-
-#[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(
-        mut,
-        seeds = [
-        "test-state".as_bytes()
-        ],
-        bump
-        )]
-    pub state: Account<'info, TestState>,
 }

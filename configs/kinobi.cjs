@@ -17,29 +17,9 @@ kinobi.update(
 // Update accounts.
 kinobi.update(
   new k.updateAccountsVisitor({
-    testState: {
-      seeds: [k.constantPdaSeedNodeFromString("test-state")],
+    global: {
+      seeds: [k.constantPdaSeedNodeFromString("global")],
     },
-    // tokenManager: {
-    //   seeds: [
-    //     k.constantPdaSeedNodeFro3mString("token-manager")
-    //   ],
-    // },
-    // poolManager: {
-    //   seeds: [
-    //     k.constantPdaSeedNodeFromString("pool-manager")
-    //   ],
-    // },
-    // gatekeeper: {
-    //   seeds: [
-    //     k.constantPdaSeedNodeFromString("gatekeeper"),
-    //     k.variablePdaSeedNode(
-    //       "wallet",
-    //       k.publicKeyTypeNode(),
-    //       "The address of the gate_keeper wallet"
-    //     ),
-    //   ],
-    // },
   })
 );
 

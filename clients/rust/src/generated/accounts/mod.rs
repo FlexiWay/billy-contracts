@@ -5,6 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod r#test_state;
+pub(crate) mod r#global;
 
-pub use self::r#test_state::*;
+pub use self::r#global::*;

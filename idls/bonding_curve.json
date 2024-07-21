@@ -6,34 +6,170 @@
       "name": "initialize",
       "accounts": [
         {
-          "name": "state",
+          "name": "authority",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "GlobalSettingsInput"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
     {
-      "name": "TestState",
+      "name": "Global",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
-            "type": "u8"
+            "name": "status",
+            "type": {
+              "defined": "ProgramStatus"
+            }
           },
           {
-            "name": "symbol",
-            "type": "u8"
+            "name": "authority",
+            "type": "publicKey"
           },
           {
-            "name": "decimals",
-            "type": "u8"
+            "name": "feeRecipient",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "initialVirtualTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialRealTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialRealSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialTokenSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "feeBasisPoints",
+            "type": "u32"
           }
         ]
       }
+    }
+  ],
+  "types": [
+    {
+      "name": "GlobalSettingsInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialTokenSupply",
+            "type": "u64"
+          },
+          {
+            "name": "initialRealSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialRealTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "feeBasisPoints",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "feeRecipient",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawAuthority",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProgramStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Running"
+          },
+          {
+            "name": "SwapOnly"
+          },
+          {
+            "name": "SwapOnlyNoLaunch"
+          },
+          {
+            "name": "Paused"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidInstructionData",
+      "msg": "Invalid instruction data"
     }
   ],
   "metadata": {

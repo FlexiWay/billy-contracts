@@ -12,6 +12,19 @@ type ProgramErrorConstructor = new (program: Program, cause?: Error) => ProgramE
 const codeToErrorMap: Map<number, ProgramErrorConstructor> = new Map();
 const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
 
+/** InvalidInstructionData: Invalid instruction data */
+export class InvalidInstructionDataError extends ProgramError {
+  override readonly name: string = 'InvalidInstructionData';
+
+  readonly code: number = 0x1770; // 6000
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid instruction data', program, cause);
+  }
+}
+codeToErrorMap.set(0x1770, InvalidInstructionDataError);
+nameToErrorMap.set('InvalidInstructionData', InvalidInstructionDataError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
