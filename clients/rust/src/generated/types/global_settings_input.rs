@@ -15,11 +15,12 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GlobalSettingsInput {
-    pub initial_token_supply: u64,
-    pub initial_real_sol_reserves: u64,
-    pub initial_real_token_reserves: u64,
-    pub initial_virtual_sol_reserves: u64,
-    pub initial_virtual_token_reserves: u64,
-    pub sol_launch_threshold: u64,
-    pub fee_basis_points: u32,
+    pub initial_token_supply: Option<u64>,
+    pub initial_real_sol_reserves: Option<u64>,
+    pub initial_real_token_reserves: Option<u64>,
+    pub initial_virtual_sol_reserves: Option<u64>,
+    pub initial_virtual_token_reserves: Option<u64>,
+    pub sol_launch_threshold: Option<u64>,
+    pub fee_basis_points: Option<u32>,
+    pub created_mint_decimals: Option<u8>,
 }

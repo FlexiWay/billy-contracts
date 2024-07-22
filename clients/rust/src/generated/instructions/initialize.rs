@@ -19,6 +19,10 @@ pub struct Initialize {
     pub global: solana_program::pubkey::Pubkey,
 
     pub system_program: solana_program::pubkey::Pubkey,
+
+    pub event_authority: solana_program::pubkey::Pubkey,
+
+    pub program: solana_program::pubkey::Pubkey,
 }
 
 impl Initialize {
@@ -34,7 +38,7 @@ impl Initialize {
         args: InitializeInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true,
@@ -45,6 +49,14 @@ impl Initialize {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.event_authority,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.program,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
@@ -90,11 +102,15 @@ pub struct InitializeInstructionArgs {
 ///   0. `[writable, signer]` authority
 ///   1. `[writable]` global
 ///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[]` event_authority
+///   4. `[]` program
 #[derive(Default)]
 pub struct InitializeBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
+    event_authority: Option<solana_program::pubkey::Pubkey>,
+    program: Option<solana_program::pubkey::Pubkey>,
     authority_params: Option<GlobalAuthorityInput>,
     settings_params: Option<GlobalSettingsInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -118,6 +134,19 @@ impl InitializeBuilder {
     #[inline(always)]
     pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
+        self
+    }
+    #[inline(always)]
+    pub fn event_authority(
+        &mut self,
+        event_authority: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.event_authority = Some(event_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn program(&mut self, program: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.program = Some(program);
         self
     }
     #[inline(always)]
@@ -156,6 +185,8 @@ impl InitializeBuilder {
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            event_authority: self.event_authority.expect("event_authority is not set"),
+            program: self.program.expect("program is not set"),
         };
         let args = InitializeInstructionArgs {
             authority_params: self
@@ -179,6 +210,10 @@ pub struct InitializeCpiAccounts<'a, 'b> {
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `initialize` CPI instruction.
@@ -191,6 +226,10 @@ pub struct InitializeCpi<'a, 'b> {
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: InitializeInstructionArgs,
 }
@@ -206,6 +245,8 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
             authority: accounts.authority,
             global: accounts.global,
             system_program: accounts.system_program,
+            event_authority: accounts.event_authority,
+            program: accounts.program,
             __args: args,
         }
     }
@@ -242,7 +283,7 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true,
@@ -253,6 +294,14 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.event_authority.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.program.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -271,11 +320,13 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
         account_infos.push(self.global.clone());
         account_infos.push(self.system_program.clone());
+        account_infos.push(self.event_authority.clone());
+        account_infos.push(self.program.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -295,6 +346,8 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
 ///   0. `[writable, signer]` authority
 ///   1. `[writable]` global
 ///   2. `[]` system_program
+///   3. `[]` event_authority
+///   4. `[]` program
 pub struct InitializeCpiBuilder<'a, 'b> {
     instruction: Box<InitializeCpiBuilderInstruction<'a, 'b>>,
 }
@@ -306,6 +359,8 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
             authority: None,
             global: None,
             system_program: None,
+            event_authority: None,
+            program: None,
             authority_params: None,
             settings_params: None,
             __remaining_accounts: Vec::new(),
@@ -334,6 +389,22 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
         system_program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
+        self
+    }
+    #[inline(always)]
+    pub fn event_authority(
+        &mut self,
+        event_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.event_authority = Some(event_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn program(
+        &mut self,
+        program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.program = Some(program);
         self
     }
     #[inline(always)]
@@ -410,6 +481,13 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
                 .instruction
                 .system_program
                 .expect("system_program is not set"),
+
+            event_authority: self
+                .instruction
+                .event_authority
+                .expect("event_authority is not set"),
+
+            program: self.instruction.program.expect("program is not set"),
             __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
@@ -424,6 +502,8 @@ struct InitializeCpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority_params: Option<GlobalAuthorityInput>,
     settings_params: Option<GlobalSettingsInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

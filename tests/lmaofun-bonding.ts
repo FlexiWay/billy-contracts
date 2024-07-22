@@ -74,6 +74,7 @@ describe("lmaofun-bonding", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const program = anchor.workspace.BondingCurve as Program<BondingCurve>;
+
   const bondingCurveProgram = createBondingCurveProgram();
   let umi = createUmi(rpcUrl);
   umi.programs.add(createSplAssociatedTokenProgram());
@@ -117,6 +118,7 @@ describe("lmaofun-bonding", () => {
         global: globalPda[0],
         settingsParams: INIT_DEFAULTS,
         authorityParams: initAccs,
+        ...evtAuthorityAccs,
       })
     );
 

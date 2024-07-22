@@ -36,7 +36,9 @@ impl SetParams<'_> {
         global.update_settings(settings_params);
         global.status = status;
 
-        emit_cpi!(global.into_event());
+        emit_cpi!(GlobalUpdateEvent {
+            global: global.clone().into_inner()
+        });
         msg!("Updated global state");
 
         Ok(())

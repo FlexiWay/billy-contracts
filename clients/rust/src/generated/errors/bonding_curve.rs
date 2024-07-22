@@ -19,6 +19,9 @@ pub enum BondingCurveError {
     /// 6002 (0x1772) - Invalid Authority
     #[error("Invalid Authority")]
     InvalidAuthority,
+    /// 6003 (0x1773) - Not in Running State
+    #[error("Not in Running State")]
+    ProgramNotRunning,
 }
 
 impl solana_program::program_error::PrintProgramError for BondingCurveError {

@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
 
-use crate::events::{GlobalUpdateEvent, IntoEvent};
-
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
     pub global_authority: Option<Pubkey>,
@@ -9,7 +7,7 @@ pub struct GlobalAuthorityInput {
     pub withdraw_authority: Option<Pubkey>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq)]
 pub enum ProgramStatus {
     Running,
     SwapOnly,
@@ -91,22 +89,6 @@ impl Global {
         }
         if let Some(withdraw_authority) = params.withdraw_authority {
             self.withdraw_authority = withdraw_authority;
-        }
-    }
-}
-
-impl IntoEvent<GlobalUpdateEvent> for Global {
-    fn into_event(&self) -> GlobalUpdateEvent {
-        GlobalUpdateEvent {
-            fee_recipient: self.fee_recipient,
-            withdraw_authority: self.withdraw_authority,
-            initial_virtual_token_reserves: self.initial_virtual_token_reserves,
-            initial_virtual_sol_reserves: self.initial_virtual_sol_reserves,
-            initial_real_token_reserves: self.initial_real_token_reserves,
-            initial_token_supply: self.initial_token_supply,
-            fee_basis_points: self.fee_basis_points,
-            sol_launch_threshold: self.sol_launch_threshold,
-            created_mint_decimals: self.created_mint_decimals,
         }
     }
 }

@@ -19,6 +19,16 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -89,6 +99,38 @@
   ],
   "accounts": [
     {
+      "name": "BondingCurve",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "virtualTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "complete",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "Global",
       "type": {
         "kind": "struct",
@@ -142,48 +184,16 @@
           {
             "name": "feeBasisPoints",
             "type": "u32"
+          },
+          {
+            "name": "createdMintDecimals",
+            "type": "u8"
           }
         ]
       }
     }
   ],
   "types": [
-    {
-      "name": "GlobalSettingsInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialTokenSupply",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
-            "name": "feeBasisPoints",
-            "type": "u32"
-          }
-        ]
-      }
-    },
     {
       "name": "GlobalAuthorityInput",
       "type": {
@@ -205,6 +215,62 @@
             "name": "withdrawAuthority",
             "type": {
               "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalSettingsInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialTokenSupply",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "initialRealSolReserves",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "initialRealTokenReserves",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "initialVirtualSolReserves",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "initialVirtualTokenReserves",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "feeBasisPoints",
+            "type": {
+              "option": "u32"
+            }
+          },
+          {
+            "name": "createdMintDecimals",
+            "type": {
+              "option": "u8"
             }
           }
         ]
@@ -244,41 +310,50 @@
   ],
   "events": [
     {
-      "name": "SetParamsEvent",
+      "name": "GlobalUpdateEvent",
       "fields": [
         {
-          "name": "feeRecipient",
+          "name": "global",
+          "type": {
+            "defined": "Global"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CreateEvent",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "mint",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "withdrawAuthority",
+          "name": "creator",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "initialVirtualTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialVirtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialRealTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialTokenSupply",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "feeBasisPoints",
-          "type": "u32",
+          "name": "bondingCurve",
+          "type": {
+            "defined": "BondingCurve"
+          },
           "index": false
         }
       ]
@@ -299,6 +374,11 @@
       "code": 6002,
       "name": "InvalidAuthority",
       "msg": "Invalid Authority"
+    },
+    {
+      "code": 6003,
+      "name": "ProgramNotRunning",
+      "msg": "Not in Running State"
     }
   ],
   "metadata": {

@@ -51,6 +51,19 @@ export class InvalidAuthorityError extends ProgramError {
 codeToErrorMap.set(0x1772, InvalidAuthorityError);
 nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
 
+/** ProgramNotRunning: Not in Running State */
+export class ProgramNotRunningError extends ProgramError {
+  override readonly name: string = 'ProgramNotRunning';
+
+  readonly code: number = 0x1773; // 6003
+  
+  constructor(program: Program, cause?: Error) {
+    super('Not in Running State', program, cause);
+  }
+}
+codeToErrorMap.set(0x1773, ProgramNotRunningError);
+nameToErrorMap.set('ProgramNotRunning', ProgramNotRunningError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

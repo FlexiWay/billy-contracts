@@ -35,7 +35,9 @@ impl Initialize<'_> {
 
         global.status = ProgramStatus::Running;
         global.initialized = true;
-        emit_cpi!(global.into_event());
+        emit_cpi!(GlobalUpdateEvent {
+            global: global.clone().into_inner()
+        });
         msg!("Initialized global state");
         Ok(())
     }

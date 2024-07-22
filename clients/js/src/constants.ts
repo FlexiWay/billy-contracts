@@ -14,4 +14,5 @@ export const INIT_DEFAULTS={
     initialTokenSupply:DEFAULT_TOKEN_SUPPLY,
     solLaunchThreshold: 100*LAMPORTS_PER_SOL,
     feeBasisPoints: 0,
+    createdMintDecimals: TOKEN_DECIMALS,
 }

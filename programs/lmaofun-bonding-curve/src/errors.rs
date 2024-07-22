@@ -8,4 +8,6 @@ pub enum CurveLaunchpadError {
     NotInitialized,
     #[msg("Invalid Authority")]
     InvalidAuthority,
+    #[msg("Not in Running State")]
+    ProgramNotRunning,
 }
