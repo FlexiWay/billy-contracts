@@ -1,6 +1,7 @@
-use crate::{errors::CurveLaunchpadError, state::global::*};
+use crate::{errors::CurveLaunchpadError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
+#[event_cpi]
 #[derive(Accounts)]
 #[instruction(settings_params: GlobalSettingsInput, authority_params: GlobalAuthorityInput)]
 pub struct Initialize<'info> {
@@ -34,8 +35,8 @@ impl Initialize<'_> {
 
         global.status = ProgramStatus::Running;
         global.initialized = true;
+        emit_cpi!(global.into_event());
         msg!("Initialized global state");
-
         Ok(())
     }
 }

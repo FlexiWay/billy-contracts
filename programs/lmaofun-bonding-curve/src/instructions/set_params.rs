@@ -1,4 +1,4 @@
-use crate::{errors::CurveLaunchpadError, events::SetParamsEvent, state::global::*};
+use crate::{errors::CurveLaunchpadError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]
@@ -36,15 +36,8 @@ impl SetParams<'_> {
         global.update_settings(settings_params);
         global.status = status;
 
-        emit_cpi!(SetParamsEvent {
-            fee_recipient: global.fee_recipient,
-            withdraw_authority: global.withdraw_authority,
-            initial_virtual_token_reserves: global.initial_virtual_token_reserves,
-            initial_virtual_sol_reserves: global.initial_virtual_sol_reserves,
-            initial_real_token_reserves: global.initial_real_token_reserves,
-            initial_token_supply: global.initial_token_supply,
-            fee_basis_points: global.fee_basis_points,
-        });
+        emit_cpi!(global.into_event());
+        msg!("Updated global state");
 
         Ok(())
     }
