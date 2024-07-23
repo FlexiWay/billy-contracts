@@ -1,12 +1,13 @@
+import { Amman } from "@metaplex-foundation/amman-client";
+
+
 import {
   keypairIdentity,
   createAmount,
-  TransactionBuilder,
   none,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
-  createAssociatedToken,
   createSplAssociatedTokenProgram,
   createSplTokenProgram,
   SPL_SYSTEM_PROGRAM_ID,
@@ -15,11 +16,6 @@ import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction,
-  SystemProgram,
-  Transaction,
-  TransactionMessage,
-  VersionedTransaction,
   PublicKey as Web3JsPublicKey,
 } from "@solana/web3.js";
 import {
@@ -27,46 +23,34 @@ import {
   fetchGlobal,
   findGlobalPda,
   initialize,
-  InitializeInstructionAccounts,
   LMAOFUN_BONDING_CURVE_PROGRAM_ID,
   ProgramStatus,
-  safeFetchGlobal,
-  safeFetchGlobalFromSeeds,
 } from "../clients/js/src";
 import {
-  createMint,
-  createMintToInstruction,
-  getOrCreateAssociatedTokenAccount,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
-import {
   fromWeb3JsKeypair,
-  fromWeb3JsPublicKey,
-  toWeb3JsKeypair,
-  toWeb3JsPublicKey,
-  toWeb3JsTransaction,
 } from "@metaplex-foundation/umi-web3js-adapters";
 import assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
 import {
-  DECIMALS_MULTIPLIER,
-  DEFAULT_TOKEN_SUPPLY,
   INIT_DEFAULTS,
-  INIT_DEFAULTS_ANCHOR,
 } from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
 import { LmaofunBondingCurve } from "../target/types/lmaofun_bonding_curve";
 import { findEvtAuthorityPda, getTransactionEventsFromDetails, getTxDetails, getTxEventsFromTxBuilderResponse, logEvent } from "../clients/js/src/utils";
 import {
   setParams,
-  SetParamsInstructionAccounts,
 } from "../clients/js/src/generated/instructions/setParams";
-import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { assertGlobal } from "./utils";
+
+const amman = Amman.instance();
+
 
 const keypair = Keypair.fromSecretKey(
   Uint8Array.from(require("../keys/test-kp.json"))
 );
+
+amman.addr.addLabel("master", keypair.publicKey);
+amman.addr.addLabel("LmaofunBondingCurveProgram", LMAOFUN_BONDING_CURVE_PROGRAM_ID);
 
 describe("lmaofun-bonding", () => {
   let rpcUrl;
@@ -95,17 +79,13 @@ describe("lmaofun-bonding", () => {
   umi.use(keypairIdentity(fromWeb3JsKeypair(keypair)));
 
   let globalPda = findGlobalPda(umi);
+  amman.addr.addLabel("global", globalPda[0]);
+
   let eventAuthorityPda = findEvtAuthorityPda(umi);
   let eventAuthority = eventAuthorityPda[0];
   const evtAuthorityAccs = {
     eventAuthority,
     program: LMAOFUN_BONDING_CURVE_PROGRAM_ID,
-  };
-  const quoteMintDecimals = 6;
-  const initAccs = {
-    globalAuthority: toWeb3JsPublicKey(umi.identity.publicKey),
-    feeRecipient: toWeb3JsPublicKey(umi.identity.publicKey),
-    withdrawAuthority: toWeb3JsPublicKey(umi.identity.publicKey),
   };
   before(async () => {
     try {

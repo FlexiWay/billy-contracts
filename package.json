@@ -16,11 +16,12 @@
         "validator:logs": "CI=1 amman logs",
         "validator:stop": "amman stop",
         "test": "pnpm validator && pnpm test:only",
-        "test:only":"pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/*",
-        "test:anchor":"anchor test"
+        "test:only": "pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/*",
+        "test:anchor": "anchor test"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.29.0",
+        "@metaplex-foundation/amman-client": "^0.2.4",
         "@metaplex-foundation/mpl-token-metadata": "^3.2.1",
         "@metaplex-foundation/mpl-toolbox": "^0.9.4",
         "@metaplex-foundation/umi": "^0.9.1",
