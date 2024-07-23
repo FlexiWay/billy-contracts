@@ -56,11 +56,12 @@ import {
 } from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
 import { LmaofunBondingCurve } from "../target/types/lmaofun_bonding_curve";
-import { findEvtAuthorityPda } from "../clients/js/src/utils";
+import { findEvtAuthorityPda, getTransactionEventsFromDetails, getTxDetails, getTxEventsFromTxBuilderResponse } from "../clients/js/src/utils";
 import {
   setParams,
   SetParamsInstructionAccounts,
 } from "../clients/js/src/generated/instructions/setParams";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 const keypair = Keypair.fromSecretKey(
   Uint8Array.from(require("../keys/test-kp.json"))
@@ -121,19 +122,7 @@ describe("lmaofun-bonding", () => {
   });
 
   it("is initialized", async () => {
-    const txBuilder = initialize(umi, {
-      global: globalPda,
-      authority: umi.identity,
-      params: INIT_DEFAULTS,
-      systemProgram: SPL_SYSTEM_PROGRAM_ID,
-      ...evtAuthorityAccs,
-    });
-
-
-    const { signature, result } = await txBuilder.sendAndConfirm(umi);
-    console.log({ signature, val: result.value });
-
-    // using ANCHOR
+    //  ANCHOR
     // const tx = await program.methods
     //   .initialize(INIT_DEFAULTS_ANCHOR)
     //   .accounts({
@@ -149,6 +138,21 @@ describe("lmaofun-bonding", () => {
     // console.log(res);
 
     // console.log({ sig });
+
+    const txBuilder = initialize(umi, {
+      global: globalPda,
+      authority: umi.identity,
+      params: INIT_DEFAULTS,
+      systemProgram: SPL_SYSTEM_PROGRAM_ID,
+      ...evtAuthorityAccs,
+    });
+
+
+    const txRes= await txBuilder.sendAndConfirm(umi);
+    const events =await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    console.log({ events });
+
+
 
     const global = await fetchGlobal(umi, globalPda);
 
@@ -192,20 +196,16 @@ describe("lmaofun-bonding", () => {
 
           status: ProgramStatus.SwapOnly,
         },
-        // authorityParams: initAccs,
 
         ...evtAuthorityAccs,
       })
 
 
-    const tx = await txBuilder.buildAndSign(umi);
-    const _tx = toWeb3JsTransaction(tx);
-    const simRes = await connection.simulateTransaction(_tx);
-    console.log(simRes);
-    const { ...a } = await txBuilder.sendAndConfirm(umi);
-    console.log(a);
+    const txRes = await txBuilder.sendAndConfirm(umi);
+    const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    console.log({ events });
     const global = await fetchGlobal(umi, globalPda);
-    console.log({ global });
+
 
     assert.equal(global.status, ProgramStatus.SwapOnly);
   });
@@ -226,19 +226,13 @@ describe("lmaofun-bonding", () => {
 
         status: ProgramStatus.Running,
       },
-      // authorityParams: initAccs,
-
       ...evtAuthorityAccs,
     })
 
-    const tx = await txBuilder.buildAndSign(umi);
-    const _tx = toWeb3JsTransaction(tx);
-    const simRes = await connection.simulateTransaction(_tx);
-    console.log(simRes);
-    const { ...a } = await txBuilder.sendAndConfirm(umi);
-    console.log(a);
+    const txRes= await txBuilder.sendAndConfirm(umi);
+    const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    console.log({ events });
     const global = await fetchGlobal(umi, globalPda);
-    console.log({ global });
 
     assert.equal(global.status, ProgramStatus.Running);
   });

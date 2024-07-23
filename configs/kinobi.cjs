@@ -1,6 +1,6 @@
 const path = require("path");
 const k = require("@metaplex-foundation/kinobi");
-
+const fs = require("fs");
 // Paths.
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
@@ -37,6 +37,12 @@ kinobi.accept(
     exportAccounts: true,
   })
 );
+
+// cp idls dir in clients/js/src/idls
+const idlsTargetDir = path.join(clientDir, "js", "src", "idls");
+fs.cpSync(idlDir, idlsTargetDir, { recursive: true });
+// cp target/types in clients/js/src/idls
+fs.cpSync(path.join(__dirname, "..", "target", "types"), idlsTargetDir, { recursive: true });
 
 // Render Rust.
 const crateDir = path.join(clientDir, "rust");
