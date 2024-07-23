@@ -127,14 +127,8 @@ describe("lmaofun-bonding", () => {
       ...evtAuthorityAccs,
     });
 
-    // const tx = await txBuilder.buildAndSign(umi);
 
     const { signature, result } = await txBuilder.sendAndConfirm(umi);
-    // const _tx = toWeb3JsTransaction(tx);
-
-    // // const simRes = await connection.simulateTransaction(_tx);
-    // // console.log(simRes);
-    // const { ...a } = await txBuilder.sendAndConfirm(umi);
     console.log({ signature, val: result.value });
 
     // const tx = await program.methods
@@ -154,7 +148,9 @@ describe("lmaofun-bonding", () => {
     // console.log({ sig });
 
     const global = await safeFetchGlobal(umi, globalPda);
-    console.log({ global });
+    if(!global) {
+      throw new Error("Global acc not found");
+    }
     assert.equal(
       global.initialRealSolReserves,
       INIT_DEFAULTS.initialRealSolReserves
@@ -178,54 +174,54 @@ describe("lmaofun-bonding", () => {
     assert.equal(global.status, ProgramStatus.Running);
   });
 
-  // it("set_params in SwapOnly", async () => {
-  //   const txBuilder = new TransactionBuilder();
-  //   txBuilder.add(
-  //     setParams(umi, {
-  //       global: globalPda[0],
-  //       status: ProgramStatus.SwapOnly,
+  it("set_params in SwapOnly", async () => {
+    const txBuilder = new TransactionBuilder();
+    txBuilder.add(
+      setParams(umi, {
+        global: globalPda[0],
+        status: ProgramStatus.SwapOnly,
 
-  //       settingsParams: INIT_DEFAULTS,
-  //       authorityParams: initAccs,
+        settingsParams: INIT_DEFAULTS,
+        authorityParams: initAccs,
 
-  //       ...evtAuthorityAccs,
-  //     })
-  //   );
+        ...evtAuthorityAccs,
+      })
+    );
 
-  //   const tx = await txBuilder.buildAndSign(umi);
-  //   const _tx = toWeb3JsTransaction(tx);
-  //   const simRes = await connection.simulateTransaction(_tx);
-  //   console.log(simRes);
-  //   const { ...a } = await txBuilder.sendAndConfirm(umi);
-  //   console.log(a);
-  //   const global = await safeFetchGlobal(umi, globalPda);
-  //   console.log({ global });
+    const tx = await txBuilder.buildAndSign(umi);
+    const _tx = toWeb3JsTransaction(tx);
+    const simRes = await connection.simulateTransaction(_tx);
+    console.log(simRes);
+    const { ...a } = await txBuilder.sendAndConfirm(umi);
+    console.log(a);
+    const global = await safeFetchGlobal(umi, globalPda);
+    console.log({ global });
 
-  //   assert.equal(global.status, ProgramStatus.SwapOnly);
-  // });
+    assert.equal(global.status, ProgramStatus.SwapOnly);
+  });
 
-  // it("set_params back", async () => {
-  //   const txBuilder = new TransactionBuilder();
-  //   txBuilder.add(
-  //     setParams(umi, {
-  //       global: globalPda[0],
-  //       status: ProgramStatus.Running,
+  it("set_params back", async () => {
+    const txBuilder = new TransactionBuilder();
+    txBuilder.add(
+      setParams(umi, {
+        global: globalPda[0],
+        status: ProgramStatus.Running,
 
-  //       settingsParams: INIT_DEFAULTS,
-  //       authorityParams: initAccs,
-  //       ...evtAuthorityAccs,
-  //     })
-  //   );
+        settingsParams: INIT_DEFAULTS,
+        authorityParams: initAccs,
+        ...evtAuthorityAccs,
+      })
+    );
 
-  //   const tx = await txBuilder.buildAndSign(umi);
-  //   const _tx = toWeb3JsTransaction(tx);
-  //   const simRes = await connection.simulateTransaction(_tx);
-  //   console.log(simRes);
-  //   const { ...a } = await txBuilder.sendAndConfirm(umi);
-  //   console.log(a);
-  //   const global = await safeFetchGlobal(umi, globalPda);
-  //   console.log({ global });
+    const tx = await txBuilder.buildAndSign(umi);
+    const _tx = toWeb3JsTransaction(tx);
+    const simRes = await connection.simulateTransaction(_tx);
+    console.log(simRes);
+    const { ...a } = await txBuilder.sendAndConfirm(umi);
+    console.log(a);
+    const global = await safeFetchGlobal(umi, globalPda);
+    console.log({ global });
 
-  //   assert.equal(global.status, ProgramStatus.Running);
-  // });
+    assert.equal(global.status, ProgramStatus.Running);
+  });
 });
