@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::GlobalAuthorityInput;
 use crate::generated::types::GlobalSettingsInput;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -65,7 +64,7 @@ impl Initialize {
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
-            program_id: crate::BONDING_CURVE_ID,
+            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
             accounts,
             data,
         }
@@ -91,8 +90,7 @@ impl InitializeInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct InitializeInstructionArgs {
-    pub authority_params: GlobalAuthorityInput,
-    pub settings_params: GlobalSettingsInput,
+    pub params: GlobalSettingsInput,
 }
 
 /// Instruction builder for `Initialize`.
@@ -111,8 +109,7 @@ pub struct InitializeBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     event_authority: Option<solana_program::pubkey::Pubkey>,
     program: Option<solana_program::pubkey::Pubkey>,
-    authority_params: Option<GlobalAuthorityInput>,
-    settings_params: Option<GlobalSettingsInput>,
+    params: Option<GlobalSettingsInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -150,13 +147,8 @@ impl InitializeBuilder {
         self
     }
     #[inline(always)]
-    pub fn authority_params(&mut self, authority_params: GlobalAuthorityInput) -> &mut Self {
-        self.authority_params = Some(authority_params);
-        self
-    }
-    #[inline(always)]
-    pub fn settings_params(&mut self, settings_params: GlobalSettingsInput) -> &mut Self {
-        self.settings_params = Some(settings_params);
+    pub fn params(&mut self, params: GlobalSettingsInput) -> &mut Self {
+        self.params = Some(params);
         self
     }
     /// Add an aditional account to the instruction.
@@ -189,14 +181,7 @@ impl InitializeBuilder {
             program: self.program.expect("program is not set"),
         };
         let args = InitializeInstructionArgs {
-            authority_params: self
-                .authority_params
-                .clone()
-                .expect("authority_params is not set"),
-            settings_params: self
-                .settings_params
-                .clone()
-                .expect("settings_params is not set"),
+            params: self.params.clone().expect("params is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -316,7 +301,7 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::BONDING_CURVE_ID,
+            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
             accounts,
             data,
         };
@@ -361,8 +346,7 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
             system_program: None,
             event_authority: None,
             program: None,
-            authority_params: None,
-            settings_params: None,
+            params: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -408,13 +392,8 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn authority_params(&mut self, authority_params: GlobalAuthorityInput) -> &mut Self {
-        self.instruction.authority_params = Some(authority_params);
-        self
-    }
-    #[inline(always)]
-    pub fn settings_params(&mut self, settings_params: GlobalSettingsInput) -> &mut Self {
-        self.instruction.settings_params = Some(settings_params);
+    pub fn params(&mut self, params: GlobalSettingsInput) -> &mut Self {
+        self.instruction.params = Some(params);
         self
     }
     /// Add an additional account to the instruction.
@@ -459,16 +438,7 @@ impl<'a, 'b> InitializeCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = InitializeInstructionArgs {
-            authority_params: self
-                .instruction
-                .authority_params
-                .clone()
-                .expect("authority_params is not set"),
-            settings_params: self
-                .instruction
-                .settings_params
-                .clone()
-                .expect("settings_params is not set"),
+            params: self.instruction.params.clone().expect("params is not set"),
         };
         let instruction = InitializeCpi {
             __program: self.instruction.__program,
@@ -504,8 +474,7 @@ struct InitializeCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority_params: Option<GlobalAuthorityInput>,
-    settings_params: Option<GlobalSettingsInput>,
+    params: Option<GlobalSettingsInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

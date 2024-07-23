@@ -68,7 +68,7 @@ nameToErrorMap.set('ProgramNotRunning', ProgramNotRunningError);
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  */
-export function getBondingCurveErrorFromCode(code: number, program: Program, cause?: Error): ProgramError | null {
+export function getLmaofunBondingCurveErrorFromCode(code: number, program: Program, cause?: Error): ProgramError | null {
   const constructor = codeToErrorMap.get(code);
   return constructor ? new constructor(program, cause) : null;
 }
@@ -77,7 +77,7 @@ export function getBondingCurveErrorFromCode(code: number, program: Program, cau
  * Attempts to resolve a custom program error from the provided error name, i.e. 'Unauthorized'.
  * @category Errors
  */
-export function getBondingCurveErrorFromName(name: string, program: Program, cause?: Error): ProgramError | null {
+export function getLmaofunBondingCurveErrorFromName(name: string, program: Program, cause?: Error): ProgramError | null {
   const constructor = nameToErrorMap.get(name);
   return constructor ? new constructor(program, cause) : null;
 }

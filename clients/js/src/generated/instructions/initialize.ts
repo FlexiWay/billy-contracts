@@ -9,7 +9,7 @@
 import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
 import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { GlobalAuthorityInput, GlobalAuthorityInputArgs, GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalAuthorityInputSerializer, getGlobalSettingsInputSerializer } from '../types';
+import { GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalSettingsInputSerializer } from '../types';
 
 // Accounts.
 export type InitializeInstructionAccounts = {
@@ -21,13 +21,13 @@ export type InitializeInstructionAccounts = {
 };
 
   // Data.
-  export type InitializeInstructionData = { discriminator: Array<number>; authorityParams: GlobalAuthorityInput; settingsParams: GlobalSettingsInput;  };
+  export type InitializeInstructionData = { discriminator: Array<number>; params: GlobalSettingsInput;  };
 
-export type InitializeInstructionDataArgs = { authorityParams: GlobalAuthorityInputArgs; settingsParams: GlobalSettingsInputArgs;  };
+export type InitializeInstructionDataArgs = { params: GlobalSettingsInputArgs;  };
 
 
   export function getInitializeInstructionDataSerializer(): Serializer<InitializeInstructionDataArgs, InitializeInstructionData> {
-  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['authorityParams', getGlobalAuthorityInputSerializer()], ['settingsParams', getGlobalSettingsInputSerializer()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
+  return mapSerializer<InitializeInstructionDataArgs, any, InitializeInstructionData>(struct<InitializeInstructionData>([['discriminator', array(u8(), { size: 8 })], ['params', getGlobalSettingsInputSerializer()]], { description: 'InitializeInstructionData' }), (value) => ({ ...value, discriminator: [175, 175, 109, 31, 13, 152, 155, 237] }) ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 
 
@@ -43,7 +43,7 @@ export function initialize(
                         input: InitializeInstructionAccounts & InitializeInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
-  const programId = context.programs.getPublicKey('bondingCurve', 'E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb');
+  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
 
   // Accounts.
   const resolvedAccounts = {

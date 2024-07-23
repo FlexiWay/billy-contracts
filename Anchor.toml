@@ -1,20 +1,18 @@
 [toolchain]
-anchor_version = "0.29.0"
-solana_version = "1.18.15"
 
 [features]
 seeds = false
 skip-lint = false
 
-[programs.devnet]
-bonding-curve = "898RNYePTRDQaQCdvVfZdPo82vekCJXyLfc2XsWUZVx5"
+[programs.localnet]
+lmaofun_bonding_curve = "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "./keys/test-kp.json"
+cluster = "Localnet"
+wallet = "/Users/buku/.config/solana/id.json"
 
 [scripts]
-test = "rm -rf programs/.bin && yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

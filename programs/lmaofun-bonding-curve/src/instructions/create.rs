@@ -11,7 +11,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    errors::CurveLaunchpadError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
+    errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,
 };
 
@@ -56,8 +56,8 @@ pub struct Create<'info> {
 
     #[account(
         seeds = [Global::SEED_PREFIX],
-        constraint = global.initialized == true @ CurveLaunchpadError::NotInitialized,
-        constraint = global.status == ProgramStatus::Running @ CurveLaunchpadError::ProgramNotRunning,
+        constraint = global.initialized == true @ ProgramError::NotInitialized,
+        constraint = global.status == ProgramStatus::Running @ ProgramError::ProgramNotRunning,
         bump,
     )]
     global: Box<Account<'info, Global>>,
@@ -175,7 +175,8 @@ pub fn create(ctx: Context<Create>, name: String, symbol: String, uri: String) -
         None,
     )?;
 
-    ctx.accounts
+    let bonding_curve = &mut ctx
+        .accounts
         .bonding_curve
         .new_from_global(&ctx.accounts.global);
 
@@ -184,8 +185,10 @@ pub fn create(ctx: Context<Create>, name: String, symbol: String, uri: String) -
         symbol,
         uri,
         mint: *ctx.accounts.mint.to_account_info().key,
-        bonding_curve: ctx.accounts.bonding_curve.clone().into_inner(),
         creator: *ctx.accounts.creator.to_account_info().key,
+        virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
+        virtual_token_reserves: bonding_curve.virtual_token_reserves,
+        token_total_supply: bonding_curve.token_total_supply,
     });
 
     Ok(())

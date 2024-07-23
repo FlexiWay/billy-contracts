@@ -1,9 +1,9 @@
-use crate::{errors::CurveLaunchpadError, events::*, state::global::*};
+use crate::{errors::ProgramError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]
 #[derive(Accounts)]
-#[instruction(settings_params: GlobalSettingsInput, authority_params: GlobalAuthorityInput)]
+#[instruction(params: GlobalSettingsInput)]
 pub struct Initialize<'info> {
     #[account(mut)]
     authority: Signer<'info>,
@@ -21,23 +21,20 @@ pub struct Initialize<'info> {
 }
 
 impl Initialize<'_> {
-    pub fn handler(
-        ctx: Context<Initialize>,
-        authority_params: GlobalAuthorityInput,
-        settings_params: GlobalSettingsInput,
-    ) -> Result<()> {
+    pub fn handler(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
         let global = &mut ctx.accounts.global;
 
-        require!(!global.initialized, CurveLaunchpadError::AlreadyInitialized);
+        require!(!global.initialized, ProgramError::AlreadyInitialized);
 
-        global.update_authority(authority_params);
-        global.update_settings(settings_params);
+        global.update_authority(GlobalAuthorityInput {
+            global_authority: Some(ctx.accounts.authority.key()),
+            fee_recipient: Some(ctx.accounts.authority.key()),
+        });
+        global.update_settings(params);
 
         global.status = ProgramStatus::Running;
         global.initialized = true;
-        emit_cpi!(GlobalUpdateEvent {
-            global: global.clone().into_inner()
-        });
+        emit_cpi!(global.into_event());
         msg!("Initialized global state");
         Ok(())
     }

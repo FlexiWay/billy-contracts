@@ -7,8 +7,8 @@ const programDir = path.join(__dirname, "..", "programs");
 
 generateIdl({
   generator: "anchor",
-  programName: "bonding_curve",
-  programId: "E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb",
+  programName: "lmaofun_bonding_curve",
+  programId: "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP",
   idlDir,
   binaryInstallDir,
   programDir: path.join(programDir, "lmaofun-bonding-curve"),

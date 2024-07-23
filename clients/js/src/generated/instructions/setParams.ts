@@ -6,10 +6,10 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Context, Option, OptionOrNullable, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
+import { Serializer, array, mapSerializer, option, publicKey as publicKeySerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { GlobalAuthorityInput, GlobalAuthorityInputArgs, GlobalSettingsInput, GlobalSettingsInputArgs, ProgramStatus, ProgramStatusArgs, getGlobalAuthorityInputSerializer, getGlobalSettingsInputSerializer, getProgramStatusSerializer } from '../types';
+import { GlobalSettingsInput, GlobalSettingsInputArgs, ProgramStatus, ProgramStatusArgs, getGlobalSettingsInputSerializer, getProgramStatusSerializer } from '../types';
 
 // Accounts.
 export type SetParamsInstructionAccounts = {
@@ -21,13 +21,13 @@ export type SetParamsInstructionAccounts = {
 };
 
   // Data.
-  export type SetParamsInstructionData = { discriminator: Array<number>; settingsParams: GlobalSettingsInput; authorityParams: GlobalAuthorityInput; status: ProgramStatus;  };
+  export type SetParamsInstructionData = { discriminator: Array<number>; settingsParams: GlobalSettingsInput; globalAuthority: Option<PublicKey>; feeRecipient: Option<PublicKey>; status: ProgramStatus;  };
 
-export type SetParamsInstructionDataArgs = { settingsParams: GlobalSettingsInputArgs; authorityParams: GlobalAuthorityInputArgs; status: ProgramStatusArgs;  };
+export type SetParamsInstructionDataArgs = { settingsParams: GlobalSettingsInputArgs; globalAuthority: OptionOrNullable<PublicKey>; feeRecipient: OptionOrNullable<PublicKey>; status: ProgramStatusArgs;  };
 
 
   export function getSetParamsInstructionDataSerializer(): Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData> {
-  return mapSerializer<SetParamsInstructionDataArgs, any, SetParamsInstructionData>(struct<SetParamsInstructionData>([['discriminator', array(u8(), { size: 8 })], ['settingsParams', getGlobalSettingsInputSerializer()], ['authorityParams', getGlobalAuthorityInputSerializer()], ['status', getProgramStatusSerializer()]], { description: 'SetParamsInstructionData' }), (value) => ({ ...value, discriminator: [27, 234, 178, 52, 147, 2, 187, 141] }) ) as Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData>;
+  return mapSerializer<SetParamsInstructionDataArgs, any, SetParamsInstructionData>(struct<SetParamsInstructionData>([['discriminator', array(u8(), { size: 8 })], ['settingsParams', getGlobalSettingsInputSerializer()], ['globalAuthority', option(publicKeySerializer())], ['feeRecipient', option(publicKeySerializer())], ['status', getProgramStatusSerializer()]], { description: 'SetParamsInstructionData' }), (value) => ({ ...value, discriminator: [27, 234, 178, 52, 147, 2, 187, 141] }) ) as Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData>;
 }
 
 
@@ -43,7 +43,7 @@ export function setParams(
                         input: SetParamsInstructionAccounts & SetParamsInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
-  const programId = context.programs.getPublicKey('bondingCurve', 'E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb');
+  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
 
   // Accounts.
   const resolvedAccounts = {

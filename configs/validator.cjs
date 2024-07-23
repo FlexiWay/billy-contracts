@@ -1,9 +1,9 @@
 const path = require("path");
 
-const programDir = path.join(__dirname, "..", "programs");
+const programBinDir = path.join(__dirname, "..", ".programsBin");
 
 function getProgram(programBinary) {
-  return path.join(programDir, ".bin", programBinary);
+  return path.join(programBinDir, programBinary);
 }
 
 module.exports = {
@@ -13,8 +13,8 @@ module.exports = {
     programs: [
       {
         label: "Lmao.fun Bonding Curve Program",
-        programId: "E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb",
-        deployPath: getProgram("bonding_curve.so"),
+        programId: "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP",
+        deployPath: getProgram("lmaofun_bonding_curve.so"),
       },
 
       // Below are external programs that should be included in the local validator.

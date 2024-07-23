@@ -6,7 +6,9 @@ const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "bonding_curve.json")]);
+const kinobi = k.createFromIdls([
+  path.join(idlDir, "lmaofun_bonding_curve.json"),
+]);
 
 kinobi.update(
   new k.updateProgramsVisitor({

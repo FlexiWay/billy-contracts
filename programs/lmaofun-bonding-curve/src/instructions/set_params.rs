@@ -1,4 +1,4 @@
-use crate::{errors::CurveLaunchpadError, events::*, state::global::*};
+use crate::{errors::ProgramError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]
@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 #[instruction( authority_params: GlobalAuthorityInput,settings_params: GlobalSettingsInput, status: ProgramStatus)]
 pub struct SetParams<'info> {
     #[account(mut,
-    constraint = authority.key() == global.global_authority.key() @ CurveLaunchpadError::InvalidAuthority
+    constraint = authority.key() == global.global_authority.key() @ ProgramError::InvalidAuthority
     )]
     authority: Signer<'info>,
 
@@ -14,7 +14,7 @@ pub struct SetParams<'info> {
         init,
         space = 8 + Global::INIT_SPACE,
         seeds = [Global::SEED_PREFIX],
-        constraint = global.initialized == true @ CurveLaunchpadError::NotInitialized,
+        constraint = global.initialized == true @ ProgramError::NotInitialized,
         bump,
         payer = authority,
     )]
@@ -36,9 +36,7 @@ impl SetParams<'_> {
         global.update_settings(settings_params);
         global.status = status;
 
-        emit_cpi!(GlobalUpdateEvent {
-            global: global.clone().into_inner()
-        });
+        emit_cpi!(global.into_event());
         msg!("Updated global state");
 
         Ok(())

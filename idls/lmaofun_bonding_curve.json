@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "name": "bonding_curve",
+  "name": "lmaofun_bonding_curve",
   "instructions": [
     {
       "name": "initialize",
@@ -33,13 +33,7 @@
       ],
       "args": [
         {
-          "name": "authorityParams",
-          "type": {
-            "defined": "GlobalAuthorityInput"
-          }
-        },
-        {
-          "name": "settingsParams",
+          "name": "params",
           "type": {
             "defined": "GlobalSettingsInput"
           }
@@ -154,10 +148,6 @@
             "type": "publicKey"
           },
           {
-            "name": "withdrawAuthority",
-            "type": "publicKey"
-          },
-          {
             "name": "initialVirtualTokenReserves",
             "type": "u64"
           },
@@ -207,12 +197,6 @@
           },
           {
             "name": "feeRecipient",
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "withdrawAuthority",
             "type": {
               "option": "publicKey"
             }
@@ -295,17 +279,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "ContractError",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InvalidInstructionData"
-          }
-        ]
-      }
     }
   ],
   "events": [
@@ -313,10 +286,43 @@
       "name": "GlobalUpdateEvent",
       "fields": [
         {
-          "name": "global",
-          "type": {
-            "defined": "Global"
-          },
+          "name": "feeRecipient",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "initialVirtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialVirtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialRealTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initialTokenSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeBasisPoints",
+          "type": "u32",
+          "index": false
+        },
+        {
+          "name": "solLaunchThreshold",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "createdMintDecimals",
+          "type": "u8",
           "index": false
         }
       ]
@@ -350,10 +356,18 @@
           "index": false
         },
         {
-          "name": "bondingCurve",
-          "type": {
-            "defined": "BondingCurve"
-          },
+          "name": "virtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "virtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenTotalSupply",
+          "type": "u64",
           "index": false
         }
       ]
@@ -382,7 +396,7 @@
     }
   ],
   "metadata": {
-    "address": "E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb",
+    "address": "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP",
     "origin": "anchor",
     "binaryVersion": "0.29.0",
     "libVersion": "0.29.0"

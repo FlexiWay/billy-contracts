@@ -7,24 +7,15 @@ pub mod state;
 use instructions::{initialize::*, set_params::*};
 use state::global::*;
 
-#[error_code]
-pub enum ContractError {
-    #[msg("Invalid instruction data")]
-    InvalidInstructionData,
-}
-declare_id!("E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb");
+declare_id!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
 
 #[program]
-pub mod bonding_curve {
+pub mod lmaofun_bonding_curve {
 
     use super::*;
 
-    pub fn initialize(
-        ctx: Context<Initialize>,
-        authority_params: GlobalAuthorityInput,
-        settings_params: GlobalSettingsInput,
-    ) -> Result<()> {
-        Initialize::handler(ctx, authority_params, settings_params)
+    pub fn initialize(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
+        Initialize::handler(ctx, params)
     }
     pub fn set_params(
         ctx: Context<SetParams>,

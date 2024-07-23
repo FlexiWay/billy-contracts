@@ -6,7 +6,5 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './contractError';
-export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';

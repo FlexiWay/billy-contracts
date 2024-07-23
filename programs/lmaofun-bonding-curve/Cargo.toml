@@ -6,7 +6,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "bonding_curve"
+name = "lmaofun_bonding_curve"
 
 [features]
 no-entrypoint = []

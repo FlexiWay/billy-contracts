@@ -30,11 +30,6 @@ pub struct Global {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub fee_recipient: Pubkey,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub withdraw_authority: Pubkey,
     pub initial_virtual_token_reserves: u64,
     pub initial_virtual_sol_reserves: u64,
     pub initial_real_token_reserves: u64,
@@ -46,7 +41,7 @@ pub struct Global {
 }
 
 impl Global {
-    pub const LEN: usize = 159;
+    pub const LEN: usize = 127;
 
     /// Prefix values used to generate a PDA for this account.
     ///
@@ -60,14 +55,14 @@ impl Global {
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
             &["global".as_bytes(), &[bump]],
-            &crate::BONDING_CURVE_ID,
+            &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda() -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
             &["global".as_bytes()],
-            &crate::BONDING_CURVE_ID,
+            &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
 

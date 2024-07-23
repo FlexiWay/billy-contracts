@@ -9,7 +9,7 @@ use num_derive::FromPrimitive;
 use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
-pub enum BondingCurveError {
+pub enum LmaofunBondingCurveError {
     /// 6000 (0x1770) - Global Already Initialized
     #[error("Global Already Initialized")]
     AlreadyInitialized,
@@ -24,7 +24,7 @@ pub enum BondingCurveError {
     ProgramNotRunning,
 }
 
-impl solana_program::program_error::PrintProgramError for BondingCurveError {
+impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {
     fn print<E>(&self) {
         solana_program::msg!(&self.to_string());
     }

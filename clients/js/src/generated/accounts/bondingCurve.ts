@@ -71,7 +71,7 @@ export async function safeFetchAllBondingCurve(
 }
 
 export function getBondingCurveGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('bondingCurve', 'E52KjA58odp3taqmaCuBFdDya3s4TA1ho4tSXoW2igxb');
+  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'virtualSolReserves': number | bigint, 'virtualTokenReserves': number | bigint, 'realSolReserves': number | bigint, 'realTokenReserves': number | bigint, 'tokenTotalSupply': number | bigint, 'complete': boolean }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'virtualSolReserves': [8, u64()], 'virtualTokenReserves': [16, u64()], 'realSolReserves': [24, u64()], 'realTokenReserves': [32, u64()], 'tokenTotalSupply': [40, u64()], 'complete': [48, bool()] })
     .deserializeUsing<BondingCurve>((account) => deserializeBondingCurve(account))      .whereField('discriminator', [23, 183, 248, 55, 96, 216, 172, 96])

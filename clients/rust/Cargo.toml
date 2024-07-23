@@ -1,5 +1,5 @@
 [package]
-name = "lmaofun-bonding-curve-contract"
+name = "lmaofun-bonding-curve-client"
 version = "1.0.0"
 description = "LMAOFUN Bonding Curve Contract"
 license-file = "../../LICENSE"

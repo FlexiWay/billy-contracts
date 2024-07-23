@@ -16,7 +16,8 @@
         "validator:logs": "CI=1 amman logs",
         "validator:stop": "amman stop",
         "test": "pnpm validator && pnpm test:only",
-        "test:only":"pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/*"
+        "test:only":"pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/*",
+        "test:anchor":"anchor test"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.29.0",

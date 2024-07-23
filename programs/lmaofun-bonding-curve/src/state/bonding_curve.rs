@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use std::fmt;
 
-use super::Global;
+use crate::Global;
 
 #[account]
 #[derive(InitSpace)]
@@ -16,12 +16,14 @@ pub struct BondingCurve {
 
 impl BondingCurve {
     pub const SEED_PREFIX: &'static [u8; 13] = b"bonding-curve";
-    pub fn new_from_global(&mut self, global: &Global) {
+    pub fn new_from_global(&mut self, global: &Global) -> &mut Self {
         self.virtual_sol_reserves = global.initial_virtual_sol_reserves;
         self.virtual_token_reserves = global.initial_virtual_token_reserves;
         self.real_sol_reserves = global.initial_real_sol_reserves;
         self.real_token_reserves = global.initial_real_token_reserves;
         self.token_total_supply = global.initial_token_supply;
+        self.complete = false;
+        self
     }
 }
 
