@@ -96,6 +96,7 @@ impl Global {
 impl IntoEvent<GlobalUpdateEvent> for Global {
     fn into_event(&self) -> GlobalUpdateEvent {
         GlobalUpdateEvent {
+            global_authority: self.global_authority,
             fee_recipient: self.fee_recipient,
             initial_virtual_token_reserves: self.initial_virtual_token_reserves,
             initial_virtual_sol_reserves: self.initial_virtual_sol_reserves,

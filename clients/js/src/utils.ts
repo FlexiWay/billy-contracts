@@ -9,6 +9,8 @@ import {
     toWeb3JsPublicKey,
   } from "@metaplex-foundation/umi-web3js-adapters";
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
+import { IdlEvent } from '@coral-xyz/anchor/dist/cjs/idl';
+import { BN } from '@coral-xyz/anchor';
 
 const EVENT_AUTHORITY_PDA_SEED = "__event_authority";
 export function findEvtAuthorityPda(
@@ -37,6 +39,18 @@ const validEventNames: Array<keyof anchor.IdlEvents<LmaofunBondingCurve>> = [
   "GlobalUpdateEvent",
   "CreateEvent",
 ];
+
+export const logEvent = (event: anchor.Event<IdlEvent, Record<string, string>>)=> {
+  const normalizeVal = (val: string | number | bigint | PublicKey | unknown) => {
+    if (val instanceof BN || typeof val === 'number') {
+      return parseInt(val.toString());
+    }
+
+    return val?.toString() || val;
+  }
+  const normalized = Object.fromEntries(Object.entries(event.data).map(([key, value]) => [key, normalizeVal(value)]));
+  console.log(event.name, normalized);
+}
 
 export const getTxEventsFromTxBuilderResponse = async (conn:Connection, program: anchor.Program<LmaofunBondingCurve>, txBuilderRes:{
     signature: TransactionSignature;

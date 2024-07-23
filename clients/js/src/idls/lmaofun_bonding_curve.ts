@@ -299,6 +299,11 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
+          "name": "globalAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "initialVirtualTokenReserves",
           "type": "u64",
           "index": false
@@ -702,6 +707,11 @@ export const IDL: LmaofunBondingCurve = {
       "fields": [
         {
           "name": "feeRecipient",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "globalAuthority",
           "type": "publicKey",
           "index": false
         },

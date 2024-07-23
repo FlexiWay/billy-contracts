@@ -1,4 +1,19 @@
-import { expect, assert } from "chai";
+import { IdlEvent } from "@coral-xyz/anchor/dist/cjs/idl";
+import * as anchor from "@coral-xyz/anchor";
+import { Global, GlobalAccountDataArgs } from "../clients/js/src/generated/accounts/global";
+import { PublicKey } from "@solana/web3.js";
+
+export const assertGlobal = ( global: Global, expected: Partial<GlobalAccountDataArgs>) => {
+  console.log({global})
+  assert.equal(global.initialRealSolReserves, expected.initialRealSolReserves);
+  assert.equal(global.initialRealTokenReserves, expected.initialRealTokenReserves);
+  assert.equal(global.initialVirtualSolReserves, expected.initialVirtualSolReserves);
+  assert.equal(global.initialVirtualTokenReserves, expected.initialVirtualTokenReserves);
+  assert.equal(global.initialTokenSupply, expected.initialTokenSupply);
+  assert.equal(global.solLaunchThreshold, expected.solLaunchThreshold);
+  assert.equal(global.feeBasisPoints, expected.feeBasisPoints);
+  assert.equal(global.status, expected.status);
+}
 
 export const advanceBySlots = async (context: any, slots: BigInt) => {
   const currentClock = await context.banksClient.getClock();
@@ -49,6 +64,8 @@ export const expectError = (
 };
 
 import { Clock, ProgramTestContext } from "solana-bankrun";
+import assert from 'assert';
+import { BN } from "bn.js";
 
 export const fastForward = async (
   context: ProgramTestContext,

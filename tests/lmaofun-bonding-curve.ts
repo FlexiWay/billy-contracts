@@ -56,12 +56,13 @@ import {
 } from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
 import { LmaofunBondingCurve } from "../target/types/lmaofun_bonding_curve";
-import { findEvtAuthorityPda, getTransactionEventsFromDetails, getTxDetails, getTxEventsFromTxBuilderResponse } from "../clients/js/src/utils";
+import { findEvtAuthorityPda, getTransactionEventsFromDetails, getTxDetails, getTxEventsFromTxBuilderResponse, logEvent } from "../clients/js/src/utils";
 import {
   setParams,
   SetParamsInstructionAccounts,
 } from "../clients/js/src/generated/instructions/setParams";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import { assertGlobal } from "./utils";
 
 const keypair = Keypair.fromSecretKey(
   Uint8Array.from(require("../keys/test-kp.json"))
@@ -150,34 +151,12 @@ describe("lmaofun-bonding", () => {
 
     const txRes= await txBuilder.sendAndConfirm(umi);
     const events =await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-    console.log({ events });
+    events.forEach(logEvent)
 
 
 
     const global = await fetchGlobal(umi, globalPda);
-
-
-    assert.equal(
-      global.initialRealSolReserves,
-      INIT_DEFAULTS.initialRealSolReserves
-    );
-    assert.equal(
-      global.initialRealTokenReserves,
-      INIT_DEFAULTS.initialRealTokenReserves
-    );
-    assert.equal(
-      global.initialVirtualSolReserves,
-      INIT_DEFAULTS.initialVirtualSolReserves
-    );
-    assert.equal(
-      global.initialVirtualTokenReserves,
-      INIT_DEFAULTS.initialVirtualTokenReserves
-    );
-    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
-    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
-    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
-
-    assert.equal(global.status, ProgramStatus.Running);
+    assertGlobal( global, INIT_DEFAULTS);
   });
 
   it("set_params in SwapOnly", async () => {
@@ -203,31 +182,14 @@ describe("lmaofun-bonding", () => {
 
     const txRes = await txBuilder.sendAndConfirm(umi);
     const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-    console.log({ events });
+    events.forEach(logEvent)
     const global = await fetchGlobal(umi, globalPda);
 
 
-    assert.equal(
-      global.initialRealSolReserves,
-      INIT_DEFAULTS.initialRealSolReserves
-    );
-    assert.equal(
-      global.initialRealTokenReserves,
-      INIT_DEFAULTS.initialRealTokenReserves
-    );
-    assert.equal(
-      global.initialVirtualSolReserves,
-      INIT_DEFAULTS.initialVirtualSolReserves
-    );
-    assert.equal(
-      global.initialVirtualTokenReserves,
-      INIT_DEFAULTS.initialVirtualTokenReserves
-    );
-    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
-    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
-    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
-
-    assert.equal(global.status, ProgramStatus.SwapOnly);
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+      status: ProgramStatus.SwapOnly,
+    });
   });
 
   it("set_params back", async () => {
@@ -251,29 +213,9 @@ describe("lmaofun-bonding", () => {
 
     const txRes= await txBuilder.sendAndConfirm(umi);
     const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-    console.log({ events });
+    events.forEach(logEvent)
     const global = await fetchGlobal(umi, globalPda);
 
-    assert.equal(
-      global.initialRealSolReserves,
-      INIT_DEFAULTS.initialRealSolReserves
-    );
-    assert.equal(
-      global.initialRealTokenReserves,
-      INIT_DEFAULTS.initialRealTokenReserves
-    );
-    assert.equal(
-      global.initialVirtualSolReserves,
-      INIT_DEFAULTS.initialVirtualSolReserves
-    );
-    assert.equal(
-      global.initialVirtualTokenReserves,
-      INIT_DEFAULTS.initialVirtualTokenReserves
-    );
-    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
-    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
-    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
-
-    assert.equal(global.status, ProgramStatus.Running);
+    assertGlobal(global,INIT_DEFAULTS);
   });
 });

@@ -299,6 +299,11 @@
           "index": false
         },
         {
+          "name": "globalAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "initialVirtualTokenReserves",
           "type": "u64",
           "index": false

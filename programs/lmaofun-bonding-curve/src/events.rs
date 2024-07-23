@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 #[event]
 pub struct GlobalUpdateEvent {
     pub fee_recipient: Pubkey,
+    pub global_authority: Pubkey,
     pub initial_virtual_token_reserves: u64,
     pub initial_virtual_sol_reserves: u64,
     pub initial_real_token_reserves: u64,
