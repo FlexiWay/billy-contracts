@@ -81,7 +81,7 @@ describe("lmaofun-bonding", () => {
   umi.programs.add(createSplTokenProgram());
   umi.programs.add(bondingCurveProgram);
   const connection = new Connection(rpcUrl, {
-    commitment: "finalized",
+    commitment: "confirmed",
   });
 
   umi.use(keypairIdentity(fromWeb3JsKeypair(keypair)));
