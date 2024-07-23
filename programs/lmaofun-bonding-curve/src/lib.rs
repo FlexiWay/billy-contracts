@@ -17,12 +17,7 @@ pub mod lmaofun_bonding_curve {
     pub fn initialize(ctx: Context<Initialize>, params: GlobalSettingsInput) -> Result<()> {
         Initialize::handler(ctx, params)
     }
-    pub fn set_params(
-        ctx: Context<SetParams>,
-        settings_params: GlobalSettingsInput,
-        authority_params: GlobalAuthorityInput,
-        status: ProgramStatus,
-    ) -> Result<()> {
-        SetParams::handler(ctx, authority_params, settings_params, status)
+    pub fn set_params(ctx: Context<SetParams>, params: GlobalSettingsInput) -> Result<()> {
+        SetParams::handler(ctx, params)
     }
 }

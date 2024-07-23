@@ -1,6 +1,7 @@
 // import { InitializeInstructionArgs } from "./generated";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import BN from "bn.js";
+import { ProgramStatus } from "./generated";
 export const TOKEN_DECIMALS = 6;
 
 export const DECIMALS_MULTIPLIER = 10 ** TOKEN_DECIMALS;
@@ -16,6 +17,8 @@ export const INIT_DEFAULTS={
     solLaunchThreshold: 100*LAMPORTS_PER_SOL,
     feeBasisPoints: 0,
     createdMintDecimals: TOKEN_DECIMALS,
+
+    status: ProgramStatus.Running,
 }
 
 export const INIT_DEFAULTS_ANCHOR={
@@ -27,4 +30,6 @@ export const INIT_DEFAULTS_ANCHOR={
     solLaunchThreshold: new BN(100*LAMPORTS_PER_SOL),
     feeBasisPoints: 0,
     createdMintDecimals: TOKEN_DECIMALS,
+
+    status: ProgramStatus.Running,
 }

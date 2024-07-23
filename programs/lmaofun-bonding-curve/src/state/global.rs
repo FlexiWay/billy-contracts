@@ -44,6 +44,8 @@ pub struct GlobalSettingsInput {
 
     pub fee_basis_points: Option<u32>,
     pub created_mint_decimals: Option<u8>,
+
+    pub status: Option<ProgramStatus>,
 }
 
 impl Global {
@@ -75,6 +77,9 @@ impl Global {
 
         if let Some(created_mint_decimals) = params.created_mint_decimals {
             self.created_mint_decimals = created_mint_decimals;
+        }
+        if let Some(status) = params.status {
+            self.status = status;
         }
     }
 

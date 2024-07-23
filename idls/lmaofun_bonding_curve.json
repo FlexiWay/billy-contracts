@@ -54,6 +54,18 @@
           "isSigner": false
         },
         {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "newFeeRecipient",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -71,21 +83,9 @@
       ],
       "args": [
         {
-          "name": "settingsParams",
+          "name": "params",
           "type": {
             "defined": "GlobalSettingsInput"
-          }
-        },
-        {
-          "name": "authorityParams",
-          "type": {
-            "defined": "GlobalAuthorityInput"
-          }
-        },
-        {
-          "name": "status",
-          "type": {
-            "defined": "ProgramStatus"
           }
         }
       ]
@@ -255,6 +255,14 @@
             "name": "createdMintDecimals",
             "type": {
               "option": "u8"
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "option": {
+                "defined": "ProgramStatus"
+              }
             }
           }
         ]

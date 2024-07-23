@@ -6,28 +6,30 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Context, Option, OptionOrNullable, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, option, publicKey as publicKeySerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
+import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { GlobalSettingsInput, GlobalSettingsInputArgs, ProgramStatus, ProgramStatusArgs, getGlobalSettingsInputSerializer, getProgramStatusSerializer } from '../types';
+import { GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalSettingsInputSerializer } from '../types';
 
 // Accounts.
 export type SetParamsInstructionAccounts = {
     authority?: Signer;
     global: PublicKey | Pda;
+    newAuthority?: PublicKey | Pda;
+    newFeeRecipient?: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     eventAuthority: PublicKey | Pda;
     program: PublicKey | Pda;
 };
 
   // Data.
-  export type SetParamsInstructionData = { discriminator: Array<number>; settingsParams: GlobalSettingsInput; globalAuthority: Option<PublicKey>; feeRecipient: Option<PublicKey>; status: ProgramStatus;  };
+  export type SetParamsInstructionData = { discriminator: Array<number>; params: GlobalSettingsInput;  };
 
-export type SetParamsInstructionDataArgs = { settingsParams: GlobalSettingsInputArgs; globalAuthority: OptionOrNullable<PublicKey>; feeRecipient: OptionOrNullable<PublicKey>; status: ProgramStatusArgs;  };
+export type SetParamsInstructionDataArgs = { params: GlobalSettingsInputArgs;  };
 
 
   export function getSetParamsInstructionDataSerializer(): Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData> {
-  return mapSerializer<SetParamsInstructionDataArgs, any, SetParamsInstructionData>(struct<SetParamsInstructionData>([['discriminator', array(u8(), { size: 8 })], ['settingsParams', getGlobalSettingsInputSerializer()], ['globalAuthority', option(publicKeySerializer())], ['feeRecipient', option(publicKeySerializer())], ['status', getProgramStatusSerializer()]], { description: 'SetParamsInstructionData' }), (value) => ({ ...value, discriminator: [27, 234, 178, 52, 147, 2, 187, 141] }) ) as Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData>;
+  return mapSerializer<SetParamsInstructionDataArgs, any, SetParamsInstructionData>(struct<SetParamsInstructionData>([['discriminator', array(u8(), { size: 8 })], ['params', getGlobalSettingsInputSerializer()]], { description: 'SetParamsInstructionData' }), (value) => ({ ...value, discriminator: [27, 234, 178, 52, 147, 2, 187, 141] }) ) as Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData>;
 }
 
 
@@ -49,9 +51,11 @@ export function setParams(
   const resolvedAccounts = {
           authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
           global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
-          systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
-          eventAuthority: { index: 3, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 4, isWritable: false as boolean, value: input.program ?? null },
+          newAuthority: { index: 2, isWritable: false as boolean, value: input.newAuthority ?? null },
+          newFeeRecipient: { index: 3, isWritable: false as boolean, value: input.newFeeRecipient ?? null },
+          systemProgram: { index: 4, isWritable: false as boolean, value: input.systemProgram ?? null },
+          eventAuthority: { index: 5, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 6, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.

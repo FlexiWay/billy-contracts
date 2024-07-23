@@ -2,6 +2,7 @@ import {
   keypairIdentity,
   createAmount,
   TransactionBuilder,
+  none,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
@@ -23,6 +24,7 @@ import {
 } from "@solana/web3.js";
 import {
   createLmaofunBondingCurveProgram,
+  fetchGlobal,
   findGlobalPda,
   initialize,
   InitializeInstructionAccounts,
@@ -131,6 +133,7 @@ describe("lmaofun-bonding", () => {
     const { signature, result } = await txBuilder.sendAndConfirm(umi);
     console.log({ signature, val: result.value });
 
+    // using ANCHOR
     // const tx = await program.methods
     //   .initialize(INIT_DEFAULTS_ANCHOR)
     //   .accounts({
@@ -147,10 +150,9 @@ describe("lmaofun-bonding", () => {
 
     // console.log({ sig });
 
-    const global = await safeFetchGlobal(umi, globalPda);
-    if(!global) {
-      throw new Error("Global acc not found");
-    }
+    const global = await fetchGlobal(umi, globalPda);
+
+
     assert.equal(
       global.initialRealSolReserves,
       INIT_DEFAULTS.initialRealSolReserves
@@ -175,18 +177,26 @@ describe("lmaofun-bonding", () => {
   });
 
   it("set_params in SwapOnly", async () => {
-    const txBuilder = new TransactionBuilder();
-    txBuilder.add(
-      setParams(umi, {
+    const txBuilder =  setParams(umi, {
         global: globalPda[0],
-        status: ProgramStatus.SwapOnly,
+        authority: umi.identity,
+        params:{
+          initialTokenSupply:none(),
+          initialRealSolReserves:none(),
+          initialRealTokenReserves:none(),
+          initialVirtualSolReserves:none(),
+          initialVirtualTokenReserves:none(),
+          solLaunchThreshold:none(),
+          feeBasisPoints:none(),
+          createdMintDecimals:none(),
 
-        settingsParams: INIT_DEFAULTS,
-        authorityParams: initAccs,
+          status: ProgramStatus.SwapOnly,
+        },
+        // authorityParams: initAccs,
 
         ...evtAuthorityAccs,
       })
-    );
+
 
     const tx = await txBuilder.buildAndSign(umi);
     const _tx = toWeb3JsTransaction(tx);
@@ -194,24 +204,32 @@ describe("lmaofun-bonding", () => {
     console.log(simRes);
     const { ...a } = await txBuilder.sendAndConfirm(umi);
     console.log(a);
-    const global = await safeFetchGlobal(umi, globalPda);
+    const global = await fetchGlobal(umi, globalPda);
     console.log({ global });
 
     assert.equal(global.status, ProgramStatus.SwapOnly);
   });
 
   it("set_params back", async () => {
-    const txBuilder = new TransactionBuilder();
-    txBuilder.add(
-      setParams(umi, {
-        global: globalPda[0],
-        status: ProgramStatus.Running,
+    const txBuilder =   setParams(umi, {
+      global: globalPda[0],
+      authority: umi.identity,
+      params:{
+        initialTokenSupply:none(),
+        initialRealSolReserves:none(),
+        initialRealTokenReserves:none(),
+        initialVirtualSolReserves:none(),
+        initialVirtualTokenReserves:none(),
+        solLaunchThreshold:none(),
+        feeBasisPoints:none(),
+        createdMintDecimals:none(),
 
-        settingsParams: INIT_DEFAULTS,
-        authorityParams: initAccs,
-        ...evtAuthorityAccs,
-      })
-    );
+        status: ProgramStatus.Running,
+      },
+      // authorityParams: initAccs,
+
+      ...evtAuthorityAccs,
+    })
 
     const tx = await txBuilder.buildAndSign(umi);
     const _tx = toWeb3JsTransaction(tx);
@@ -219,7 +237,7 @@ describe("lmaofun-bonding", () => {
     console.log(simRes);
     const { ...a } = await txBuilder.sendAndConfirm(umi);
     console.log(a);
-    const global = await safeFetchGlobal(umi, globalPda);
+    const global = await fetchGlobal(umi, globalPda);
     console.log({ global });
 
     assert.equal(global.status, ProgramStatus.Running);
