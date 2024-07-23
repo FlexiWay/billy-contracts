@@ -207,6 +207,26 @@ describe("lmaofun-bonding", () => {
     const global = await fetchGlobal(umi, globalPda);
 
 
+    assert.equal(
+      global.initialRealSolReserves,
+      INIT_DEFAULTS.initialRealSolReserves
+    );
+    assert.equal(
+      global.initialRealTokenReserves,
+      INIT_DEFAULTS.initialRealTokenReserves
+    );
+    assert.equal(
+      global.initialVirtualSolReserves,
+      INIT_DEFAULTS.initialVirtualSolReserves
+    );
+    assert.equal(
+      global.initialVirtualTokenReserves,
+      INIT_DEFAULTS.initialVirtualTokenReserves
+    );
+    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
+    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
+    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
+
     assert.equal(global.status, ProgramStatus.SwapOnly);
   });
 
@@ -233,6 +253,26 @@ describe("lmaofun-bonding", () => {
     const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
     console.log({ events });
     const global = await fetchGlobal(umi, globalPda);
+
+    assert.equal(
+      global.initialRealSolReserves,
+      INIT_DEFAULTS.initialRealSolReserves
+    );
+    assert.equal(
+      global.initialRealTokenReserves,
+      INIT_DEFAULTS.initialRealTokenReserves
+    );
+    assert.equal(
+      global.initialVirtualSolReserves,
+      INIT_DEFAULTS.initialVirtualSolReserves
+    );
+    assert.equal(
+      global.initialVirtualTokenReserves,
+      INIT_DEFAULTS.initialVirtualTokenReserves
+    );
+    assert.equal(global.initialTokenSupply, INIT_DEFAULTS.initialTokenSupply);
+    assert.equal(global.solLaunchThreshold, INIT_DEFAULTS.solLaunchThreshold);
+    assert.equal(global.feeBasisPoints, INIT_DEFAULTS.feeBasisPoints);
 
     assert.equal(global.status, ProgramStatus.Running);
   });
