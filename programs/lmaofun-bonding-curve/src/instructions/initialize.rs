@@ -11,7 +11,7 @@ pub struct Initialize<'info> {
     #[account(
         init,
         space = 8 + Global::INIT_SPACE,
-        seeds = [Global::SEED_PREFIX],
+        seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized != true @ ProgramError::AlreadyInitialized,
         bump,
         payer = authority,
@@ -26,17 +26,40 @@ impl Initialize<'_> {
         let global = &mut ctx.accounts.global;
         global.update_authority(GlobalAuthorityInput {
             global_authority: Some(ctx.accounts.authority.key()),
+            withdraw_authority: Some(ctx.accounts.authority.key()),
         });
         global.update_settings(params);
 
-        if global.initial_virtual_sol_reserves == 0
-            || global.initial_virtual_token_reserves == 0
-            || global.created_mint_decimals == 0
-            || global.initial_real_token_reserves == 0
-            || global.initial_token_supply == 0
-        {
-            global.status = ProgramStatus::SwapOnly;
-        }
+        require_gt!(
+            global.initial_token_supply,
+            0,
+            ProgramError::InvalidArgument
+        );
+        require_gt!(
+            global.initial_real_token_reserves,
+            0,
+            ProgramError::InvalidArgument
+        );
+        require_gt!(
+            global.initial_virtual_sol_reserves,
+            0,
+            ProgramError::InvalidArgument
+        );
+        require_gt!(
+            global.initial_virtual_token_reserves,
+            0,
+            ProgramError::InvalidArgument
+        );
+        require_gt!(
+            global.sol_launch_threshold,
+            0,
+            ProgramError::InvalidArgument
+        );
+        require_gt!(
+            global.created_mint_decimals,
+            0,
+            ProgramError::InvalidArgument
+        );
 
         global.status = ProgramStatus::Running;
         global.initialized = true;

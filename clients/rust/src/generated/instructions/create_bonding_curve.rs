@@ -70,7 +70,7 @@ impl CreateBondingCurve {
             self.bonding_curve_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.global,
             false,
         ));
@@ -156,7 +156,7 @@ pub struct CreateBondingCurveInstructionArgs {
 ///   1. `[writable, signer]` creator
 ///   2. `[writable]` bonding_curve
 ///   3. `[writable]` bonding_curve_token_account
-///   4. `[]` global
+///   4. `[writable]` global
 ///   5. `[writable]` metadata
 ///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   7. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
@@ -502,7 +502,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             *self.bonding_curve_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.global.key,
             false,
         ));
@@ -596,7 +596,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
 ///   1. `[writable, signer]` creator
 ///   2. `[writable]` bonding_curve
 ///   3. `[writable]` bonding_curve_token_account
-///   4. `[]` global
+///   4. `[writable]` global
 ///   5. `[writable]` metadata
 ///   6. `[]` system_program
 ///   7. `[]` token_program

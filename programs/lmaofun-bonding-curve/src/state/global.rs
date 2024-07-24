@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
     pub global_authority: Option<Pubkey>,
+    pub withdraw_authority: Option<Pubkey>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq)]
@@ -20,6 +21,7 @@ pub struct Global {
     pub initialized: bool,
 
     pub global_authority: Pubkey,
+    pub withdraw_authority: Pubkey,
 
     pub initial_virtual_token_reserves: u64,
     pub initial_virtual_sol_reserves: u64,
@@ -50,7 +52,13 @@ pub struct GlobalSettingsInput {
 }
 
 impl Global {
-    pub const SEED_PREFIX: &'static [u8; 6] = b"global";
+    pub const SEED_PREFIX: &str = "global";
+
+    pub fn get_signer<'a>(&'a self, bump: &'a u8) -> [&'a [u8]; 2] {
+        let prefix_bytes = Global::SEED_PREFIX.as_bytes();
+        let bump_slice: &'a [u8] = std::slice::from_ref(bump);
+        [prefix_bytes, bump_slice]
+    }
 
     pub fn update_settings(&mut self, params: GlobalSettingsInput) {
         if let Some(value) = params.initial_token_supply {
@@ -88,6 +96,9 @@ impl Global {
     pub fn update_authority(&mut self, params: GlobalAuthorityInput) {
         if let Some(global_authority) = params.global_authority {
             self.global_authority = global_authority;
+        }
+        if let Some(withdraw_authority) = params.withdraw_authority {
+            self.withdraw_authority = withdraw_authority;
         }
     }
 }

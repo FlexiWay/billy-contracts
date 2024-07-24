@@ -60,7 +60,7 @@ export type LmaofunBondingCurve = {
           "isOptional": true
         },
         {
-          "name": "newFeeRecipient",
+          "name": "newWithdrawAuthority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true
@@ -115,7 +115,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -172,6 +172,42 @@ export type LmaofunBondingCurve = {
           }
         }
       ]
+    },
+    {
+      "name": "withdrawFees",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -236,6 +272,10 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "globalAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawAuthority",
             "type": "publicKey"
           },
           {
@@ -312,6 +352,12 @@ export type LmaofunBondingCurve = {
         "fields": [
           {
             "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "withdrawAuthority",
             "type": {
               "option": "publicKey"
             }
@@ -505,6 +551,21 @@ export type LmaofunBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "WithdrawEvent",
+      "fields": [
+        {
+          "name": "withdrawAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -520,8 +581,8 @@ export type LmaofunBondingCurve = {
     },
     {
       "code": 6002,
-      "name": "InvalidAuthority",
-      "msg": "Invalid Authority"
+      "name": "InvalidGlobalAuthority",
+      "msg": "Invalid Global Authority"
     },
     {
       "code": 6003,
@@ -532,6 +593,16 @@ export type LmaofunBondingCurve = {
       "code": 6004,
       "name": "InvalidArgument",
       "msg": "Invalid Argument"
+    },
+    {
+      "code": 6005,
+      "name": "BondingCurveNotComplete",
+      "msg": "Bonding Curve Not Complete"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidWithdrawAuthority",
+      "msg": "Invalid Withdraw Authority"
     }
   ]
 };
@@ -598,7 +669,7 @@ export const IDL: LmaofunBondingCurve = {
           "isOptional": true
         },
         {
-          "name": "newFeeRecipient",
+          "name": "newWithdrawAuthority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true
@@ -653,7 +724,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -710,6 +781,42 @@ export const IDL: LmaofunBondingCurve = {
           }
         }
       ]
+    },
+    {
+      "name": "withdrawFees",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -774,6 +881,10 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "globalAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawAuthority",
             "type": "publicKey"
           },
           {
@@ -850,6 +961,12 @@ export const IDL: LmaofunBondingCurve = {
         "fields": [
           {
             "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "withdrawAuthority",
             "type": {
               "option": "publicKey"
             }
@@ -1043,6 +1160,21 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "WithdrawEvent",
+      "fields": [
+        {
+          "name": "withdrawAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -1058,8 +1190,8 @@ export const IDL: LmaofunBondingCurve = {
     },
     {
       "code": 6002,
-      "name": "InvalidAuthority",
-      "msg": "Invalid Authority"
+      "name": "InvalidGlobalAuthority",
+      "msg": "Invalid Global Authority"
     },
     {
       "code": 6003,
@@ -1070,6 +1202,16 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6004,
       "name": "InvalidArgument",
       "msg": "Invalid Argument"
+    },
+    {
+      "code": 6005,
+      "name": "BondingCurveNotComplete",
+      "msg": "Bonding Curve Not Complete"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidWithdrawAuthority",
+      "msg": "Invalid Withdraw Authority"
     }
   ]
 };

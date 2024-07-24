@@ -1,3 +1,4 @@
+use anchor_lang::accounts::signer;
 use anchor_lang::solana_program::system_instruction;
 use anchor_lang::system_program::transfer;
 use anchor_lang::{
@@ -40,7 +41,7 @@ pub struct CreateBondingCurve<'info> {
         mint::authority = global,
         mint::freeze_authority = global
     )]
-    mint: Account<'info, Mint>,
+    mint: Box<Account<'info, Mint>>,
 
     #[account(mut)]
     creator: Signer<'info>,
@@ -48,7 +49,7 @@ pub struct CreateBondingCurve<'info> {
     #[account(
         init,
         payer = creator,
-        seeds = [BondingCurve::SEED_PREFIX, mint.to_account_info().key.as_ref()],
+        seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
         space = 8 + BondingCurve::INIT_SPACE,
     )]
@@ -63,7 +64,8 @@ pub struct CreateBondingCurve<'info> {
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        seeds = [Global::SEED_PREFIX],
+        mut,
+        seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ProgramError::NotInitialized,
         constraint = global.status == ProgramStatus::Running @ ProgramError::ProgramNotRunning,
         bump,
@@ -122,8 +124,8 @@ impl CreateBondingCurve<'_> {
             &ctx.accounts.bonding_curve.get_lamports()
         );
 
-        let seeds = &["global".as_bytes(), &[ctx.bumps.global]];
-        let signer = [&seeds[..]];
+        let signer = ctx.accounts.global.get_signer(&ctx.bumps.global);
+        let signer_seeds = &[&signer[..]];
 
         let token_data: DataV2 = DataV2 {
             name: name.clone(),
@@ -148,7 +150,7 @@ impl CreateBondingCurve<'_> {
                 system_program: ctx.accounts.system_program.to_account_info(),
                 rent: ctx.accounts.rent.to_account_info(),
             },
-            &signer,
+            signer_seeds,
         );
 
         create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
@@ -162,7 +164,7 @@ impl CreateBondingCurve<'_> {
                     to: bonding_curve_token_account_info.clone(),
                     mint: mint_info.clone(),
                 },
-                &signer,
+                signer_seeds,
             ),
             initial_supply,
         )?;
@@ -175,7 +177,7 @@ impl CreateBondingCurve<'_> {
                     current_authority: mint_authority_info.clone(),
                     account_or_mint: mint_info.clone(),
                 },
-                &signer,
+                signer_seeds,
             ),
             AuthorityType::MintTokens,
             None,
@@ -189,7 +191,7 @@ impl CreateBondingCurve<'_> {
                     current_authority: mint_authority_info.clone(),
                     account_or_mint: mint_info.clone(),
                 },
-                &signer,
+                signer_seeds,
             ),
             AuthorityType::FreezeAccount,
             None,
@@ -201,7 +203,7 @@ impl CreateBondingCurve<'_> {
         let fee_amount = ctx.accounts.global.launch_fee_lamports;
 
         let transfer_instruction =
-            system_instruction::transfer(&fee_from.key(), &fee_to.key(), fee_amount);
+            system_instruction::transfer(fee_from.key, &fee_to.key(), fee_amount);
 
         anchor_lang::solana_program::program::invoke_signed(
             &transfer_instruction,
@@ -212,6 +214,8 @@ impl CreateBondingCurve<'_> {
             ],
             &[],
         )?;
+
+        //create bonding curve
         let clock = Clock::get()?;
         let pool_start_time = start_time.unwrap_or(clock.unix_timestamp);
         let bonding_curve = &mut ctx.accounts.bonding_curve.new_from_global(

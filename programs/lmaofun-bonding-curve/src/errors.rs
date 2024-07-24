@@ -6,11 +6,17 @@ pub enum ProgramError {
     AlreadyInitialized,
     #[msg("Global Not Initialized")]
     NotInitialized,
-    #[msg("Invalid Authority")]
-    InvalidAuthority,
+    #[msg("Invalid Global Authority")]
+    InvalidGlobalAuthority,
     #[msg("Not in Running State")]
     ProgramNotRunning,
 
     #[msg("Invalid Argument")]
     InvalidArgument,
+
+    #[msg("Bonding Curve Not Complete")]
+    BondingCurveNotComplete,
+
+    #[msg("Invalid Withdraw Authority")]
+    InvalidWithdrawAuthority,
 }

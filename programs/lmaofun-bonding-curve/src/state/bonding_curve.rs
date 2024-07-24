@@ -33,7 +33,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const SEED_PREFIX: &'static [u8; 13] = b"bonding-curve";
+    pub const SEED_PREFIX: &str = "bonding-curve";
 
     pub fn new_from_global(
         &mut self,

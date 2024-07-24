@@ -38,18 +38,18 @@ export class NotInitializedError extends ProgramError {
 codeToErrorMap.set(0x1771, NotInitializedError);
 nameToErrorMap.set('NotInitialized', NotInitializedError);
 
-/** InvalidAuthority: Invalid Authority */
-export class InvalidAuthorityError extends ProgramError {
-  override readonly name: string = 'InvalidAuthority';
+/** InvalidGlobalAuthority: Invalid Global Authority */
+export class InvalidGlobalAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidGlobalAuthority';
 
   readonly code: number = 0x1772; // 6002
   
   constructor(program: Program, cause?: Error) {
-    super('Invalid Authority', program, cause);
+    super('Invalid Global Authority', program, cause);
   }
 }
-codeToErrorMap.set(0x1772, InvalidAuthorityError);
-nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
+codeToErrorMap.set(0x1772, InvalidGlobalAuthorityError);
+nameToErrorMap.set('InvalidGlobalAuthority', InvalidGlobalAuthorityError);
 
 /** ProgramNotRunning: Not in Running State */
 export class ProgramNotRunningError extends ProgramError {
@@ -76,6 +76,32 @@ export class InvalidArgumentError extends ProgramError {
 }
 codeToErrorMap.set(0x1774, InvalidArgumentError);
 nameToErrorMap.set('InvalidArgument', InvalidArgumentError);
+
+/** BondingCurveNotComplete: Bonding Curve Not Complete */
+export class BondingCurveNotCompleteError extends ProgramError {
+  override readonly name: string = 'BondingCurveNotComplete';
+
+  readonly code: number = 0x1775; // 6005
+  
+  constructor(program: Program, cause?: Error) {
+    super('Bonding Curve Not Complete', program, cause);
+  }
+}
+codeToErrorMap.set(0x1775, BondingCurveNotCompleteError);
+nameToErrorMap.set('BondingCurveNotComplete', BondingCurveNotCompleteError);
+
+/** InvalidWithdrawAuthority: Invalid Withdraw Authority */
+export class InvalidWithdrawAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidWithdrawAuthority';
+
+  readonly code: number = 0x1776; // 6006
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Withdraw Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x1776, InvalidWithdrawAuthorityError);
+nameToErrorMap.set('InvalidWithdrawAuthority', InvalidWithdrawAuthorityError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

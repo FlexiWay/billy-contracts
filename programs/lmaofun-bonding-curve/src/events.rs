@@ -25,6 +25,12 @@ pub struct CreateEvent {
     pub token_total_supply: u64,
 }
 
+#[event]
+pub struct WithdrawEvent {
+    pub withdraw_authority: Pubkey,
+    pub amount: u64,
+}
+
 pub trait IntoEvent<T: anchor_lang::Event> {
     fn into_event(&self) -> T;
 }

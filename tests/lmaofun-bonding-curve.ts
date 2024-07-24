@@ -22,6 +22,7 @@ import {
   Keypair as Web3JsKeypair,
   LAMPORTS_PER_SOL,
   PublicKey as Web3JsPublicKey,
+  SYSVAR_CLOCK_PUBKEY,
 } from "@solana/web3.js";
 import {
   createLmaofunBondingCurveProgram,
@@ -34,8 +35,12 @@ import {
   safeFetchBondingCurve,
   fetchBondingCurve,
   findBondingCurvePda,
+  withdrawFees,
 } from "../clients/js/src";
-import { fromWeb3JsKeypair } from "@metaplex-foundation/umi-web3js-adapters";
+import {
+  fromWeb3JsKeypair,
+  fromWeb3JsPublicKey,
+} from "@metaplex-foundation/umi-web3js-adapters";
 import { findMetadataPda } from "@metaplex-foundation/mpl-token-metadata";
 import assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
@@ -51,6 +56,7 @@ import {
 } from "../clients/js/src/utils";
 import { setParams } from "../clients/js/src/generated/instructions/setParams";
 import { assertBondingCurve, assertGlobal } from "./utils";
+import { getGlobalSize } from "../clients/js/src/generated/accounts/global";
 
 const amman = Amman.instance({
   ammanClientOpts: { autoUnref: false, ack: true },
@@ -84,8 +90,11 @@ const keypair = Web3JsKeypair.fromSecretKey(
 
 let simpleMintKp = generateSigner(umi);
 let creator = generateSigner(umi);
+let withdrawAuthority = generateSigner(umi);
 
 amman.addr.addLabel("master", keypair.publicKey);
+amman.addr.addLabel("withdrawAuthority", withdrawAuthority.publicKey);
+
 amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
 amman.addr.addLabel("creator", creator.publicKey);
 
@@ -108,41 +117,23 @@ describe("lmaofun-bonding", () => {
   };
   before(async () => {
     try {
-      await Promise.all([
-        umi.rpc.airdrop(
+      await Promise.all(
+        [
           umi.identity.publicKey,
-          createAmount(100 * LAMPORTS_PER_SOL, "SOL", 9),
-          { commitment: "finalized" }
-        ),
-        umi.rpc.airdrop(
           creator.publicKey,
-          createAmount(100 * LAMPORTS_PER_SOL, "SOL", 9),
-          { commitment: "finalized" }
-        ),
-      ]);
+          withdrawAuthority.publicKey,
+        ].map((pk) =>
+          umi.rpc.airdrop(pk, createAmount(100 * LAMPORTS_PER_SOL, "SOL", 9), {
+            commitment: "finalized",
+          })
+        )
+      );
     } catch (error) {
       console.log(error);
     }
   });
 
   it("is initialized", async () => {
-    //  ANCHOR
-    // const tx = await program.methods
-    //   .initialize(INIT_DEFAULTS_ANCHOR)
-    //   .accounts({
-    //     authority: keypair.publicKey,
-    //     global: globalPda[0],
-    //   })
-    //   // .signers([keypair])
-    //   .transaction();
-
-    // const sig = await connection.sendTransaction(tx, [keypair]);
-    // console.log({ sig });
-    // const res = await connection.confirmTransaction(sig, "finalized");
-    // console.log(res);
-
-    // console.log({ sig });
-
     const txBuilder = initialize(umi, {
       global: globalPda,
       authority: umi.identity,
@@ -152,12 +143,12 @@ describe("lmaofun-bonding", () => {
     });
 
     const txRes = await txBuilder.sendAndConfirm(umi);
-    const events = await getTxEventsFromTxBuilderResponse(
-      connection,
-      program,
-      txRes
-    );
-    events.forEach(logEvent);
+    // const events = await getTxEventsFromTxBuilderResponse(
+    //   connection,
+    //   program,
+    //   txRes
+    // );
+    // events.forEach(logEvent);
 
     const global = await fetchGlobal(umi, globalPda);
     assertGlobal(global, INIT_DEFAULTS);
@@ -170,7 +161,6 @@ describe("lmaofun-bonding", () => {
       mintAuthority: globalPda[0],
       freezeAuthority: globalPda[0],
     });
-    console.log("mint created");
 
     const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
       mint: simpleMintKp.publicKey,
@@ -203,19 +193,22 @@ describe("lmaofun-bonding", () => {
       ...evtAuthorityAccs,
 
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      startTime: none(),
     });
     const txRes = await txBuilder.sendAndConfirm(umi);
-    const events = await getTxEventsFromTxBuilderResponse(
-      connection,
-      program,
-      txRes
-    );
-    events.forEach(logEvent);
+
+    // const events = await getTxEventsFromTxBuilderResponse(
+    //   connection,
+    //   program,
+    //   txRes
+    // );
+    // events.forEach(logEvent);
+
     const bondingCurveData = await fetchBondingCurve(
       umi,
       simpleMintBondingCurvePda[0]
     );
-    console.log({ bondingCurveData });
     assertBondingCurve(bondingCurveData, {
       virtualSolReserves: INIT_DEFAULTS.initialVirtualSolReserves,
       virtualTokenReserves: INIT_DEFAULTS.initialVirtualTokenReserves,
@@ -224,63 +217,116 @@ describe("lmaofun-bonding", () => {
       tokenTotalSupply: INIT_DEFAULTS.initialTokenSupply,
       complete: false,
     });
+
+    // assert launch fee collection
+    const globalBalance = await umi.rpc.getBalance(globalPda[0]);
+    const globalBalanceInt = parseInt(globalBalance.basisPoints.toString());
+    const startingBalance = await connection.getMinimumBalanceForRentExemption(
+      getGlobalSize()
+    );
+    const accruedFees = globalBalanceInt - startingBalance;
+
+    assert(accruedFees == INIT_DEFAULTS.launchFeeLamports);
   });
 
-  // it("set_params in SwapOnly", async () => {
-  //   const txBuilder =  setParams(umi, {
-  //       global: globalPda[0],
-  //       authority: umi.identity,
-  //       params:{
-  //         initialTokenSupply:none(),
-  //         initialRealSolReserves:none(),
-  //         initialRealTokenReserves:none(),
-  //         initialVirtualSolReserves:none(),
-  //         initialVirtualTokenReserves:none(),
-  //         solLaunchThreshold:none(),
-  //         tradeFeeBps:none(),
-  //         createdMintDecimals:none(),
+  it("set_params: status:SwapOnly, withdrawAuthority", async () => {
+    const txBuilder = setParams(umi, {
+      global: globalPda[0],
+      authority: umi.identity,
+      params: {
+        launchFeeLamports: none(),
+        initialTokenSupply: none(),
+        initialRealSolReserves: none(),
+        initialRealTokenReserves: none(),
+        initialVirtualSolReserves: none(),
+        initialVirtualTokenReserves: none(),
+        solLaunchThreshold: none(),
+        tradeFeeBps: none(),
+        createdMintDecimals: none(),
+        status: ProgramStatus.SwapOnly,
+      },
+      newWithdrawAuthority: withdrawAuthority.publicKey,
+      ...evtAuthorityAccs,
+    });
 
-  //         status: ProgramStatus.SwapOnly,
-  //       },
+    const txRes = await txBuilder.sendAndConfirm(umi);
+    // const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    // events.forEach(logEvent)
+    const global = await fetchGlobal(umi, globalPda);
 
-  //       ...evtAuthorityAccs,
-  //     })
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+      status: ProgramStatus.SwapOnly,
+      withdrawAuthority: withdrawAuthority.publicKey,
+    });
+  });
 
-  //   const txRes = await txBuilder.sendAndConfirm(umi);
-  //   const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-  //   events.forEach(logEvent)
-  //   const global = await fetchGlobal(umi, globalPda);
+  it("withdraw_fees using withdraw_authority", async () => {
+    const globalBalance = await umi.rpc.getBalance(globalPda[0]);
+    const globalBalanceInt = parseInt(globalBalance.basisPoints.toString());
+    const startingBalance = await connection.getMinimumBalanceForRentExemption(
+      getGlobalSize()
+    );
+    const accruedFees = globalBalanceInt - startingBalance;
 
-  //   assertGlobal(global, {
-  //     ...INIT_DEFAULTS,
-  //     status: ProgramStatus.SwapOnly,
-  //   });
-  // });
+    assert(accruedFees > 0);
+    const txBuilder = withdrawFees(umi, {
+      global: globalPda[0],
+      authority: withdrawAuthority,
+      ...evtAuthorityAccs,
+    });
 
-  // it("set_params back", async () => {
-  //   const txBuilder =   setParams(umi, {
-  //     global: globalPda[0],
-  //     authority: umi.identity,
-  //     params:{
-  //       initialTokenSupply:none(),
-  //       initialRealSolReserves:none(),
-  //       initialRealTokenReserves:none(),
-  //       initialVirtualSolReserves:none(),
-  //       initialVirtualTokenReserves:none(),
-  //       solLaunchThreshold:none(),
-  //       tradeFeeBps:none(),
-  //       createdMintDecimals:none(),
+    const txRes = await txBuilder.sendAndConfirm(umi);
+    // const events = await getTxEventsFromTxBuilderResponse(
+    //   connection,
+    //   program,
+    //   txRes
+    // );
+    // events.forEach(logEvent);
 
-  //       status: ProgramStatus.Running,
-  //     },
-  //     ...evtAuthorityAccs,
-  //   })
+    const global = await fetchGlobal(umi, globalPda);
 
-  //   const txRes= await txBuilder.sendAndConfirm(umi);
-  //   const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-  //   events.forEach(logEvent)
-  //   const global = await fetchGlobal(umi, globalPda);
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+      status: ProgramStatus.SwapOnly,
+      withdrawAuthority: withdrawAuthority.publicKey,
+    });
 
-  //   assertGlobal(global,INIT_DEFAULTS);
-  // });
+    const globalBalancePost = await umi.rpc.getBalance(globalPda[0]);
+    const globalBalanceIntPost = parseInt(
+      globalBalancePost.basisPoints.toString()
+    );
+    console.log({ globalBalancePost, globalBalanceIntPost, startingBalance });
+    assert(globalBalanceIntPost == startingBalance);
+  });
+
+  it("set_params: status:Running", async () => {
+    const txBuilder = setParams(umi, {
+      global: globalPda[0],
+      authority: umi.identity,
+      params: {
+        launchFeeLamports: none(),
+        initialTokenSupply: none(),
+        initialRealSolReserves: none(),
+        initialRealTokenReserves: none(),
+        initialVirtualSolReserves: none(),
+        initialVirtualTokenReserves: none(),
+        solLaunchThreshold: none(),
+        tradeFeeBps: none(),
+        createdMintDecimals: none(),
+
+        status: ProgramStatus.Running,
+      },
+      ...evtAuthorityAccs,
+    });
+
+    const txRes = await txBuilder.sendAndConfirm(umi);
+    //   const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    //   events.forEach(logEvent)
+    const global = await fetchGlobal(umi, globalPda);
+
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+    });
+  });
 });

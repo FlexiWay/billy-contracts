@@ -4,7 +4,7 @@ pub mod errors;
 pub mod events;
 pub mod instructions;
 pub mod state;
-use instructions::{create_bonding_curve::*, initialize::*, set_params::*};
+use instructions::{create_bonding_curve::*, initialize::*, set_params::*, withdraw_fees::*};
 use state::global::*;
 declare_id!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
 
@@ -25,5 +25,9 @@ pub mod lmaofun_bonding_curve {
         params: CreateBondingCurveParams,
     ) -> Result<()> {
         CreateBondingCurve::handler(ctx, params)
+    }
+
+    pub fn withdraw_fees(ctx: Context<WithdrawFees>) -> Result<()> {
+        WithdrawFees::handler(ctx)
     }
 }

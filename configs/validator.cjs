@@ -52,7 +52,7 @@ module.exports = {
     ledgerDir: "./test-ledger",
     resetLedger: true,
     verifyFees: false,
-    detached: false,
+    detached: true,
   },
   relay: {
     enabled: true,

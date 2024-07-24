@@ -9,40 +9,34 @@
 import { Context, Pda, PublicKey, Signer, TransactionBuilder, transactionBuilder } from '@metaplex-foundation/umi';
 import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { GlobalSettingsInput, GlobalSettingsInputArgs, getGlobalSettingsInputSerializer } from '../types';
 
 // Accounts.
-export type SetParamsInstructionAccounts = {
+export type WithdrawFeesInstructionAccounts = {
     authority?: Signer;
     global: PublicKey | Pda;
-    newAuthority?: PublicKey | Pda;
-    newWithdrawAuthority?: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
+    tokenProgram?: PublicKey | Pda;
     eventAuthority: PublicKey | Pda;
     program: PublicKey | Pda;
 };
 
   // Data.
-  export type SetParamsInstructionData = { discriminator: Array<number>; params: GlobalSettingsInput;  };
+  export type WithdrawFeesInstructionData = { discriminator: Array<number>;  };
 
-export type SetParamsInstructionDataArgs = { params: GlobalSettingsInputArgs;  };
+export type WithdrawFeesInstructionDataArgs = {  };
 
 
-  export function getSetParamsInstructionDataSerializer(): Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData> {
-  return mapSerializer<SetParamsInstructionDataArgs, any, SetParamsInstructionData>(struct<SetParamsInstructionData>([['discriminator', array(u8(), { size: 8 })], ['params', getGlobalSettingsInputSerializer()]], { description: 'SetParamsInstructionData' }), (value) => ({ ...value, discriminator: [27, 234, 178, 52, 147, 2, 187, 141] }) ) as Serializer<SetParamsInstructionDataArgs, SetParamsInstructionData>;
+  export function getWithdrawFeesInstructionDataSerializer(): Serializer<WithdrawFeesInstructionDataArgs, WithdrawFeesInstructionData> {
+  return mapSerializer<WithdrawFeesInstructionDataArgs, any, WithdrawFeesInstructionData>(struct<WithdrawFeesInstructionData>([['discriminator', array(u8(), { size: 8 })]], { description: 'WithdrawFeesInstructionData' }), (value) => ({ ...value, discriminator: [198, 212, 171, 109, 144, 215, 174, 89] }) ) as Serializer<WithdrawFeesInstructionDataArgs, WithdrawFeesInstructionData>;
 }
 
 
 
-  
-  // Args.
-      export type SetParamsInstructionArgs =           SetParamsInstructionDataArgs
-      ;
-  
+
 // Instruction.
-export function setParams(
+export function withdrawFees(
   context: Pick<Context, "identity" | "programs">,
-                        input: SetParamsInstructionAccounts & SetParamsInstructionArgs,
+                        input: WithdrawFeesInstructionAccounts,
       ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
@@ -51,15 +45,12 @@ export function setParams(
   const resolvedAccounts = {
           authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
           global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
-          newAuthority: { index: 2, isWritable: false as boolean, value: input.newAuthority ?? null },
-          newWithdrawAuthority: { index: 3, isWritable: false as boolean, value: input.newWithdrawAuthority ?? null },
-          systemProgram: { index: 4, isWritable: false as boolean, value: input.systemProgram ?? null },
-          eventAuthority: { index: 5, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 6, isWritable: false as boolean, value: input.program ?? null },
+          systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 3, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          eventAuthority: { index: 4, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 5, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
-      // Arguments.
-    const resolvedArgs: SetParamsInstructionArgs = { ...input };
   
     // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -68,6 +59,10 @@ export function setParams(
       if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
 resolvedAccounts.systemProgram.isWritable = false
+      }
+      if (!resolvedAccounts.tokenProgram.value) {
+        resolvedAccounts.tokenProgram.value = context.programs.getPublicKey('splToken', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+resolvedAccounts.tokenProgram.isWritable = false
       }
       
   // Accounts in order.
@@ -78,7 +73,7 @@ resolvedAccounts.systemProgram.isWritable = false
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
-      const data = getSetParamsInstructionDataSerializer().serialize(resolvedArgs as SetParamsInstructionDataArgs);
+      const data = getWithdrawFeesInstructionDataSerializer().serialize({});
   
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;

@@ -9,3 +9,4 @@
 export * from './createBondingCurve';
 export * from './initialize';
 export * from './setParams';
+export * from './withdrawFees';

@@ -59,7 +59,7 @@ export function createBondingCurve(
           creator: { index: 1, isWritable: true as boolean, value: input.creator ?? null },
           bondingCurve: { index: 2, isWritable: true as boolean, value: input.bondingCurve ?? null },
           bondingCurveTokenAccount: { index: 3, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          global: { index: 4, isWritable: false as boolean, value: input.global ?? null },
+          global: { index: 4, isWritable: true as boolean, value: input.global ?? null },
           metadata: { index: 5, isWritable: true as boolean, value: input.metadata ?? null },
           systemProgram: { index: 6, isWritable: false as boolean, value: input.systemProgram ?? null },
           tokenProgram: { index: 7, isWritable: false as boolean, value: input.tokenProgram ?? null },

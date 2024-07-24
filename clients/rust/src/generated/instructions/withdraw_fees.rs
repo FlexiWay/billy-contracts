@@ -5,43 +5,36 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::GlobalSettingsInput;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct SetParams {
+pub struct WithdrawFees {
     pub authority: solana_program::pubkey::Pubkey,
 
     pub global: solana_program::pubkey::Pubkey,
 
-    pub new_authority: Option<solana_program::pubkey::Pubkey>,
-
-    pub new_withdraw_authority: Option<solana_program::pubkey::Pubkey>,
-
     pub system_program: solana_program::pubkey::Pubkey,
+
+    pub token_program: solana_program::pubkey::Pubkey,
 
     pub event_authority: solana_program::pubkey::Pubkey,
 
     pub program: solana_program::pubkey::Pubkey,
 }
 
-impl SetParams {
-    pub fn instruction(
-        &self,
-        args: SetParamsInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(args, &[])
+impl WithdrawFees {
+    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: SetParamsInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true,
@@ -50,30 +43,12 @@ impl SetParams {
             self.global,
             false,
         ));
-        if let Some(new_authority) = self.new_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                new_authority,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::LMAOFUN_BONDING_CURVE_ID,
-                false,
-            ));
-        }
-        if let Some(new_withdraw_authority) = self.new_withdraw_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                new_withdraw_authority,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::LMAOFUN_BONDING_CURVE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.token_program,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -85,9 +60,7 @@ impl SetParams {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = SetParamsInstructionData::new().try_to_vec().unwrap();
-        let mut args = args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::LMAOFUN_BONDING_CURVE_ID,
@@ -99,51 +72,40 @@ impl SetParams {
 
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-pub struct SetParamsInstructionData {
+pub struct WithdrawFeesInstructionData {
     discriminator: [u8; 8],
 }
 
-impl SetParamsInstructionData {
+impl WithdrawFeesInstructionData {
     pub fn new() -> Self {
         Self {
-            discriminator: [27, 234, 178, 52, 147, 2, 187, 141],
+            discriminator: [198, 212, 171, 109, 144, 215, 174, 89],
         }
     }
 }
 
-#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
-#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SetParamsInstructionArgs {
-    pub params: GlobalSettingsInput,
-}
-
-/// Instruction builder for `SetParams`.
+/// Instruction builder for `WithdrawFees`.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` authority
 ///   1. `[writable]` global
-///   2. `[optional]` new_authority
-///   3. `[optional]` new_withdraw_authority
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   5. `[]` event_authority
-///   6. `[]` program
+///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   4. `[]` event_authority
+///   5. `[]` program
 #[derive(Default)]
-pub struct SetParamsBuilder {
+pub struct WithdrawFeesBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
-    new_authority: Option<solana_program::pubkey::Pubkey>,
-    new_withdraw_authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
+    token_program: Option<solana_program::pubkey::Pubkey>,
     event_authority: Option<solana_program::pubkey::Pubkey>,
     program: Option<solana_program::pubkey::Pubkey>,
-    params: Option<GlobalSettingsInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl SetParamsBuilder {
+impl WithdrawFeesBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -157,28 +119,16 @@ impl SetParamsBuilder {
         self.global = Some(global);
         self
     }
-    /// `[optional account]`
-    #[inline(always)]
-    pub fn new_authority(
-        &mut self,
-        new_authority: Option<solana_program::pubkey::Pubkey>,
-    ) -> &mut Self {
-        self.new_authority = new_authority;
-        self
-    }
-    /// `[optional account]`
-    #[inline(always)]
-    pub fn new_withdraw_authority(
-        &mut self,
-        new_withdraw_authority: Option<solana_program::pubkey::Pubkey>,
-    ) -> &mut Self {
-        self.new_withdraw_authority = new_withdraw_authority;
-        self
-    }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
     pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
+        self
+    }
+    /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
+    #[inline(always)]
+    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.token_program = Some(token_program);
         self
     }
     #[inline(always)]
@@ -192,11 +142,6 @@ impl SetParamsBuilder {
     #[inline(always)]
     pub fn program(&mut self, program: solana_program::pubkey::Pubkey) -> &mut Self {
         self.program = Some(program);
-        self
-    }
-    #[inline(always)]
-    pub fn params(&mut self, params: GlobalSettingsInput) -> &mut Self {
-        self.params = Some(params);
         self
     }
     /// Add an aditional account to the instruction.
@@ -219,44 +164,40 @@ impl SetParamsBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = SetParams {
+        let accounts = WithdrawFees {
             authority: self.authority.expect("authority is not set"),
             global: self.global.expect("global is not set"),
-            new_authority: self.new_authority,
-            new_withdraw_authority: self.new_withdraw_authority,
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            )),
             event_authority: self.event_authority.expect("event_authority is not set"),
             program: self.program.expect("program is not set"),
         };
-        let args = SetParamsInstructionArgs {
-            params: self.params.clone().expect("params is not set"),
-        };
 
-        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `set_params` CPI accounts.
-pub struct SetParamsCpiAccounts<'a, 'b> {
+/// `withdraw_fees` CPI accounts.
+pub struct WithdrawFeesCpiAccounts<'a, 'b> {
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub new_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-
-    pub new_withdraw_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `set_params` CPI instruction.
-pub struct SetParamsCpi<'a, 'b> {
+/// `withdraw_fees` CPI instruction.
+pub struct WithdrawFeesCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -264,35 +205,28 @@ pub struct SetParamsCpi<'a, 'b> {
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub new_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-
-    pub new_withdraw_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The arguments for the instruction.
-    pub __args: SetParamsInstructionArgs,
 }
 
-impl<'a, 'b> SetParamsCpi<'a, 'b> {
+impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: SetParamsCpiAccounts<'a, 'b>,
-        args: SetParamsInstructionArgs,
+        accounts: WithdrawFeesCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
             authority: accounts.authority,
             global: accounts.global,
-            new_authority: accounts.new_authority,
-            new_withdraw_authority: accounts.new_withdraw_authority,
             system_program: accounts.system_program,
+            token_program: accounts.token_program,
             event_authority: accounts.event_authority,
             program: accounts.program,
-            __args: args,
         }
     }
     #[inline(always)]
@@ -328,7 +262,7 @@ impl<'a, 'b> SetParamsCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true,
@@ -337,30 +271,12 @@ impl<'a, 'b> SetParamsCpi<'a, 'b> {
             *self.global.key,
             false,
         ));
-        if let Some(new_authority) = self.new_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *new_authority.key,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::LMAOFUN_BONDING_CURVE_ID,
-                false,
-            ));
-        }
-        if let Some(new_withdraw_authority) = self.new_withdraw_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *new_withdraw_authority.key,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::LMAOFUN_BONDING_CURVE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.token_program.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -378,26 +294,19 @@ impl<'a, 'b> SetParamsCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = SetParamsInstructionData::new().try_to_vec().unwrap();
-        let mut args = self.__args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::LMAOFUN_BONDING_CURVE_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
         account_infos.push(self.global.clone());
-        if let Some(new_authority) = self.new_authority {
-            account_infos.push(new_authority.clone());
-        }
-        if let Some(new_withdraw_authority) = self.new_withdraw_authority {
-            account_infos.push(new_withdraw_authority.clone());
-        }
         account_infos.push(self.system_program.clone());
+        account_infos.push(self.token_program.clone());
         account_infos.push(self.event_authority.clone());
         account_infos.push(self.program.clone());
         remaining_accounts
@@ -412,33 +321,30 @@ impl<'a, 'b> SetParamsCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `SetParams` via CPI.
+/// Instruction builder for `WithdrawFees` via CPI.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` authority
 ///   1. `[writable]` global
-///   2. `[optional]` new_authority
-///   3. `[optional]` new_withdraw_authority
-///   4. `[]` system_program
-///   5. `[]` event_authority
-///   6. `[]` program
-pub struct SetParamsCpiBuilder<'a, 'b> {
-    instruction: Box<SetParamsCpiBuilderInstruction<'a, 'b>>,
+///   2. `[]` system_program
+///   3. `[]` token_program
+///   4. `[]` event_authority
+///   5. `[]` program
+pub struct WithdrawFeesCpiBuilder<'a, 'b> {
+    instruction: Box<WithdrawFeesCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
+impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(SetParamsCpiBuilderInstruction {
+        let instruction = Box::new(WithdrawFeesCpiBuilderInstruction {
             __program: program,
             authority: None,
             global: None,
-            new_authority: None,
-            new_withdraw_authority: None,
             system_program: None,
+            token_program: None,
             event_authority: None,
             program: None,
-            params: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -459,30 +365,20 @@ impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
         self.instruction.global = Some(global);
         self
     }
-    /// `[optional account]`
-    #[inline(always)]
-    pub fn new_authority(
-        &mut self,
-        new_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.new_authority = new_authority;
-        self
-    }
-    /// `[optional account]`
-    #[inline(always)]
-    pub fn new_withdraw_authority(
-        &mut self,
-        new_withdraw_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.new_withdraw_authority = new_withdraw_authority;
-        self
-    }
     #[inline(always)]
     pub fn system_program(
         &mut self,
         system_program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
+        self
+    }
+    #[inline(always)]
+    pub fn token_program(
+        &mut self,
+        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.token_program = Some(token_program);
         self
     }
     #[inline(always)]
@@ -499,11 +395,6 @@ impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
         program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.program = Some(program);
-        self
-    }
-    #[inline(always)]
-    pub fn params(&mut self, params: GlobalSettingsInput) -> &mut Self {
-        self.instruction.params = Some(params);
         self
     }
     /// Add an additional account to the instruction.
@@ -547,24 +438,22 @@ impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = SetParamsInstructionArgs {
-            params: self.instruction.params.clone().expect("params is not set"),
-        };
-        let instruction = SetParamsCpi {
+        let instruction = WithdrawFeesCpi {
             __program: self.instruction.__program,
 
             authority: self.instruction.authority.expect("authority is not set"),
 
             global: self.instruction.global.expect("global is not set"),
 
-            new_authority: self.instruction.new_authority,
-
-            new_withdraw_authority: self.instruction.new_withdraw_authority,
-
             system_program: self
                 .instruction
                 .system_program
                 .expect("system_program is not set"),
+
+            token_program: self
+                .instruction
+                .token_program
+                .expect("token_program is not set"),
 
             event_authority: self
                 .instruction
@@ -572,7 +461,6 @@ impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
                 .expect("event_authority is not set"),
 
             program: self.instruction.program.expect("program is not set"),
-            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -581,16 +469,14 @@ impl<'a, 'b> SetParamsCpiBuilder<'a, 'b> {
     }
 }
 
-struct SetParamsCpiBuilderInstruction<'a, 'b> {
+struct WithdrawFeesCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    new_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    new_withdraw_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    params: Option<GlobalSettingsInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

@@ -16,15 +16,21 @@ pub enum LmaofunBondingCurveError {
     /// 6001 (0x1771) - Global Not Initialized
     #[error("Global Not Initialized")]
     NotInitialized,
-    /// 6002 (0x1772) - Invalid Authority
-    #[error("Invalid Authority")]
-    InvalidAuthority,
+    /// 6002 (0x1772) - Invalid Global Authority
+    #[error("Invalid Global Authority")]
+    InvalidGlobalAuthority,
     /// 6003 (0x1773) - Not in Running State
     #[error("Not in Running State")]
     ProgramNotRunning,
     /// 6004 (0x1774) - Invalid Argument
     #[error("Invalid Argument")]
     InvalidArgument,
+    /// 6005 (0x1775) - Bonding Curve Not Complete
+    #[error("Bonding Curve Not Complete")]
+    BondingCurveNotComplete,
+    /// 6006 (0x1776) - Invalid Withdraw Authority
+    #[error("Invalid Withdraw Authority")]
+    InvalidWithdrawAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

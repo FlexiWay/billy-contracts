@@ -6,13 +6,13 @@ use anchor_lang::prelude::*;
 #[instruction( params: GlobalSettingsInput)]
 pub struct SetParams<'info> {
     #[account(mut,
-    constraint = authority.key() == global.global_authority.key() @ ProgramError::InvalidAuthority
+    constraint = authority.key() == global.global_authority.key() @ ProgramError::InvalidGlobalAuthority
     )]
     authority: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [Global::SEED_PREFIX],
+        seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ProgramError::NotInitialized,
         bump,
     )]
@@ -24,7 +24,7 @@ pub struct SetParams<'info> {
 
     #[account()]
     /// CHECK: This is not dangerous because we don't read or write from this account
-    new_fee_recipient: Option<UncheckedAccount<'info>>,
+    new_withdraw_authority: Option<UncheckedAccount<'info>>,
 
     system_program: Program<'info, System>,
 }
@@ -36,6 +36,13 @@ impl SetParams<'_> {
         global.update_authority(GlobalAuthorityInput {
             global_authority: if let Some(new_authority) = ctx.accounts.new_authority.as_ref() {
                 Some(*new_authority.key)
+            } else {
+                None
+            },
+            withdraw_authority: if let Some(new_withdraw_authority) =
+                ctx.accounts.new_withdraw_authority.as_ref()
+            {
+                Some(*new_withdraw_authority.key)
             } else {
                 None
             },

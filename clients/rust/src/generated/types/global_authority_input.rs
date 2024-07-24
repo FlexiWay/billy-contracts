@@ -17,4 +17,5 @@ use solana_program::pubkey::Pubkey;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GlobalAuthorityInput {
     pub global_authority: Option<Pubkey>,
+    pub withdraw_authority: Option<Pubkey>,
 }
