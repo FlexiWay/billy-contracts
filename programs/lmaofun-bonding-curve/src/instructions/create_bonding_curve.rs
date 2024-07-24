@@ -197,7 +197,8 @@ impl CreateBondingCurve<'_> {
             None,
         )?;
 
-        //transfer SOL to fee recipient
+        // transfer SOL to fee recipient
+        // sender is signer, must go through system program
         let fee_to = &ctx.accounts.global;
         let fee_from = &ctx.accounts.creator;
         let fee_amount = ctx.accounts.global.launch_fee_lamports;

@@ -27,7 +27,9 @@ pub struct WithdrawFees<'info> {
 
 impl WithdrawFees<'_> {
     pub fn handler(ctx: Context<WithdrawFees>) -> Result<()> {
-        //transer sol to withdraw authority from global account
+        // transer sol to withdraw authority from global account
+        // sender is PDA, can use lamport utilities
+
         let from = &ctx.accounts.global;
         let to = &ctx.accounts.authority;
 
@@ -37,18 +39,7 @@ impl WithdrawFees<'_> {
 
         from.sub_lamports(amount)?;
         to.add_lamports(amount)?;
-        // let transfer_instruction = system_instruction::transfer(&from.key(), &to.key(), amount);
-        // let signer = ctx.accounts.global.get_signer(&ctx.bumps.global);
-        // let signer_seeds = &[&signer[..]];
-        // anchor_lang::solana_program::program::invoke_signed(
-        //     &transfer_instruction,
-        //     &[
-        //         from.to_account_info(),
-        //         to.to_account_info(),
-        //         ctx.accounts.system_program.to_account_info(),
-        //     ],
-        //     signer_seeds,
-        // )?;
+
         emit_cpi!(WithdrawEvent {
             withdraw_authority: *ctx.accounts.authority.key,
             amount: amount,
