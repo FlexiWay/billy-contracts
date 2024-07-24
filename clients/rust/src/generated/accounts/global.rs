@@ -25,11 +25,6 @@ pub struct Global {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub global_authority: Pubkey,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub fee_recipient: Pubkey,
     pub initial_virtual_token_reserves: u64,
     pub initial_virtual_sol_reserves: u64,
     pub initial_real_token_reserves: u64,
@@ -42,7 +37,7 @@ pub struct Global {
 }
 
 impl Global {
-    pub const LEN: usize = 135;
+    pub const LEN: usize = 103;
 
     /// Prefix values used to generate a PDA for this account.
     ///

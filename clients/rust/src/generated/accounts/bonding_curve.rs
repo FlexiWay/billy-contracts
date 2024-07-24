@@ -22,6 +22,7 @@ pub struct BondingCurve {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub creator: Pubkey,
+    pub initial_virtual_token_reserves: u64,
     pub virtual_sol_reserves: u64,
     pub virtual_token_reserves: u64,
     pub real_sol_reserves: u64,
@@ -31,7 +32,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 81;
+    pub const LEN: usize = 89;
 
     /// Prefix values used to generate a PDA for this account.
     ///

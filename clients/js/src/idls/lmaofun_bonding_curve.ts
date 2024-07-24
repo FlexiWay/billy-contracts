@@ -180,6 +180,10 @@ export type LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
+            "name": "initialVirtualTokenReserves",
+            "type": "u64"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -223,10 +227,6 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "globalAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feeRecipient",
             "type": "publicKey"
           },
           {
@@ -297,12 +297,6 @@ export type LmaofunBondingCurve = {
         "fields": [
           {
             "name": "globalAuthority",
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "feeRecipient",
             "type": {
               "option": "publicKey"
             }
@@ -405,11 +399,6 @@ export type LmaofunBondingCurve = {
     {
       "name": "GlobalUpdateEvent",
       "fields": [
-        {
-          "name": "feeRecipient",
-          "type": "publicKey",
-          "index": false
-        },
         {
           "name": "globalAuthority",
           "type": "publicKey",
@@ -714,6 +703,10 @@ export const IDL: LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
+            "name": "initialVirtualTokenReserves",
+            "type": "u64"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -757,10 +750,6 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "globalAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feeRecipient",
             "type": "publicKey"
           },
           {
@@ -831,12 +820,6 @@ export const IDL: LmaofunBondingCurve = {
         "fields": [
           {
             "name": "globalAuthority",
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "feeRecipient",
             "type": {
               "option": "publicKey"
             }
@@ -939,11 +922,6 @@ export const IDL: LmaofunBondingCurve = {
     {
       "name": "GlobalUpdateEvent",
       "fields": [
-        {
-          "name": "feeRecipient",
-          "type": "publicKey",
-          "index": false
-        },
         {
           "name": "globalAuthority",
           "type": "publicKey",

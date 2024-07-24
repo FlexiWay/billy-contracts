@@ -180,6 +180,10 @@
             "type": "publicKey"
           },
           {
+            "name": "initialVirtualTokenReserves",
+            "type": "u64"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -223,10 +227,6 @@
           },
           {
             "name": "globalAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feeRecipient",
             "type": "publicKey"
           },
           {
@@ -297,12 +297,6 @@
         "fields": [
           {
             "name": "globalAuthority",
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "feeRecipient",
             "type": {
               "option": "publicKey"
             }
@@ -405,11 +399,6 @@
     {
       "name": "GlobalUpdateEvent",
       "fields": [
-        {
-          "name": "feeRecipient",
-          "type": "publicKey",
-          "index": false
-        },
         {
           "name": "globalAuthority",
           "type": "publicKey",
