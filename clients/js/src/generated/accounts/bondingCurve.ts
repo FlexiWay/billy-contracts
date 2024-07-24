@@ -7,7 +7,7 @@
  */
 
 import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, bool, mapSerializer, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, array, bool, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 
   
   export type BondingCurve = Account<BondingCurveAccountData>;
@@ -82,3 +82,32 @@ export function getBondingCurveSize(): number {
   return 49;
 }
 
+export function findBondingCurvePda(
+  context: Pick<Context, 'eddsa' | 'programs'>,
+      seeds: {
+                                      /** The mint of the bonding curve tkn */
+          mint: PublicKey;
+                  }
+  ): Pda {
+  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  return context.eddsa.findPda(programId, [
+                  string({ size: 'variable' }).serialize("bonding-curve"),
+                        publicKeySerializer().serialize(seeds.mint),
+            ]);
+}
+
+export async function fetchBondingCurveFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+      seeds: Parameters<typeof findBondingCurvePda>[1],
+    options?: RpcGetAccountOptions,
+): Promise<BondingCurve> {
+  return fetchBondingCurve(context, findBondingCurvePda(context, seeds), options);
+}
+
+export async function safeFetchBondingCurveFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+      seeds: Parameters<typeof findBondingCurvePda>[1],
+    options?: RpcGetAccountOptions,
+): Promise<BondingCurve | null> {
+  return safeFetchBondingCurve(context, findBondingCurvePda(context, seeds), options);
+}

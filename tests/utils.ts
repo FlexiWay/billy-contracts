@@ -1,19 +1,48 @@
 import { IdlEvent } from "@coral-xyz/anchor/dist/cjs/idl";
 import * as anchor from "@coral-xyz/anchor";
-import { Global, GlobalAccountDataArgs } from "../clients/js/src/generated/accounts/global";
+import {
+  Global,
+  GlobalAccountDataArgs,
+} from "../clients/js/src/generated/accounts/global";
 import { PublicKey } from "@solana/web3.js";
 
-export const assertGlobal = ( global: Global, expected: Partial<GlobalAccountDataArgs>) => {
-  console.log({global})
+export const assertBondingCurve = (
+  bondingCurve: BondingCurve,
+  expected: Partial<BondingCurveAccountDataArgs>
+) => {
+  assert.equal(bondingCurve.virtualSolReserves, expected.virtualSolReserves);
+  assert.equal(
+    bondingCurve.virtualTokenReserves,
+    expected.virtualTokenReserves
+  );
+  assert.equal(bondingCurve.realSolReserves, expected.realSolReserves);
+  assert.equal(bondingCurve.realTokenReserves, expected.realTokenReserves);
+  assert.equal(bondingCurve.tokenTotalSupply, expected.tokenTotalSupply);
+  assert.equal(bondingCurve.complete, expected.complete);
+};
+
+export const assertGlobal = (
+  global: Global,
+  expected: Partial<GlobalAccountDataArgs>
+) => {
   assert.equal(global.initialRealSolReserves, expected.initialRealSolReserves);
-  assert.equal(global.initialRealTokenReserves, expected.initialRealTokenReserves);
-  assert.equal(global.initialVirtualSolReserves, expected.initialVirtualSolReserves);
-  assert.equal(global.initialVirtualTokenReserves, expected.initialVirtualTokenReserves);
+  assert.equal(
+    global.initialRealTokenReserves,
+    expected.initialRealTokenReserves
+  );
+  assert.equal(
+    global.initialVirtualSolReserves,
+    expected.initialVirtualSolReserves
+  );
+  assert.equal(
+    global.initialVirtualTokenReserves,
+    expected.initialVirtualTokenReserves
+  );
   assert.equal(global.initialTokenSupply, expected.initialTokenSupply);
   assert.equal(global.solLaunchThreshold, expected.solLaunchThreshold);
   assert.equal(global.feeBasisPoints, expected.feeBasisPoints);
   assert.equal(global.status, expected.status);
-}
+};
 
 export const advanceBySlots = async (context: any, slots: BigInt) => {
   const currentClock = await context.banksClient.getClock();
@@ -64,8 +93,9 @@ export const expectError = (
 };
 
 import { Clock, ProgramTestContext } from "solana-bankrun";
-import assert from 'assert';
+import assert from "assert";
 import { BN } from "bn.js";
+import { BondingCurve, BondingCurveAccountDataArgs } from "../clients/js/src";
 
 export const fastForward = async (
   context: ProgramTestContext,

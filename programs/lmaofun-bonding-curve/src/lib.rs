@@ -4,9 +4,8 @@ pub mod errors;
 pub mod events;
 pub mod instructions;
 pub mod state;
-use instructions::{initialize::*, set_params::*};
+use instructions::{create_bonding_curve::*, initialize::*, set_params::*};
 use state::global::*;
-
 declare_id!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
 
 #[program]
@@ -19,5 +18,12 @@ pub mod lmaofun_bonding_curve {
     }
     pub fn set_params(ctx: Context<SetParams>, params: GlobalSettingsInput) -> Result<()> {
         SetParams::handler(ctx, params)
+    }
+
+    pub fn create_bonding_curve(
+        ctx: Context<CreateBondingCurve>,
+        params: CreateBondingCurveParams,
+    ) -> Result<()> {
+        CreateBondingCurve::handler(ctx, params)
     }
 }

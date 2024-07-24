@@ -22,6 +22,16 @@ kinobi.update(
     global: {
       seeds: [k.constantPdaSeedNodeFromString("global")],
     },
+    bondingCurve: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("bonding-curve"),
+        k.variablePdaSeedNode(
+          "mint",
+          k.publicKeyTypeNode(),
+          "The mint of the bonding curve tkn"
+        ),
+      ],
+    },
     eventAuthority: {
       seeds: [k.constantPdaSeedNodeFromString("__event_authority")],
     },
@@ -42,7 +52,9 @@ kinobi.accept(
 const idlsTargetDir = path.join(clientDir, "js", "src", "idls");
 fs.cpSync(idlDir, idlsTargetDir, { recursive: true });
 // cp target/types in clients/js/src/idls
-fs.cpSync(path.join(__dirname, "..", "target", "types"), idlsTargetDir, { recursive: true });
+fs.cpSync(path.join(__dirname, "..", "target", "types"), idlsTargetDir, {
+  recursive: true,
+});
 
 // Render Rust.
 const crateDir = path.join(clientDir, "rust");

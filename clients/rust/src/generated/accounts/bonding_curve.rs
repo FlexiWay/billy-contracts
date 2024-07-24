@@ -9,6 +9,7 @@
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::pubkey::Pubkey;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
@@ -26,6 +27,31 @@ pub struct BondingCurve {
 
 impl BondingCurve {
     pub const LEN: usize = 49;
+
+    /// Prefix values used to generate a PDA for this account.
+    ///
+    /// Values are positional and appear in the following order:
+    ///
+    ///   0. `BondingCurve::PREFIX`
+    ///   1. mint (`Pubkey`)
+    pub const PREFIX: &'static [u8] = "bonding-curve".as_bytes();
+
+    pub fn create_pda(
+        mint: Pubkey,
+        bump: u8,
+    ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
+        solana_program::pubkey::Pubkey::create_program_address(
+            &["bonding-curve".as_bytes(), mint.as_ref(), &[bump]],
+            &crate::LMAOFUN_BONDING_CURVE_ID,
+        )
+    }
+
+    pub fn find_pda(mint: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
+        solana_program::pubkey::Pubkey::find_program_address(
+            &["bonding-curve".as_bytes(), mint.as_ref()],
+            &crate::LMAOFUN_BONDING_CURVE_ID,
+        )
+    }
 
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {

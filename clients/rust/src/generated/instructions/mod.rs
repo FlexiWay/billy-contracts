@@ -5,8 +5,10 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#create_bonding_curve;
 pub(crate) mod r#initialize;
 pub(crate) mod r#set_params;
 
+pub use self::r#create_bonding_curve::*;
 pub use self::r#initialize::*;
 pub use self::r#set_params::*;
