@@ -40,7 +40,7 @@ export const assertGlobal = (
   );
   assert.equal(global.initialTokenSupply, expected.initialTokenSupply);
   assert.equal(global.solLaunchThreshold, expected.solLaunchThreshold);
-  assert.equal(global.feeBasisPoints, expected.feeBasisPoints);
+  assert.equal(global.tradeFeeBps, expected.tradeFeeBps);
   assert.equal(global.status, expected.status);
 };
 

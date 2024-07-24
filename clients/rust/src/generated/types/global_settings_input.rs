@@ -22,7 +22,8 @@ pub struct GlobalSettingsInput {
     pub initial_virtual_sol_reserves: Option<u64>,
     pub initial_virtual_token_reserves: Option<u64>,
     pub sol_launch_threshold: Option<u64>,
-    pub fee_basis_points: Option<u32>,
+    pub trade_fee_bps: Option<u32>,
     pub created_mint_decimals: Option<u8>,
+    pub launch_fee_lamports: Option<u64>,
     pub status: Option<ProgramStatus>,
 }

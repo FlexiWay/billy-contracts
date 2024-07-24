@@ -13,7 +13,7 @@ import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners
 // Accounts.
 export type CreateBondingCurveInstructionAccounts = {
     mint: Signer;
-    authority?: Signer;
+    creator: Signer;
     bondingCurve: PublicKey | Pda;
     bondingCurveTokenAccount: PublicKey | Pda;
     global: PublicKey | Pda;
@@ -46,7 +46,7 @@ export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: stri
   
 // Instruction.
 export function createBondingCurve(
-  context: Pick<Context, "identity" | "programs">,
+  context: Pick<Context, "programs">,
                         input: CreateBondingCurveInstructionAccounts & CreateBondingCurveInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
@@ -55,7 +55,7 @@ export function createBondingCurve(
   // Accounts.
   const resolvedAccounts = {
           mint: { index: 0, isWritable: true as boolean, value: input.mint ?? null },
-          authority: { index: 1, isWritable: true as boolean, value: input.authority ?? null },
+          creator: { index: 1, isWritable: true as boolean, value: input.creator ?? null },
           bondingCurve: { index: 2, isWritable: true as boolean, value: input.bondingCurve ?? null },
           bondingCurveTokenAccount: { index: 3, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
           global: { index: 4, isWritable: false as boolean, value: input.global ?? null },
@@ -73,10 +73,7 @@ export function createBondingCurve(
     const resolvedArgs: CreateBondingCurveInstructionArgs = { ...input };
   
     // Default values.
-  if (!resolvedAccounts.authority.value) {
-        resolvedAccounts.authority.value = context.identity;
-      }
-      if (!resolvedAccounts.systemProgram.value) {
+  if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
 resolvedAccounts.systemProgram.isWritable = false
       }

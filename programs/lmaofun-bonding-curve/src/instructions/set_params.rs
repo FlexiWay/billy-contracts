@@ -39,12 +39,6 @@ impl SetParams<'_> {
             } else {
                 None
             },
-            fee_recipient: if let Some(new_fee_recipient) = ctx.accounts.new_fee_recipient.as_ref()
-            {
-                Some(*new_fee_recipient.key)
-            } else {
-                None
-            },
         });
         global.update_settings(params);
 

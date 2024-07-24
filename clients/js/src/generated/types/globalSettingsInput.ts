@@ -11,13 +11,13 @@ import { Serializer, option, struct, u32, u64, u8 } from '@metaplex-foundation/u
 import { ProgramStatus, ProgramStatusArgs, getProgramStatusSerializer } from '.';
 
 
-export type GlobalSettingsInput = { initialTokenSupply: Option<bigint>; initialRealSolReserves: Option<bigint>; initialRealTokenReserves: Option<bigint>; initialVirtualSolReserves: Option<bigint>; initialVirtualTokenReserves: Option<bigint>; solLaunchThreshold: Option<bigint>; feeBasisPoints: Option<number>; createdMintDecimals: Option<number>; status: Option<ProgramStatus>;  };
+export type GlobalSettingsInput = { initialTokenSupply: Option<bigint>; initialRealSolReserves: Option<bigint>; initialRealTokenReserves: Option<bigint>; initialVirtualSolReserves: Option<bigint>; initialVirtualTokenReserves: Option<bigint>; solLaunchThreshold: Option<bigint>; tradeFeeBps: Option<number>; createdMintDecimals: Option<number>; launchFeeLamports: Option<bigint>; status: Option<ProgramStatus>;  };
 
-export type GlobalSettingsInputArgs = { initialTokenSupply: OptionOrNullable<number | bigint>; initialRealSolReserves: OptionOrNullable<number | bigint>; initialRealTokenReserves: OptionOrNullable<number | bigint>; initialVirtualSolReserves: OptionOrNullable<number | bigint>; initialVirtualTokenReserves: OptionOrNullable<number | bigint>; solLaunchThreshold: OptionOrNullable<number | bigint>; feeBasisPoints: OptionOrNullable<number>; createdMintDecimals: OptionOrNullable<number>; status: OptionOrNullable<ProgramStatusArgs>;  };
+export type GlobalSettingsInputArgs = { initialTokenSupply: OptionOrNullable<number | bigint>; initialRealSolReserves: OptionOrNullable<number | bigint>; initialRealTokenReserves: OptionOrNullable<number | bigint>; initialVirtualSolReserves: OptionOrNullable<number | bigint>; initialVirtualTokenReserves: OptionOrNullable<number | bigint>; solLaunchThreshold: OptionOrNullable<number | bigint>; tradeFeeBps: OptionOrNullable<number>; createdMintDecimals: OptionOrNullable<number>; launchFeeLamports: OptionOrNullable<number | bigint>; status: OptionOrNullable<ProgramStatusArgs>;  };
 
 
 export function getGlobalSettingsInputSerializer(): Serializer<GlobalSettingsInputArgs, GlobalSettingsInput> {
-  return struct<GlobalSettingsInput>([['initialTokenSupply', option(u64())], ['initialRealSolReserves', option(u64())], ['initialRealTokenReserves', option(u64())], ['initialVirtualSolReserves', option(u64())], ['initialVirtualTokenReserves', option(u64())], ['solLaunchThreshold', option(u64())], ['feeBasisPoints', option(u32())], ['createdMintDecimals', option(u8())], ['status', option(getProgramStatusSerializer())]], { description: 'GlobalSettingsInput' }) as Serializer<GlobalSettingsInputArgs, GlobalSettingsInput>;
+  return struct<GlobalSettingsInput>([['initialTokenSupply', option(u64())], ['initialRealSolReserves', option(u64())], ['initialRealTokenReserves', option(u64())], ['initialVirtualSolReserves', option(u64())], ['initialVirtualTokenReserves', option(u64())], ['solLaunchThreshold', option(u64())], ['tradeFeeBps', option(u32())], ['createdMintDecimals', option(u8())], ['launchFeeLamports', option(u64())], ['status', option(getProgramStatusSerializer())]], { description: 'GlobalSettingsInput' }) as Serializer<GlobalSettingsInputArgs, GlobalSettingsInput>;
 }
 
 

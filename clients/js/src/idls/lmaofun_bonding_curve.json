@@ -99,7 +99,7 @@
           "isSigner": true
         },
         {
-          "name": "authority",
+          "name": "creator",
           "isMut": true,
           "isSigner": true
         },
@@ -176,6 +176,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -250,8 +254,12 @@
             "type": "u64"
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": "u32"
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": "u64"
           },
           {
             "name": "createdMintDecimals",
@@ -344,7 +352,7 @@
             }
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": {
               "option": "u32"
             }
@@ -353,6 +361,12 @@
             "name": "createdMintDecimals",
             "type": {
               "option": "u8"
+            }
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": {
+              "option": "u64"
             }
           },
           {
@@ -422,8 +436,13 @@
           "index": false
         },
         {
-          "name": "feeBasisPoints",
+          "name": "tradeFeeBps",
           "type": "u32",
+          "index": false
+        },
+        {
+          "name": "launchFeeLamports",
+          "type": "u64",
           "index": false
         },
         {
@@ -504,6 +523,11 @@
       "code": 6003,
       "name": "ProgramNotRunning",
       "msg": "Not in Running State"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidArgument",
+      "msg": "Invalid Argument"
     }
   ],
   "metadata": {

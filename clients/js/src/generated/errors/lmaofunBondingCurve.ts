@@ -64,6 +64,19 @@ export class ProgramNotRunningError extends ProgramError {
 codeToErrorMap.set(0x1773, ProgramNotRunningError);
 nameToErrorMap.set('ProgramNotRunning', ProgramNotRunningError);
 
+/** InvalidArgument: Invalid Argument */
+export class InvalidArgumentError extends ProgramError {
+  override readonly name: string = 'InvalidArgument';
+
+  readonly code: number = 0x1774; // 6004
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Argument', program, cause);
+  }
+}
+codeToErrorMap.set(0x1774, InvalidArgumentError);
+nameToErrorMap.set('InvalidArgument', InvalidArgumentError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

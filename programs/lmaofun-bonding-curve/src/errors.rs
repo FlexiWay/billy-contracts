@@ -10,4 +10,7 @@ pub enum ProgramError {
     InvalidAuthority,
     #[msg("Not in Running State")]
     ProgramNotRunning,
+
+    #[msg("Invalid Argument")]
+    InvalidArgument,
 }

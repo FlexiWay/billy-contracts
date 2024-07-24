@@ -36,12 +36,13 @@ pub struct Global {
     pub initial_real_sol_reserves: u64,
     pub initial_token_supply: u64,
     pub sol_launch_threshold: u64,
-    pub fee_basis_points: u32,
+    pub trade_fee_bps: u32,
+    pub launch_fee_lamports: u64,
     pub created_mint_decimals: u8,
 }
 
 impl Global {
-    pub const LEN: usize = 127;
+    pub const LEN: usize = 135;
 
     /// Prefix values used to generate a PDA for this account.
     ///

@@ -22,6 +22,9 @@ pub enum LmaofunBondingCurveError {
     /// 6003 (0x1773) - Not in Running State
     #[error("Not in Running State")]
     ProgramNotRunning,
+    /// 6004 (0x1774) - Invalid Argument
+    #[error("Invalid Argument")]
+    InvalidArgument,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

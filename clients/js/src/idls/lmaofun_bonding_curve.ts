@@ -99,7 +99,7 @@ export type LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "authority",
+          "name": "creator",
           "isMut": true,
           "isSigner": true
         },
@@ -176,6 +176,10 @@ export type LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -250,8 +254,12 @@ export type LmaofunBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": "u32"
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": "u64"
           },
           {
             "name": "createdMintDecimals",
@@ -344,7 +352,7 @@ export type LmaofunBondingCurve = {
             }
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": {
               "option": "u32"
             }
@@ -353,6 +361,12 @@ export type LmaofunBondingCurve = {
             "name": "createdMintDecimals",
             "type": {
               "option": "u8"
+            }
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": {
+              "option": "u64"
             }
           },
           {
@@ -422,8 +436,13 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "feeBasisPoints",
+          "name": "tradeFeeBps",
           "type": "u32",
+          "index": false
+        },
+        {
+          "name": "launchFeeLamports",
+          "type": "u64",
           "index": false
         },
         {
@@ -504,6 +523,11 @@ export type LmaofunBondingCurve = {
       "code": 6003,
       "name": "ProgramNotRunning",
       "msg": "Not in Running State"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidArgument",
+      "msg": "Invalid Argument"
     }
   ]
 };
@@ -609,7 +633,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "authority",
+          "name": "creator",
           "isMut": true,
           "isSigner": true
         },
@@ -686,6 +710,10 @@ export const IDL: LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualSolReserves",
             "type": "u64"
           },
@@ -760,8 +788,12 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": "u32"
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": "u64"
           },
           {
             "name": "createdMintDecimals",
@@ -854,7 +886,7 @@ export const IDL: LmaofunBondingCurve = {
             }
           },
           {
-            "name": "feeBasisPoints",
+            "name": "tradeFeeBps",
             "type": {
               "option": "u32"
             }
@@ -863,6 +895,12 @@ export const IDL: LmaofunBondingCurve = {
             "name": "createdMintDecimals",
             "type": {
               "option": "u8"
+            }
+          },
+          {
+            "name": "launchFeeLamports",
+            "type": {
+              "option": "u64"
             }
           },
           {
@@ -932,8 +970,13 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "feeBasisPoints",
+          "name": "tradeFeeBps",
           "type": "u32",
+          "index": false
+        },
+        {
+          "name": "launchFeeLamports",
+          "type": "u64",
           "index": false
         },
         {
@@ -1014,6 +1057,11 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6003,
       "name": "ProgramNotRunning",
       "msg": "Not in Running State"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidArgument",
+      "msg": "Invalid Argument"
     }
   ]
 };

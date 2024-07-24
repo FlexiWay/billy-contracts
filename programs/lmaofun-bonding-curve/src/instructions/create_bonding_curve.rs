@@ -1,4 +1,9 @@
-use anchor_lang::prelude::*;
+use anchor_lang::solana_program::system_instruction;
+use anchor_lang::system_program::transfer;
+use anchor_lang::{
+    prelude::*,
+    solana_program::system_program::{self, *},
+};
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{
@@ -10,6 +15,7 @@ use anchor_spl::{
     },
 };
 
+use crate::state::global;
 use crate::{
     errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,
@@ -28,7 +34,7 @@ pub struct CreateBondingCurveParams {
 pub struct CreateBondingCurve<'info> {
     #[account(
         init,
-        payer = authority,
+        payer = creator,
         mint::decimals = global.created_mint_decimals,
         mint::authority = global,
         mint::freeze_authority = global
@@ -36,11 +42,11 @@ pub struct CreateBondingCurve<'info> {
     mint: Account<'info, Mint>,
 
     #[account(mut)]
-    authority: Signer<'info>,
+    creator: Signer<'info>,
 
     #[account(
         init,
-        payer = authority,
+        payer = creator,
         seeds = [BondingCurve::SEED_PREFIX, mint.to_account_info().key.as_ref()],
         bump,
         space = 8 + BondingCurve::INIT_SPACE,
@@ -49,7 +55,7 @@ pub struct CreateBondingCurve<'info> {
 
     #[account(
         init_if_needed,
-        payer = authority,
+        payer = creator,
         associated_token::mint = mint,
         associated_token::authority = bonding_curve,
     )]
@@ -93,7 +99,7 @@ impl CreateBondingCurve<'_> {
         params: CreateBondingCurveParams,
     ) -> Result<()> {
         let CreateBondingCurveParams { name, symbol, uri } = params;
-        let creator_info = ctx.accounts.authority.to_account_info();
+        let creator_info = ctx.accounts.creator.to_account_info();
         let mint_info = ctx.accounts.mint.to_account_info();
         let mint_authority_info = ctx.accounts.global.to_account_info();
 
@@ -181,17 +187,35 @@ impl CreateBondingCurve<'_> {
             None,
         )?;
 
+        //transfer SOL to fee recipient
+        let fee_to = &ctx.accounts.global;
+        let fee_from = &ctx.accounts.creator;
+        let fee_amount = ctx.accounts.global.launch_fee_lamports;
+
+        let transfer_instruction =
+            system_instruction::transfer(&fee_from.key(), &fee_to.key(), fee_amount);
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                fee_from.to_account_info(),
+                fee_to.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+
         let bonding_curve = &mut ctx
             .accounts
             .bonding_curve
-            .new_from_global(&ctx.accounts.global);
+            .new_from_global(&ctx.accounts.global, ctx.accounts.creator.key());
 
         emit_cpi!(CreateEvent {
             name,
             symbol,
             uri,
             mint: *ctx.accounts.mint.to_account_info().key,
-            creator: *ctx.accounts.authority.to_account_info().key,
+            creator: *ctx.accounts.creator.to_account_info().key,
             virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
             virtual_token_reserves: bonding_curve.virtual_token_reserves,
             token_total_supply: bonding_curve.token_total_supply,

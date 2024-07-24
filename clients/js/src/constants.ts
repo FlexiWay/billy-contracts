@@ -15,7 +15,8 @@ export const INIT_DEFAULTS={
     initialVirtualTokenReserves: 1_073 * 1_000_000 * DECIMALS_MULTIPLIER,
     initialTokenSupply:DEFAULT_TOKEN_SUPPLY,
     solLaunchThreshold: 100*LAMPORTS_PER_SOL,
-    feeBasisPoints: 0,
+    tradeFeeBps: 100,
+    launchFeeLamports: 0.5*LAMPORTS_PER_SOL,
     createdMintDecimals: TOKEN_DECIMALS,
 
     status: ProgramStatus.Running,
@@ -28,7 +29,8 @@ export const INIT_DEFAULTS_ANCHOR={
     initialVirtualTokenReserves: new BN(1_073 * 1_000_000 * DECIMALS_MULTIPLIER),
     initialTokenSupply:new BN(DEFAULT_TOKEN_SUPPLY),
     solLaunchThreshold: new BN(100*LAMPORTS_PER_SOL),
-    feeBasisPoints: 0,
+    tradeFeeBps: 100,
+    launchFeeLamports: new BN(0.5*LAMPORTS_PER_SOL),
     createdMintDecimals: TOKEN_DECIMALS,
 
     status: ProgramStatus.Running,

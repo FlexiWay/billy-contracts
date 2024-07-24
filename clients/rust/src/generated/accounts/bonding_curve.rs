@@ -17,6 +17,11 @@ use solana_program::pubkey::Pubkey;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BondingCurve {
     pub discriminator: [u8; 8],
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub creator: Pubkey,
     pub virtual_sol_reserves: u64,
     pub virtual_token_reserves: u64,
     pub real_sol_reserves: u64,
@@ -26,7 +31,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 49;
+    pub const LEN: usize = 81;
 
     /// Prefix values used to generate a PDA for this account.
     ///

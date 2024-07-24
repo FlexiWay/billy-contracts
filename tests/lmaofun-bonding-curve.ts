@@ -87,6 +87,7 @@ let creator = generateSigner(umi);
 
 amman.addr.addLabel("master", keypair.publicKey);
 amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
+amman.addr.addLabel("creator", creator.publicKey);
 
 describe("lmaofun-bonding", () => {
   const bondingCurveProgram = createLmaofunBondingCurveProgram();
@@ -183,19 +184,25 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
     });
 
-    const txBuilder = createBondingCurve(umi, {
-      global: globalPda[0],
-      authority: umi.identity,
-      mint: simpleMintKp,
+    const mintMeta = {
       name: "simpleMint",
       symbol: "simpleMint",
       uri: "https://www.simpleMint.com",
+    };
+
+    const txBuilder = createBondingCurve(umi, {
+      global: globalPda[0],
+      creator: createSignerFromKeypair(umi, creator),
+      mint: simpleMintKp,
 
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       metadata: metadataPda[0],
-      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+
+      ...mintMeta,
       ...evtAuthorityAccs,
+
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
     });
     const txRes = await txBuilder.sendAndConfirm(umi);
     const events = await getTxEventsFromTxBuilderResponse(
@@ -230,7 +237,7 @@ describe("lmaofun-bonding", () => {
   //         initialVirtualSolReserves:none(),
   //         initialVirtualTokenReserves:none(),
   //         solLaunchThreshold:none(),
-  //         feeBasisPoints:none(),
+  //         tradeFeeBps:none(),
   //         createdMintDecimals:none(),
 
   //         status: ProgramStatus.SwapOnly,
@@ -261,7 +268,7 @@ describe("lmaofun-bonding", () => {
   //       initialVirtualSolReserves:none(),
   //       initialVirtualTokenReserves:none(),
   //       solLaunchThreshold:none(),
-  //       feeBasisPoints:none(),
+  //       tradeFeeBps:none(),
   //       createdMintDecimals:none(),
 
   //       status: ProgramStatus.Running,

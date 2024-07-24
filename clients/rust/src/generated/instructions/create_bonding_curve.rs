@@ -14,7 +14,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct CreateBondingCurve {
     pub mint: solana_program::pubkey::Pubkey,
 
-    pub authority: solana_program::pubkey::Pubkey,
+    pub creator: solana_program::pubkey::Pubkey,
 
     pub bonding_curve: solana_program::pubkey::Pubkey,
 
@@ -57,7 +57,7 @@ impl CreateBondingCurve {
             self.mint, true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.authority,
+            self.creator,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -147,7 +147,7 @@ pub struct CreateBondingCurveInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` mint
-///   1. `[writable, signer]` authority
+///   1. `[writable, signer]` creator
 ///   2. `[writable]` bonding_curve
 ///   3. `[writable]` bonding_curve_token_account
 ///   4. `[]` global
@@ -162,7 +162,7 @@ pub struct CreateBondingCurveInstructionArgs {
 #[derive(Default)]
 pub struct CreateBondingCurveBuilder {
     mint: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
+    creator: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve_token_account: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
@@ -190,8 +190,8 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn creator(&mut self, creator: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.creator = Some(creator);
         self
     }
     #[inline(always)]
@@ -303,7 +303,7 @@ impl CreateBondingCurveBuilder {
         let accounts =
             CreateBondingCurve {
                 mint: self.mint.expect("mint is not set"),
-                authority: self.authority.expect("authority is not set"),
+                creator: self.creator.expect("creator is not set"),
                 bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
                 bonding_curve_token_account: self
                     .bonding_curve_token_account
@@ -342,7 +342,7 @@ impl CreateBondingCurveBuilder {
 pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -374,7 +374,7 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -410,7 +410,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         Self {
             __program: program,
             mint: accounts.mint,
-            authority: accounts.authority,
+            creator: accounts.creator,
             bonding_curve: accounts.bonding_curve,
             bonding_curve_token_account: accounts.bonding_curve_token_account,
             global: accounts.global,
@@ -464,7 +464,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.authority.key,
+            *self.creator.key,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -532,7 +532,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(13 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.mint.clone());
-        account_infos.push(self.authority.clone());
+        account_infos.push(self.creator.clone());
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve_token_account.clone());
         account_infos.push(self.global.clone());
@@ -561,7 +561,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` mint
-///   1. `[writable, signer]` authority
+///   1. `[writable, signer]` creator
 ///   2. `[writable]` bonding_curve
 ///   3. `[writable]` bonding_curve_token_account
 ///   4. `[]` global
@@ -582,7 +582,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         let instruction = Box::new(CreateBondingCurveCpiBuilderInstruction {
             __program: program,
             mint: None,
-            authority: None,
+            creator: None,
             bonding_curve: None,
             bonding_curve_token_account: None,
             global: None,
@@ -607,11 +607,11 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn authority(
+    pub fn creator(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        creator: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
+        self.instruction.creator = Some(creator);
         self
     }
     #[inline(always)]
@@ -765,7 +765,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
 
             mint: self.instruction.mint.expect("mint is not set"),
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            creator: self.instruction.creator.expect("creator is not set"),
 
             bonding_curve: self
                 .instruction
@@ -821,7 +821,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
 struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
