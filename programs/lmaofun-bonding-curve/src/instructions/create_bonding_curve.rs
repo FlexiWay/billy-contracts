@@ -38,12 +38,6 @@ pub struct CreateBondingCurve<'info> {
     #[account(mut)]
     authority: Signer<'info>,
 
-    // /// CHECK: Using seed to validate mint_authority account
-    // #[account(
-    //     seeds=[b"mint-authority"],
-    //     bump,
-    // )]
-    // mint_authority: AccountInfo<'info>,
     #[account(
         init,
         payer = authority,
