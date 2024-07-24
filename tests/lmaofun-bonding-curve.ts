@@ -296,7 +296,6 @@ describe("lmaofun-bonding", () => {
     const globalBalanceIntPost = parseInt(
       globalBalancePost.basisPoints.toString()
     );
-    console.log({ globalBalancePost, globalBalanceIntPost, startingBalance });
     assert(globalBalanceIntPost == startingBalance);
   });
 
