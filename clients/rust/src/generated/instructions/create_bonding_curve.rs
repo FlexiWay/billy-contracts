@@ -34,6 +34,8 @@ pub struct CreateBondingCurve {
 
     pub rent: solana_program::pubkey::Pubkey,
 
+    pub clock: solana_program::pubkey::Pubkey,
+
     pub event_authority: solana_program::pubkey::Pubkey,
 
     pub program: solana_program::pubkey::Pubkey,
@@ -52,7 +54,7 @@ impl CreateBondingCurve {
         args: CreateBondingCurveInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(14 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.mint, true,
         ));
@@ -94,6 +96,9 @@ impl CreateBondingCurve {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.rent, false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.clock, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.event_authority,
@@ -140,6 +145,7 @@ pub struct CreateBondingCurveInstructionArgs {
     pub name: String,
     pub symbol: String,
     pub uri: String,
+    pub start_time: Option<i64>,
 }
 
 /// Instruction builder for `CreateBondingCurve`.
@@ -157,8 +163,9 @@ pub struct CreateBondingCurveInstructionArgs {
 ///   8. `[]` associated_token_program
 ///   9. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
 ///   10. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
-///   11. `[]` event_authority
-///   12. `[]` program
+///   11. `[]` clock
+///   12. `[]` event_authority
+///   13. `[]` program
 #[derive(Default)]
 pub struct CreateBondingCurveBuilder {
     mint: Option<solana_program::pubkey::Pubkey>,
@@ -172,11 +179,13 @@ pub struct CreateBondingCurveBuilder {
     associated_token_program: Option<solana_program::pubkey::Pubkey>,
     token_metadata_program: Option<solana_program::pubkey::Pubkey>,
     rent: Option<solana_program::pubkey::Pubkey>,
+    clock: Option<solana_program::pubkey::Pubkey>,
     event_authority: Option<solana_program::pubkey::Pubkey>,
     program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
+    start_time: Option<i64>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -253,6 +262,11 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
+    pub fn clock(&mut self, clock: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.clock = Some(clock);
+        self
+    }
+    #[inline(always)]
     pub fn event_authority(
         &mut self,
         event_authority: solana_program::pubkey::Pubkey,
@@ -278,6 +292,12 @@ impl CreateBondingCurveBuilder {
     #[inline(always)]
     pub fn uri(&mut self, uri: String) -> &mut Self {
         self.uri = Some(uri);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn start_time(&mut self, start_time: i64) -> &mut Self {
+        self.start_time = Some(start_time);
         self
     }
     /// Add an aditional account to the instruction.
@@ -325,6 +345,7 @@ impl CreateBondingCurveBuilder {
                 rent: self.rent.unwrap_or(solana_program::pubkey!(
                     "SysvarRent111111111111111111111111111111111"
                 )),
+                clock: self.clock.expect("clock is not set"),
                 event_authority: self.event_authority.expect("event_authority is not set"),
                 program: self.program.expect("program is not set"),
             };
@@ -332,6 +353,7 @@ impl CreateBondingCurveBuilder {
             name: self.name.clone().expect("name is not set"),
             symbol: self.symbol.clone().expect("symbol is not set"),
             uri: self.uri.clone().expect("uri is not set"),
+            start_time: self.start_time.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -361,6 +383,8 @@ pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
     pub token_metadata_program: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub rent: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -394,6 +418,8 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
 
     pub rent: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -420,6 +446,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             associated_token_program: accounts.associated_token_program,
             token_metadata_program: accounts.token_metadata_program,
             rent: accounts.rent,
+            clock: accounts.clock,
             event_authority: accounts.event_authority,
             program: accounts.program,
             __args: args,
@@ -458,7 +485,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(14 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.mint.key,
             true,
@@ -504,6 +531,10 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.clock.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.event_authority.key,
             false,
         ));
@@ -529,7 +560,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(13 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(14 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.creator.clone());
@@ -542,6 +573,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         account_infos.push(self.associated_token_program.clone());
         account_infos.push(self.token_metadata_program.clone());
         account_infos.push(self.rent.clone());
+        account_infos.push(self.clock.clone());
         account_infos.push(self.event_authority.clone());
         account_infos.push(self.program.clone());
         remaining_accounts
@@ -571,8 +603,9 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
 ///   8. `[]` associated_token_program
 ///   9. `[]` token_metadata_program
 ///   10. `[]` rent
-///   11. `[]` event_authority
-///   12. `[]` program
+///   11. `[]` clock
+///   12. `[]` event_authority
+///   13. `[]` program
 pub struct CreateBondingCurveCpiBuilder<'a, 'b> {
     instruction: Box<CreateBondingCurveCpiBuilderInstruction<'a, 'b>>,
 }
@@ -592,11 +625,13 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             associated_token_program: None,
             token_metadata_program: None,
             rent: None,
+            clock: None,
             event_authority: None,
             program: None,
             name: None,
             symbol: None,
             uri: None,
+            start_time: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -684,6 +719,11 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
+    pub fn clock(&mut self, clock: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.clock = Some(clock);
+        self
+    }
+    #[inline(always)]
     pub fn event_authority(
         &mut self,
         event_authority: &'b solana_program::account_info::AccountInfo<'a>,
@@ -712,6 +752,12 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn uri(&mut self, uri: String) -> &mut Self {
         self.instruction.uri = Some(uri);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn start_time(&mut self, start_time: i64) -> &mut Self {
+        self.instruction.start_time = Some(start_time);
         self
     }
     /// Add an additional account to the instruction.
@@ -759,6 +805,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             name: self.instruction.name.clone().expect("name is not set"),
             symbol: self.instruction.symbol.clone().expect("symbol is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
+            start_time: self.instruction.start_time.clone(),
         };
         let instruction = CreateBondingCurveCpi {
             __program: self.instruction.__program,
@@ -803,6 +850,8 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
 
             rent: self.instruction.rent.expect("rent is not set"),
 
+            clock: self.instruction.clock.expect("clock is not set"),
+
             event_authority: self
                 .instruction
                 .event_authority
@@ -831,11 +880,13 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     associated_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     token_metadata_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     rent: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    clock: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
+    start_time: Option<i64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

@@ -7,18 +7,18 @@
  */
 
 import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, bool, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, array, bool, i64, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 
   
   export type BondingCurve = Account<BondingCurveAccountData>;
 
-  export type BondingCurveAccountData = { discriminator: Array<number>; creator: PublicKey; initialVirtualTokenReserves: bigint; virtualSolReserves: bigint; virtualTokenReserves: bigint; realSolReserves: bigint; realTokenReserves: bigint; tokenTotalSupply: bigint; complete: boolean;  };
+  export type BondingCurveAccountData = { discriminator: Array<number>; creator: PublicKey; initialVirtualTokenReserves: bigint; virtualSolReserves: bigint; virtualTokenReserves: bigint; realSolReserves: bigint; realTokenReserves: bigint; tokenTotalSupply: bigint; startTime: bigint; complete: boolean;  };
 
-export type BondingCurveAccountDataArgs = { creator: PublicKey; initialVirtualTokenReserves: number | bigint; virtualSolReserves: number | bigint; virtualTokenReserves: number | bigint; realSolReserves: number | bigint; realTokenReserves: number | bigint; tokenTotalSupply: number | bigint; complete: boolean;  };
+export type BondingCurveAccountDataArgs = { creator: PublicKey; initialVirtualTokenReserves: number | bigint; virtualSolReserves: number | bigint; virtualTokenReserves: number | bigint; realSolReserves: number | bigint; realTokenReserves: number | bigint; tokenTotalSupply: number | bigint; startTime: number | bigint; complete: boolean;  };
 
 
   export function getBondingCurveAccountDataSerializer(): Serializer<BondingCurveAccountDataArgs, BondingCurveAccountData> {
-  return mapSerializer<BondingCurveAccountDataArgs, any, BondingCurveAccountData>(struct<BondingCurveAccountData>([['discriminator', array(u8(), { size: 8 })], ['creator', publicKeySerializer()], ['initialVirtualTokenReserves', u64()], ['virtualSolReserves', u64()], ['virtualTokenReserves', u64()], ['realSolReserves', u64()], ['realTokenReserves', u64()], ['tokenTotalSupply', u64()], ['complete', bool()]], { description: 'BondingCurveAccountData' }), (value) => ({ ...value, discriminator: [23, 183, 248, 55, 96, 216, 172, 96] }) ) as Serializer<BondingCurveAccountDataArgs, BondingCurveAccountData>;
+  return mapSerializer<BondingCurveAccountDataArgs, any, BondingCurveAccountData>(struct<BondingCurveAccountData>([['discriminator', array(u8(), { size: 8 })], ['creator', publicKeySerializer()], ['initialVirtualTokenReserves', u64()], ['virtualSolReserves', u64()], ['virtualTokenReserves', u64()], ['realSolReserves', u64()], ['realTokenReserves', u64()], ['tokenTotalSupply', u64()], ['startTime', i64()], ['complete', bool()]], { description: 'BondingCurveAccountData' }), (value) => ({ ...value, discriminator: [23, 183, 248, 55, 96, 216, 172, 96] }) ) as Serializer<BondingCurveAccountDataArgs, BondingCurveAccountData>;
 }
 
 
@@ -73,13 +73,13 @@ export async function safeFetchAllBondingCurve(
 export function getBondingCurveGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'creator': PublicKey, 'initialVirtualTokenReserves': number | bigint, 'virtualSolReserves': number | bigint, 'virtualTokenReserves': number | bigint, 'realSolReserves': number | bigint, 'realTokenReserves': number | bigint, 'tokenTotalSupply': number | bigint, 'complete': boolean }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'creator': [8, publicKeySerializer()], 'initialVirtualTokenReserves': [40, u64()], 'virtualSolReserves': [48, u64()], 'virtualTokenReserves': [56, u64()], 'realSolReserves': [64, u64()], 'realTokenReserves': [72, u64()], 'tokenTotalSupply': [80, u64()], 'complete': [88, bool()] })
+    .registerFields<{ 'discriminator': Array<number>, 'creator': PublicKey, 'initialVirtualTokenReserves': number | bigint, 'virtualSolReserves': number | bigint, 'virtualTokenReserves': number | bigint, 'realSolReserves': number | bigint, 'realTokenReserves': number | bigint, 'tokenTotalSupply': number | bigint, 'startTime': number | bigint, 'complete': boolean }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'creator': [8, publicKeySerializer()], 'initialVirtualTokenReserves': [40, u64()], 'virtualSolReserves': [48, u64()], 'virtualTokenReserves': [56, u64()], 'realSolReserves': [64, u64()], 'realTokenReserves': [72, u64()], 'tokenTotalSupply': [80, u64()], 'startTime': [88, i64()], 'complete': [96, bool()] })
     .deserializeUsing<BondingCurve>((account) => deserializeBondingCurve(account))      .whereField('discriminator', [23, 183, 248, 55, 96, 216, 172, 96])
     ;
 }
 
 export function getBondingCurveSize(): number {
-  return 89;
+  return 97;
 }
 
 export function findBondingCurvePda(

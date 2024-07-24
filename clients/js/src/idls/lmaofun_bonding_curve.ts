@@ -149,6 +149,11 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "eventAuthority",
           "isMut": false,
           "isSigner": false
@@ -202,6 +207,10 @@ export type LmaofunBondingCurve = {
           {
             "name": "tokenTotalSupply",
             "type": "u64"
+          },
+          {
+            "name": "startTime",
+            "type": "i64"
           },
           {
             "name": "complete",
@@ -286,6 +295,12 @@ export type LmaofunBondingCurve = {
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "startTime",
+            "type": {
+              "option": "i64"
+            }
           }
         ]
       }
@@ -672,6 +687,11 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "eventAuthority",
           "isMut": false,
           "isSigner": false
@@ -725,6 +745,10 @@ export const IDL: LmaofunBondingCurve = {
           {
             "name": "tokenTotalSupply",
             "type": "u64"
+          },
+          {
+            "name": "startTime",
+            "type": "i64"
           },
           {
             "name": "complete",
@@ -809,6 +833,12 @@ export const IDL: LmaofunBondingCurve = {
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "startTime",
+            "type": {
+              "option": "i64"
+            }
           }
         ]
       }

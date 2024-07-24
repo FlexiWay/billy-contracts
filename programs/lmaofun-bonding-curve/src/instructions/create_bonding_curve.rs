@@ -26,6 +26,7 @@ pub struct CreateBondingCurveParams {
     name: String,
     symbol: String,
     uri: String,
+    start_time: Option<i64>,
 }
 
 #[event_cpi]
@@ -91,6 +92,8 @@ pub struct CreateBondingCurve<'info> {
     token_metadata_program: Program<'info, Metaplex>,
 
     rent: Sysvar<'info, Rent>,
+
+    clock: Sysvar<'info, Clock>,
 }
 
 impl CreateBondingCurve<'_> {
@@ -98,7 +101,12 @@ impl CreateBondingCurve<'_> {
         ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,
     ) -> Result<()> {
-        let CreateBondingCurveParams { name, symbol, uri } = params;
+        let CreateBondingCurveParams {
+            name,
+            symbol,
+            uri,
+            start_time,
+        } = params;
         let creator_info = ctx.accounts.creator.to_account_info();
         let mint_info = ctx.accounts.mint.to_account_info();
         let mint_authority_info = ctx.accounts.global.to_account_info();
@@ -204,11 +212,13 @@ impl CreateBondingCurve<'_> {
             ],
             &[],
         )?;
-
-        let bonding_curve = &mut ctx
-            .accounts
-            .bonding_curve
-            .new_from_global(&ctx.accounts.global, ctx.accounts.creator.key());
+        let clock = Clock::get()?;
+        let pool_start_time = start_time.unwrap_or(clock.unix_timestamp);
+        let bonding_curve = &mut ctx.accounts.bonding_curve.new_from_global(
+            &ctx.accounts.global,
+            ctx.accounts.creator.key(),
+            pool_start_time,
+        );
 
         emit_cpi!(CreateEvent {
             name,

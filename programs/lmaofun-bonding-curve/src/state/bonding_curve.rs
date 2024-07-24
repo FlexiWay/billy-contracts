@@ -27,13 +27,20 @@ pub struct BondingCurve {
     pub real_token_reserves: u64,
 
     pub token_total_supply: u64,
+
+    pub start_time: i64,
     pub complete: bool,
 }
 
 impl BondingCurve {
     pub const SEED_PREFIX: &'static [u8; 13] = b"bonding-curve";
 
-    pub fn new_from_global(&mut self, global: &Global, creator: Pubkey) -> &mut Self {
+    pub fn new_from_global(
+        &mut self,
+        global: &Global,
+        creator: Pubkey,
+        pool_start_time: i64,
+    ) -> &mut Self {
         self.virtual_sol_reserves = global.initial_virtual_sol_reserves;
         self.initial_virtual_token_reserves = global.initial_virtual_token_reserves;
         self.virtual_token_reserves = global.initial_virtual_token_reserves;
@@ -42,6 +49,7 @@ impl BondingCurve {
         self.token_total_supply = global.initial_token_supply;
         self.creator = creator;
         self.complete = false;
+        self.start_time = pool_start_time;
         self
     }
     pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
@@ -135,9 +143,16 @@ impl fmt::Display for BondingCurve {
 #[cfg(test)]
 mod tests {
     use anchor_lang::prelude::Pubkey;
+    use once_cell::sync::Lazy;
 
     use crate::{state::bonding_curve::BondingCurve, Global};
-
+    use std::time::{SystemTime, UNIX_EPOCH};
+    static start_time: Lazy<i64> = Lazy::new(|| {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64
+    });
     #[test]
     fn test_buy_and_sell_too_much() {
         let virtual_sol_reserves = 600;
@@ -157,6 +172,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
+            start_time: *start_time,
         };
         //println!("{} \n", 1/0);
         // Attempt to buy more tokens than available in reserves
@@ -205,6 +221,7 @@ mod tests {
         let token_total_supply = 1000;
         let creator = Pubkey::default();
         let complete = false;
+
         let mut curve = BondingCurve {
             virtual_sol_reserves,
             virtual_token_reserves,
@@ -214,16 +231,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-        };
-        let mut curve = BondingCurve {
-            virtual_sol_reserves,
-            virtual_token_reserves,
-            real_sol_reserves,
-            real_token_reserves,
-            initial_virtual_token_reserves,
-            token_total_supply,
-            creator,
-            complete,
+            start_time: *start_time,
         };
         let result = curve.apply_sell(100).unwrap();
 
@@ -245,16 +253,7 @@ mod tests {
         let token_total_supply = 1000;
         let creator = Pubkey::default();
         let complete = false;
-        let mut curve = BondingCurve {
-            virtual_sol_reserves,
-            virtual_token_reserves,
-            real_sol_reserves,
-            real_token_reserves,
-            initial_virtual_token_reserves,
-            token_total_supply,
-            creator,
-            complete,
-        };
+
         let curve = BondingCurve {
             virtual_sol_reserves,
             virtual_token_reserves,
@@ -264,6 +263,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
+            start_time: *start_time,
         };
 
         // Edge case: zero tokens
@@ -296,6 +296,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
+            start_time: *start_time,
         };
 
         let purchase_amount = 100;
@@ -336,6 +337,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
+            start_time: *start_time,
         };
 
         assert_eq!(curve.get_buy_price(0), None);

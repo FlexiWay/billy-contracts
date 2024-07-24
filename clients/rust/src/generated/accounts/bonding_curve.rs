@@ -28,11 +28,12 @@ pub struct BondingCurve {
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
+    pub start_time: i64,
     pub complete: bool,
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 89;
+    pub const LEN: usize = 97;
 
     /// Prefix values used to generate a PDA for this account.
     ///

@@ -6,8 +6,8 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Context, Pda, PublicKey, Signer, TransactionBuilder, publicKey, transactionBuilder } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, string, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Context, Option, OptionOrNullable, Pda, PublicKey, Signer, TransactionBuilder, publicKey, transactionBuilder } from '@metaplex-foundation/umi';
+import { Serializer, array, i64, mapSerializer, option, string, struct, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
 
 // Accounts.
@@ -23,18 +23,19 @@ export type CreateBondingCurveInstructionAccounts = {
     associatedTokenProgram: PublicKey | Pda;
     tokenMetadataProgram?: PublicKey | Pda;
     rent?: PublicKey | Pda;
+    clock: PublicKey | Pda;
     eventAuthority: PublicKey | Pda;
     program: PublicKey | Pda;
 };
 
   // Data.
-  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string;  };
+  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>;  };
 
-export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string;  };
+export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>;  };
 
 
   export function getCreateBondingCurveInstructionDataSerializer(): Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData> {
-  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
+  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
 }
 
 
@@ -65,8 +66,9 @@ export function createBondingCurve(
           associatedTokenProgram: { index: 8, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
           tokenMetadataProgram: { index: 9, isWritable: false as boolean, value: input.tokenMetadataProgram ?? null },
           rent: { index: 10, isWritable: false as boolean, value: input.rent ?? null },
-          eventAuthority: { index: 11, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 12, isWritable: false as boolean, value: input.program ?? null },
+          clock: { index: 11, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 12, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 13, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.

@@ -149,6 +149,11 @@
           "isSigner": false
         },
         {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "eventAuthority",
           "isMut": false,
           "isSigner": false
@@ -202,6 +207,10 @@
           {
             "name": "tokenTotalSupply",
             "type": "u64"
+          },
+          {
+            "name": "startTime",
+            "type": "i64"
           },
           {
             "name": "complete",
@@ -286,6 +295,12 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "startTime",
+            "type": {
+              "option": "i64"
+            }
           }
         ]
       }
