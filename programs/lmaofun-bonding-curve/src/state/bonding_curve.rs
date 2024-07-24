@@ -1,15 +1,15 @@
+use crate::errors::ProgramError;
+use crate::Global;
 use anchor_lang::prelude::*;
 use std::fmt;
 
-use crate::Global;
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BuyResult {
     pub token_amount: u64,
     pub sol_amount: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SellResult {
     pub token_amount: u64,
     pub sol_amount: u64,
@@ -52,6 +52,7 @@ impl BondingCurve {
         self.start_time = pool_start_time;
         self
     }
+
     pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
         if tokens == 0 || tokens > self.virtual_token_reserves {
             return None;
@@ -123,6 +124,71 @@ impl BondingCurve {
 
         Some(sol_received.min(self.real_sol_reserves))
     }
+
+    pub fn msg(&self) -> () {
+        msg!("creator: {}", self.creator);
+        msg!(
+            "initial_virtual_token_reserves: {}",
+            self.initial_virtual_token_reserves
+        );
+        msg!("virtual_sol_reserves: {}", self.virtual_sol_reserves);
+        msg!("virtual_token_reserves: {}", self.virtual_token_reserves);
+        msg!("real_sol_reserves: {}", self.real_sol_reserves);
+        msg!("real_token_reserves: {}", self.real_token_reserves);
+        msg!("token_total_supply: {}", self.token_total_supply);
+        msg!("complete: {}", self.complete);
+        msg!("start_time: {}", self.start_time);
+    }
+
+    pub fn invariant(bonding_curve_acc: &Account<BondingCurve>) -> Result<()> {
+        let rent_exemption_balance: u64 =
+            Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
+        let bonding_curve_total_lamports: u64 = bonding_curve_acc.get_lamports();
+        let bonding_curve_pool_lamports: u64 =
+            bonding_curve_total_lamports - rent_exemption_balance;
+
+        // Ensure real sol reserves are equal to bonding curve pool lamports
+        if bonding_curve_pool_lamports != bonding_curve_acc.real_sol_reserves {
+            msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
+            return Err(ProgramError::BondingCurveInvariant.into());
+        }
+
+        // Ensure that the real reserves are positive when the bonding curve is active
+        if !bonding_curve_acc.complete {
+            if bonding_curve_acc.real_sol_reserves <= 0 {
+                msg!("Invariant failed: real_sol_reserves <= 0 while bonding curve is active");
+                return Err(ProgramError::BondingCurveInvariant.into());
+            }
+            if bonding_curve_acc.real_token_reserves <= 0 {
+                msg!("Invariant failed: real_token_reserves <= 0 while bonding curve is active");
+                return Err(ProgramError::BondingCurveInvariant.into());
+            }
+        }
+
+        // Ensure the virtual reserves are always positive
+        if bonding_curve_acc.virtual_sol_reserves <= 0 {
+            msg!("Invariant failed: virtual_sol_reserves <= 0");
+            return Err(ProgramError::BondingCurveInvariant.into());
+        }
+        if bonding_curve_acc.virtual_token_reserves <= 0 {
+            msg!("Invariant failed: virtual_token_reserves <= 0");
+            return Err(ProgramError::BondingCurveInvariant.into());
+        }
+
+        // Ensure the token total supply is consistent with the reserves
+        if bonding_curve_acc.token_total_supply < bonding_curve_acc.real_token_reserves {
+            msg!("Invariant failed: token_total_supply < real_token_reserves");
+            return Err(ProgramError::BondingCurveInvariant.into());
+        }
+
+        // Ensure the bonding curve is complete only if real token reserves are zero
+        if bonding_curve_acc.complete && bonding_curve_acc.real_token_reserves != 0 {
+            msg!("Invariant failed: bonding curve marked as complete but real_token_reserves != 0");
+            return Err(ProgramError::BondingCurveInvariant.into());
+        }
+
+        Ok(())
+    }
 }
 
 impl fmt::Display for BondingCurve {
@@ -145,9 +211,9 @@ mod tests {
     use anchor_lang::prelude::Pubkey;
     use once_cell::sync::Lazy;
 
-    use crate::{state::bonding_curve::BondingCurve, Global};
+    use crate::state::bonding_curve::BondingCurve;
     use std::time::{SystemTime, UNIX_EPOCH};
-    static start_time: Lazy<i64> = Lazy::new(|| {
+    static START_TIME: Lazy<i64> = Lazy::new(|| {
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -172,7 +238,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-            start_time: *start_time,
+            start_time: *START_TIME,
         };
         //println!("{} \n", 1/0);
         // Attempt to buy more tokens than available in reserves
@@ -231,7 +297,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-            start_time: *start_time,
+            start_time: *START_TIME,
         };
         let result = curve.apply_sell(100).unwrap();
 
@@ -263,7 +329,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-            start_time: *start_time,
+            start_time: *START_TIME,
         };
 
         // Edge case: zero tokens
@@ -296,7 +362,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-            start_time: *start_time,
+            start_time: *START_TIME,
         };
 
         let purchase_amount = 100;
@@ -337,7 +403,7 @@ mod tests {
             token_total_supply,
             creator,
             complete,
-            start_time: *start_time,
+            start_time: *START_TIME,
         };
 
         assert_eq!(curve.get_buy_price(0), None);

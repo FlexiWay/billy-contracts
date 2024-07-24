@@ -31,6 +31,32 @@ pub struct WithdrawEvent {
     pub amount: u64,
 }
 
+#[event]
+pub struct TradeEvent {
+    pub mint: Pubkey,
+    pub sol_amount: u64,
+    pub token_amount: u64,
+    pub fee_lamports: u64,
+    pub is_buy: bool,
+    pub user: Pubkey,
+    pub timestamp: i64,
+    pub virtual_sol_reserves: u64,
+    pub virtual_token_reserves: u64,
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+}
+
+#[event]
+pub struct CompleteEvent {
+    pub user: Pubkey,
+    pub mint: Pubkey,
+    pub virtual_sol_reserves: u64,
+    pub virtual_token_reserves: u64,
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+    pub timestamp: i64,
+}
+
 pub trait IntoEvent<T: anchor_lang::Event> {
     fn into_event(&self) -> T;
 }

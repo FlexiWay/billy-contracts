@@ -60,6 +60,10 @@ impl Global {
         [prefix_bytes, bump_slice]
     }
 
+    pub fn calculate_fee(&self, amount: u64) -> u64 {
+        amount * self.trade_fee_bps as u64 / 10000
+    }
+
     pub fn update_settings(&mut self, params: GlobalSettingsInput) {
         if let Some(value) = params.initial_token_supply {
             self.initial_token_supply = value;
@@ -116,5 +120,55 @@ impl IntoEvent<GlobalUpdateEvent> for Global {
             created_mint_decimals: self.created_mint_decimals,
             launch_fee_lamports: self.launch_fee_lamports,
         }
+    }
+}
+
+// // separate function for easy testing
+// pub fn calculate_fee(amount: u64, fee_basis_points: u64) -> u64 {
+//     amount * fee_basis_points / 10000
+// }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculate_fee() {
+        let mut fixture = Global {
+            status: ProgramStatus::Running,
+            initialized: true,
+            global_authority: Pubkey::default(),
+            withdraw_authority: Pubkey::default(),
+            initial_virtual_token_reserves: 1000,
+            initial_virtual_sol_reserves: 1000,
+            initial_real_token_reserves: 1000,
+            initial_real_sol_reserves: 1000,
+            initial_token_supply: 1000,
+            sol_launch_threshold: 1000,
+            trade_fee_bps: 0,
+            launch_fee_lamports: 1000,
+            created_mint_decimals: 0,
+        };
+
+        fixture.trade_fee_bps = 100;
+        assert_eq!(fixture.calculate_fee(100), 1); //1% fee
+
+        fixture.trade_fee_bps = 1000;
+        assert_eq!(fixture.calculate_fee(100), 10); //10% fee
+
+        fixture.trade_fee_bps = 5000;
+        assert_eq!(fixture.calculate_fee(100), 50); //50% fee
+
+        fixture.trade_fee_bps = 50000;
+        assert_eq!(fixture.calculate_fee(100), 500); //500% fee
+
+        fixture.trade_fee_bps = 50;
+        assert_eq!(fixture.calculate_fee(100), 0); //0.5% fee
+
+        fixture.trade_fee_bps = 50;
+        assert_eq!(fixture.calculate_fee(1000), 5); //0.5% fee
+
+        fixture.trade_fee_bps = 0;
+        assert_eq!(fixture.calculate_fee(100), 0); //0% fee
     }
 }
