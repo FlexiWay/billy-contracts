@@ -174,6 +174,79 @@ export type LmaofunBondingCurve = {
       ]
     },
     {
+      "name": "swap",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "SwapParams"
+          }
+        }
+      ]
+    },
+    {
       "name": "withdrawFees",
       "accounts": [
         {
@@ -341,6 +414,26 @@ export type LmaofunBondingCurve = {
             "type": {
               "option": "i64"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SwapParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseIn",
+            "type": "bool"
+          },
+          {
+            "name": "exactInAmount",
+            "type": "u64"
+          },
+          {
+            "name": "minOutAmount",
+            "type": "u64"
           }
         ]
       }
@@ -566,43 +659,193 @@ export type LmaofunBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "TradeEvent",
+      "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "solAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeLamports",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "isBuy",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "virtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "virtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CompleteEvent",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "virtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "virtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "AlreadyInitialized",
-      "msg": "Global Already Initialized"
-    },
-    {
-      "code": 6001,
-      "name": "NotInitialized",
-      "msg": "Global Not Initialized"
-    },
-    {
-      "code": 6002,
       "name": "InvalidGlobalAuthority",
       "msg": "Invalid Global Authority"
     },
     {
-      "code": 6003,
-      "name": "ProgramNotRunning",
-      "msg": "Not in Running State"
+      "code": 6001,
+      "name": "InvalidWithdrawAuthority",
+      "msg": "Invalid Withdraw Authority"
     },
     {
-      "code": 6004,
+      "code": 6002,
       "name": "InvalidArgument",
       "msg": "Invalid Argument"
     },
     {
+      "code": 6003,
+      "name": "AlreadyInitialized",
+      "msg": "Global Already Initialized"
+    },
+    {
+      "code": 6004,
+      "name": "NotInitialized",
+      "msg": "Global Not Initialized"
+    },
+    {
       "code": 6005,
+      "name": "ProgramNotRunning",
+      "msg": "Not in Running State"
+    },
+    {
+      "code": 6006,
+      "name": "BondingCurveComplete",
+      "msg": "Bonding Curve Complete"
+    },
+    {
+      "code": 6007,
       "name": "BondingCurveNotComplete",
       "msg": "Bonding Curve Not Complete"
     },
     {
-      "code": 6006,
-      "name": "InvalidWithdrawAuthority",
-      "msg": "Invalid Withdraw Authority"
+      "code": 6008,
+      "name": "InsufficientUserTokens",
+      "msg": "Insufficient User Tokens"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientCurveTokens",
+      "msg": "Insufficient Curve Tokens"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientUserSOL",
+      "msg": "Insufficient user SOL"
+    },
+    {
+      "code": 6011,
+      "name": "SlippageExceeded",
+      "msg": "Slippage Exceeded"
+    },
+    {
+      "code": 6012,
+      "name": "MinSwap",
+      "msg": "Swap exactInAmount is 0"
+    },
+    {
+      "code": 6013,
+      "name": "BuyFailed",
+      "msg": "Buy Failed"
+    },
+    {
+      "code": 6014,
+      "name": "SellFailed",
+      "msg": "Sell Failed"
+    },
+    {
+      "code": 6015,
+      "name": "BondingCurveInvariant",
+      "msg": "Bonding Curve Invariant Failed"
+    },
+    {
+      "code": 6016,
+      "name": "CurveNotStarted",
+      "msg": "Curve Not Started"
     }
   ]
 };
@@ -783,6 +1026,79 @@ export const IDL: LmaofunBondingCurve = {
       ]
     },
     {
+      "name": "swap",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "SwapParams"
+          }
+        }
+      ]
+    },
+    {
       "name": "withdrawFees",
       "accounts": [
         {
@@ -950,6 +1266,26 @@ export const IDL: LmaofunBondingCurve = {
             "type": {
               "option": "i64"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SwapParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseIn",
+            "type": "bool"
+          },
+          {
+            "name": "exactInAmount",
+            "type": "u64"
+          },
+          {
+            "name": "minOutAmount",
+            "type": "u64"
           }
         ]
       }
@@ -1175,43 +1511,193 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "TradeEvent",
+      "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "solAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeLamports",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "isBuy",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "virtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "virtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CompleteEvent",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "virtualSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "virtualTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "AlreadyInitialized",
-      "msg": "Global Already Initialized"
-    },
-    {
-      "code": 6001,
-      "name": "NotInitialized",
-      "msg": "Global Not Initialized"
-    },
-    {
-      "code": 6002,
       "name": "InvalidGlobalAuthority",
       "msg": "Invalid Global Authority"
     },
     {
-      "code": 6003,
-      "name": "ProgramNotRunning",
-      "msg": "Not in Running State"
+      "code": 6001,
+      "name": "InvalidWithdrawAuthority",
+      "msg": "Invalid Withdraw Authority"
     },
     {
-      "code": 6004,
+      "code": 6002,
       "name": "InvalidArgument",
       "msg": "Invalid Argument"
     },
     {
+      "code": 6003,
+      "name": "AlreadyInitialized",
+      "msg": "Global Already Initialized"
+    },
+    {
+      "code": 6004,
+      "name": "NotInitialized",
+      "msg": "Global Not Initialized"
+    },
+    {
       "code": 6005,
+      "name": "ProgramNotRunning",
+      "msg": "Not in Running State"
+    },
+    {
+      "code": 6006,
+      "name": "BondingCurveComplete",
+      "msg": "Bonding Curve Complete"
+    },
+    {
+      "code": 6007,
       "name": "BondingCurveNotComplete",
       "msg": "Bonding Curve Not Complete"
     },
     {
-      "code": 6006,
-      "name": "InvalidWithdrawAuthority",
-      "msg": "Invalid Withdraw Authority"
+      "code": 6008,
+      "name": "InsufficientUserTokens",
+      "msg": "Insufficient User Tokens"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientCurveTokens",
+      "msg": "Insufficient Curve Tokens"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientUserSOL",
+      "msg": "Insufficient user SOL"
+    },
+    {
+      "code": 6011,
+      "name": "SlippageExceeded",
+      "msg": "Slippage Exceeded"
+    },
+    {
+      "code": 6012,
+      "name": "MinSwap",
+      "msg": "Swap exactInAmount is 0"
+    },
+    {
+      "code": 6013,
+      "name": "BuyFailed",
+      "msg": "Buy Failed"
+    },
+    {
+      "code": 6014,
+      "name": "SellFailed",
+      "msg": "Sell Failed"
+    },
+    {
+      "code": 6015,
+      "name": "BondingCurveInvariant",
+      "msg": "Bonding Curve Invariant Failed"
+    },
+    {
+      "code": 6016,
+      "name": "CurveNotStarted",
+      "msg": "Curve Not Started"
     }
   ]
 };

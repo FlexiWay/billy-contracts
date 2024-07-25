@@ -4,7 +4,10 @@ use std::{
 };
 
 use anchor_lang::{prelude::*, solana_program::system_instruction};
-use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{self, Mint, Token, TokenAccount, Transfer},
+};
 
 use crate::{
     errors::ProgramError,
@@ -31,19 +34,17 @@ pub struct Swap<'info> {
 
     #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
+        constraint = global.initialized == true @ ProgramError::NotInitialized,
         bump,
     )]
     global: Box<Account<'info, Global>>,
-
-    /// CHECK: Using global state to validate fee_recipient account
-    #[account(mut)]
-    fee_recipient: AccountInfo<'info>,
 
     mint: Account<'info, Mint>,
 
     #[account(
         mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        constraint = bonding_curve.complete == false @ ProgramError::BondingCurveComplete,
         bump,
     )]
     bonding_curve: Box<Account<'info, BondingCurve>>,
@@ -56,7 +57,8 @@ pub struct Swap<'info> {
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
         associated_token::mint = mint,
         associated_token::authority = user,
     )]
@@ -65,151 +67,30 @@ pub struct Swap<'info> {
     system_program: Program<'info, System>,
 
     token_program: Program<'info, Token>,
+    associated_token_program: Program<'info, AssociatedToken>,
+
+    clock: Sysvar<'info, Clock>,
 }
 impl Swap<'_> {
-    pub fn complete_buy(
-        ctx: &Context<Swap>,
-        buy_result: BuyResult,
-        min_out_amount: u64,
-        fee_lamports: u64,
-    ) -> Result<()> {
-        let bonding_curve = &ctx.accounts.bonding_curve;
-
-        // Buy tokens
-        let buy_amount_with_fee = buy_result.sol_amount + fee_lamports;
-
-        require!(
-            buy_result.token_amount >= min_out_amount,
-            ProgramError::SlippageExceeded,
-        );
-
-        require!(
-            ctx.accounts.user.get_lamports() >= buy_amount_with_fee,
-            ProgramError::InsufficientUserSOL,
-        );
-
-        // Transfer SOL to bonding curve
-        let transfer_instruction = system_instruction::transfer(
-            ctx.accounts.user.key,
-            bonding_curve.to_account_info().key,
-            buy_result.sol_amount,
-        );
-
-        anchor_lang::solana_program::program::invoke_signed(
-            &transfer_instruction,
-            &[
-                ctx.accounts.user.to_account_info(),
-                bonding_curve.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-
-        // Transfer SOL to fee recipient
-        let fee_transfer_instruction = system_instruction::transfer(
-            ctx.accounts.user.key,
-            ctx.accounts.fee_recipient.key,
-            fee_lamports,
-        );
-
-        anchor_lang::solana_program::program::invoke_signed(
-            &fee_transfer_instruction,
-            &[
-                ctx.accounts.user.to_account_info(),
-                ctx.accounts.fee_recipient.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-
-        // Transfer tokens to user
-        let cpi_accounts = Transfer {
-            from: ctx.accounts.bonding_curve_token_account.to_account_info(),
-            to: ctx.accounts.user_token_account.to_account_info(),
-            authority: bonding_curve.to_account_info(),
-        };
-
-        let signer: [&[&[u8]]; 1] = [&[
-            BondingCurve::SEED_PREFIX.as_bytes(),
-            ctx.accounts.mint.to_account_info().key.as_ref(),
-            &[ctx.bumps.bonding_curve],
-        ]];
-
-        token::transfer(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                cpi_accounts,
-                &signer,
-            ),
-            buy_result.token_amount,
-        )?;
-
-        Ok(())
-    }
-
-    pub fn complete_sell(
-        ctx: &Context<Swap>,
-        sell_result: SellResult,
-        min_out_amount: u64,
-        fee_lamports: u64,
-    ) -> Result<()> {
-        // Sell tokens
-        let sell_amount_minus_fee = sell_result.sol_amount - fee_lamports;
-        require!(
-            sell_amount_minus_fee >= min_out_amount,
-            ProgramError::SlippageExceeded,
-        );
-
-        let bonding_curve = &ctx.accounts.bonding_curve;
-        // Transfer tokens to bonding curve
-        let cpi_accounts = Transfer {
-            from: ctx.accounts.user_token_account.to_account_info(),
-            to: ctx.accounts.bonding_curve_token_account.to_account_info(),
-            authority: ctx.accounts.user.to_account_info(),
-        };
-
-        token::transfer(
-            CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts),
-            sell_result.token_amount,
-        )?;
-
-        // Transfer SOL to user
-        bonding_curve.sub_lamports(sell_amount_minus_fee).unwrap();
-        ctx.accounts
-            .user
-            .add_lamports(sell_amount_minus_fee)
-            .unwrap();
-
-        // Transfer accrued fee to the global account
-        bonding_curve.sub_lamports(fee_lamports).unwrap();
-        ctx.accounts.global.add_lamports(fee_lamports).unwrap();
-
-        Ok(())
-    }
-
     pub fn handler(ctx: Context<Swap>, params: SwapParams) -> Result<()> {
         let SwapParams {
             base_in,
             exact_in_amount,
             min_out_amount,
         } = params;
+        let clock = Clock::get()?;
+
+        require!(
+            ctx.accounts.bonding_curve.is_started(&clock),
+            ProgramError::CurveNotStarted
+        );
+        require!(exact_in_amount > 0, ProgramError::MinSwap);
+
         msg!(
             "Swap started. BaseIn: {}, AmountIn: {}",
             base_in,
             exact_in_amount
         );
-
-        require!(
-            ctx.accounts.global.initialized,
-            ProgramError::NotInitialized
-        );
-
-        require!(
-            !ctx.accounts.bonding_curve.complete,
-            ProgramError::BondingCurveComplete,
-        );
-
-        require!(exact_in_amount > 0, ProgramError::MinSwap);
 
         let global_state = &ctx.accounts.global;
 
@@ -284,6 +165,126 @@ impl Swap<'_> {
 
         bonding_curve.msg();
         BondingCurve::invariant(bonding_curve)?;
+
+        Ok(())
+    }
+
+    pub fn complete_buy(
+        ctx: &Context<Swap>,
+        buy_result: BuyResult,
+        min_out_amount: u64,
+        fee_lamports: u64,
+    ) -> Result<()> {
+        let bonding_curve = &ctx.accounts.bonding_curve;
+
+        // Buy tokens
+        let buy_amount_with_fee = buy_result.sol_amount + fee_lamports;
+
+        require!(
+            buy_result.token_amount >= min_out_amount,
+            ProgramError::SlippageExceeded,
+        );
+
+        require!(
+            ctx.accounts.user.get_lamports() >= buy_amount_with_fee,
+            ProgramError::InsufficientUserSOL,
+        );
+
+        // Transfer SOL to bonding curve
+        let transfer_instruction = system_instruction::transfer(
+            ctx.accounts.user.key,
+            bonding_curve.to_account_info().key,
+            buy_result.sol_amount,
+        );
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.user.to_account_info(),
+                bonding_curve.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+
+        // Transfer SOL to fee recipient
+        let fee_transfer_instruction = system_instruction::transfer(
+            ctx.accounts.user.key,
+            &ctx.accounts.global.key(),
+            fee_lamports,
+        );
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &fee_transfer_instruction,
+            &[
+                ctx.accounts.user.to_account_info(),
+                ctx.accounts.global.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+
+        // Transfer tokens to user
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.bonding_curve_token_account.to_account_info(),
+            to: ctx.accounts.user_token_account.to_account_info(),
+            authority: bonding_curve.to_account_info(),
+        };
+
+        let signer: [&[&[u8]]; 1] = [&[
+            BondingCurve::SEED_PREFIX.as_bytes(),
+            ctx.accounts.mint.to_account_info().key.as_ref(),
+            &[ctx.bumps.bonding_curve],
+        ]];
+
+        token::transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                cpi_accounts,
+                &signer,
+            ),
+            buy_result.token_amount,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn complete_sell(
+        ctx: &Context<Swap>,
+        sell_result: SellResult,
+        min_out_amount: u64,
+        fee_lamports: u64,
+    ) -> Result<()> {
+        // Sell tokens
+        let sell_amount_minus_fee = sell_result.sol_amount - fee_lamports;
+        require!(
+            sell_amount_minus_fee >= min_out_amount,
+            ProgramError::SlippageExceeded,
+        );
+
+        let bonding_curve = &ctx.accounts.bonding_curve;
+        // Transfer tokens to bonding curve
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.user_token_account.to_account_info(),
+            to: ctx.accounts.bonding_curve_token_account.to_account_info(),
+            authority: ctx.accounts.user.to_account_info(),
+        };
+
+        token::transfer(
+            CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts),
+            sell_result.token_amount,
+        )?;
+
+        // Transfer SOL to user
+        bonding_curve.sub_lamports(sell_amount_minus_fee).unwrap();
+        ctx.accounts
+            .user
+            .add_lamports(sell_amount_minus_fee)
+            .unwrap();
+
+        // Transfer accrued fee to the global account
+        bonding_curve.sub_lamports(fee_lamports).unwrap();
+        ctx.accounts.global.add_lamports(fee_lamports).unwrap();
 
         Ok(())
     }

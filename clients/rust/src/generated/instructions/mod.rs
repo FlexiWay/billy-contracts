@@ -8,9 +8,11 @@
 pub(crate) mod r#create_bonding_curve;
 pub(crate) mod r#initialize;
 pub(crate) mod r#set_params;
+pub(crate) mod r#swap;
 pub(crate) mod r#withdraw_fees;
 
 pub use self::r#create_bonding_curve::*;
 pub use self::r#initialize::*;
 pub use self::r#set_params::*;
+pub use self::r#swap::*;
 pub use self::r#withdraw_fees::*;

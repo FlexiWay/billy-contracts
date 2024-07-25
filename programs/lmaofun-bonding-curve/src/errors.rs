@@ -43,4 +43,7 @@ pub enum ProgramError {
 
     #[msg("Bonding Curve Invariant Failed")]
     BondingCurveInvariant,
+
+    #[msg("Curve Not Started")]
+    CurveNotStarted,
 }

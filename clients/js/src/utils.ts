@@ -12,6 +12,10 @@ import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
 import { IdlEvent } from '@coral-xyz/anchor/dist/cjs/idl';
 import { BN } from '@coral-xyz/anchor';
 
+export const calculateFee = (amount: bigint, feeBps: number): bigint => {
+  return (amount * BigInt(feeBps)) / 10000n;
+};
+
 const EVENT_AUTHORITY_PDA_SEED = "__event_authority";
 export function findEvtAuthorityPda(
     context: Pick<Context, 'eddsa' | 'programs'>,

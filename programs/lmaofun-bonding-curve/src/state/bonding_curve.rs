@@ -189,6 +189,11 @@ impl BondingCurve {
 
         Ok(())
     }
+
+    pub fn is_started(&self, clock: &Clock) -> bool {
+        let now = clock.unix_timestamp;
+        now >= self.start_time
+    }
 }
 
 impl fmt::Display for BondingCurve {

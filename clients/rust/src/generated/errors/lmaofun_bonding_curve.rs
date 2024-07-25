@@ -10,27 +10,57 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum LmaofunBondingCurveError {
-    /// 6000 (0x1770) - Global Already Initialized
-    #[error("Global Already Initialized")]
-    AlreadyInitialized,
-    /// 6001 (0x1771) - Global Not Initialized
-    #[error("Global Not Initialized")]
-    NotInitialized,
-    /// 6002 (0x1772) - Invalid Global Authority
+    /// 6000 (0x1770) - Invalid Global Authority
     #[error("Invalid Global Authority")]
     InvalidGlobalAuthority,
-    /// 6003 (0x1773) - Not in Running State
-    #[error("Not in Running State")]
-    ProgramNotRunning,
-    /// 6004 (0x1774) - Invalid Argument
-    #[error("Invalid Argument")]
-    InvalidArgument,
-    /// 6005 (0x1775) - Bonding Curve Not Complete
-    #[error("Bonding Curve Not Complete")]
-    BondingCurveNotComplete,
-    /// 6006 (0x1776) - Invalid Withdraw Authority
+    /// 6001 (0x1771) - Invalid Withdraw Authority
     #[error("Invalid Withdraw Authority")]
     InvalidWithdrawAuthority,
+    /// 6002 (0x1772) - Invalid Argument
+    #[error("Invalid Argument")]
+    InvalidArgument,
+    /// 6003 (0x1773) - Global Already Initialized
+    #[error("Global Already Initialized")]
+    AlreadyInitialized,
+    /// 6004 (0x1774) - Global Not Initialized
+    #[error("Global Not Initialized")]
+    NotInitialized,
+    /// 6005 (0x1775) - Not in Running State
+    #[error("Not in Running State")]
+    ProgramNotRunning,
+    /// 6006 (0x1776) - Bonding Curve Complete
+    #[error("Bonding Curve Complete")]
+    BondingCurveComplete,
+    /// 6007 (0x1777) - Bonding Curve Not Complete
+    #[error("Bonding Curve Not Complete")]
+    BondingCurveNotComplete,
+    /// 6008 (0x1778) - Insufficient User Tokens
+    #[error("Insufficient User Tokens")]
+    InsufficientUserTokens,
+    /// 6009 (0x1779) - Insufficient Curve Tokens
+    #[error("Insufficient Curve Tokens")]
+    InsufficientCurveTokens,
+    /// 6010 (0x177A) - Insufficient user SOL
+    #[error("Insufficient user SOL")]
+    InsufficientUserSOL,
+    /// 6011 (0x177B) - Slippage Exceeded
+    #[error("Slippage Exceeded")]
+    SlippageExceeded,
+    /// 6012 (0x177C) - Swap exactInAmount is 0
+    #[error("Swap exactInAmount is 0")]
+    MinSwap,
+    /// 6013 (0x177D) - Buy Failed
+    #[error("Buy Failed")]
+    BuyFailed,
+    /// 6014 (0x177E) - Sell Failed
+    #[error("Sell Failed")]
+    SellFailed,
+    /// 6015 (0x177F) - Bonding Curve Invariant Failed
+    #[error("Bonding Curve Invariant Failed")]
+    BondingCurveInvariant,
+    /// 6016 (0x1780) - Curve Not Started
+    #[error("Curve Not Started")]
+    CurveNotStarted,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {
