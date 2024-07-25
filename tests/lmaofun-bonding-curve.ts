@@ -79,8 +79,7 @@ if (process.env.ANCHOR_PROVIDER_URL) {
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
-const program = anchor.workspace
-  .LmaofunBondingCurve as Program<LmaofunBondingCurve>;
+
 const connection = new Connection(rpcUrl, {
   commitment: "confirmed",
 });
@@ -255,14 +254,18 @@ describe("lmaofun-bonding", () => {
       simpleMintBondingCurvePda[0]
     );
     const amm = AMM.fromBondingCurve(bondingCurveData);
-    let buyTokenAmount = 10_000_000n;
+    let buyTokenAmount = 100_000_000_000n;
     let solAmount = amm.getBuyPrice(buyTokenAmount);
 
     // should use actual fee set on global when live
     let fee = calculateFee(solAmount, INIT_DEFAULTS.tradeFeeBps);
     const solAmountWithFee = solAmount + fee;
-
+    console.log("solAmount", solAmount);
+    console.log("fee", fee);
+    console.log("solAmountWithFee", solAmountWithFee);
+    console.log("buyTokenAmount", buyTokenAmount);
     let buyResult = amm.applyBuy(buyTokenAmount);
+    console.log("buySimResult", buyResult);
 
     const txBuilder = swap(umi, {
       global: globalPda[0],
@@ -282,8 +285,8 @@ describe("lmaofun-bonding", () => {
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
     });
-
     const txRes = await txBuilder.sendAndConfirm(umi);
+
     // const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
     // events.forEach(logEvent);
 
