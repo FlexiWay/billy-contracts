@@ -23,12 +23,18 @@ dependencies:
   '@metaplex-foundation/umi-bundle-defaults':
     specifier: ^0.9.1
     version: 0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.95.1)
+  '@metaplex-foundation/umi-rpc-web3js':
+    specifier: ^0.9.2
+    version: 0.9.2(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.95.1)
   '@metaplex-foundation/umi-web3js-adapters':
     specifier: ^0.9.1
     version: 0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.95.1)
   '@solana/spl-token':
     specifier: ^0.4.6
     version: 0.4.6(@solana/web3.js@1.95.1)(fastestsmallesttextencoderdecoder@1.0.22)
+  anchor-bankrun:
+    specifier: ^0.4.0
+    version: 0.4.0(@coral-xyz/anchor@0.29.0)(@solana/web3.js@1.95.1)(solana-bankrun@0.3.0)
 
 devDependencies:
   '@metaplex-foundation/amman':
@@ -731,6 +737,19 @@ packages:
     engines: {node: '>= 8.0.0'}
     dependencies:
       humanize-ms: 1.2.1
+
+  /anchor-bankrun@0.4.0(@coral-xyz/anchor@0.29.0)(@solana/web3.js@1.95.1)(solana-bankrun@0.3.0):
+    resolution: {integrity: sha512-s+K7E0IGAlmkhuo8nbiqVsQf2yJ+3l9GjNQJSmkRDe25dQj4Yef9rJh77FH6EQ5H6yQYfzuhgm/5GD6JMjdTZg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      '@coral-xyz/anchor': ^0.30.0
+      '@solana/web3.js': ^1.78.4
+      solana-bankrun: ^0.2.0
+    dependencies:
+      '@coral-xyz/anchor': 0.29.0
+      '@solana/web3.js': 1.95.1
+      solana-bankrun: 0.3.0
+    dev: false
 
   /ansi-colors@4.1.1:
     resolution: {integrity: sha512-JoX0apGbHaUJBNl6yF+p6JAFYZ666/hhCGKN5t9QFjbJQKUU/g8MNbFDbvfrgKXvI1QpZplPOnwIo99lX/AAmA==}
@@ -2058,7 +2077,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /solana-bankrun-darwin-universal@0.3.0:
@@ -2066,7 +2084,6 @@ packages:
     engines: {node: '>= 10'}
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /solana-bankrun-darwin-x64@0.3.0:
@@ -2075,7 +2092,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /solana-bankrun-linux-x64-gnu@0.3.0:
@@ -2084,7 +2100,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /solana-bankrun-linux-x64-musl@0.3.0:
@@ -2093,7 +2108,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /solana-bankrun@0.3.0:
@@ -2112,7 +2126,6 @@ packages:
       - bufferutil
       - encoding
       - utf-8-validate
-    dev: true
 
   /source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}

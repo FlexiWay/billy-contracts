@@ -1,5 +1,4 @@
 import { Amman } from "@metaplex-foundation/amman-client";
-
 import {
   keypairIdentity,
   createAmount,
@@ -7,6 +6,8 @@ import {
   Keypair,
   createSignerFromKeypair,
   generateSigner,
+  TransactionBuilder,
+  Umi,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
@@ -23,6 +24,8 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey as Web3JsPublicKey,
   SYSVAR_CLOCK_PUBKEY,
+  Transaction,
+  Keypair as Web3JsKp,
 } from "@solana/web3.js";
 import {
   createLmaofunBondingCurveProgram,
@@ -41,8 +44,14 @@ import {
 import {
   fromWeb3JsKeypair,
   fromWeb3JsPublicKey,
+  toWeb3JsPublicKey,
+  toWeb3JsTransaction,
 } from "@metaplex-foundation/umi-web3js-adapters";
-import { findMetadataPda } from "@metaplex-foundation/mpl-token-metadata";
+import { BankrunProvider } from "anchor-bankrun";
+import {
+  findMetadataPda,
+  MPL_TOKEN_METADATA_PROGRAM_ID,
+} from "@metaplex-foundation/mpl-token-metadata";
 import assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
 import { INIT_DEFAULTS } from "../clients/js/src/constants";
@@ -60,6 +69,18 @@ import { setParams } from "../clients/js/src/generated/instructions/setParams";
 import { assertBondingCurve, assertGlobal } from "./utils";
 import { getGlobalSize } from "../clients/js/src/generated/accounts/global";
 import { AMM } from "../clients/js/src/amm";
+import { Pda, PublicKey } from "@metaplex-foundation/umi";
+import {
+  BanksClient,
+  ProgramTestContext,
+  start,
+  startAnchor,
+} from "solana-bankrun";
+import { web3JsRpc } from "@metaplex-foundation/umi-rpc-web3js";
+import { AccountLayout } from "@solana/spl-token";
+
+const USE_BANKRUN = true;
+const INITIAL_SOL = 100 * LAMPORTS_PER_SOL;
 
 const amman = Amman.instance({
   ammanClientOpts: { autoUnref: false, ack: true },
@@ -68,71 +89,203 @@ const amman = Amman.instance({
   },
 });
 
-let rpcUrl;
-if (process.env.ANCHOR_PROVIDER_URL) {
-  rpcUrl = process.env.ANCHOR_PROVIDER_URL;
-} else {
-  rpcUrl = "http://127.0.0.1:8899";
-  process.env.ANCHOR_PROVIDER_URL = rpcUrl;
-  process.env.ANCHOR_WALLET = "./keys/test-kp.json";
-}
-
-const provider = anchor.AnchorProvider.env();
-anchor.setProvider(provider);
-
-const connection = new Connection(rpcUrl, {
-  commitment: "confirmed",
-});
-
-let umi = createUmi(rpcUrl);
-
-const keypair = Web3JsKeypair.fromSecretKey(
-  Uint8Array.from(require("../keys/test-kp.json"))
+// --- KEYPAIRS
+const masterKp = fromWeb3JsKeypair(
+  Web3JsKeypair.fromSecretKey(Uint8Array.from(require("../keys/test-kp.json")))
 );
+const simpleMintKp = fromWeb3JsKeypair(Web3JsKeypair.generate());
+const creator = fromWeb3JsKeypair(Web3JsKeypair.generate());
+const trader = fromWeb3JsKeypair(Web3JsKeypair.generate());
+const withdrawAuthority = fromWeb3JsKeypair(Web3JsKeypair.generate());
 
-let simpleMintKp = generateSigner(umi);
-let creator = generateSigner(umi);
-let trader = generateSigner(umi);
-let withdrawAuthority = generateSigner(umi);
-
-amman.addr.addLabel("master", keypair.publicKey);
 amman.addr.addLabel("withdrawAuthority", withdrawAuthority.publicKey);
-
 amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
 amman.addr.addLabel("creator", creator.publicKey);
 amman.addr.addLabel("trader", trader.publicKey);
 
-describe("lmaofun-bonding", () => {
-  const bondingCurveProgram = createLmaofunBondingCurveProgram();
+// --- PROVIDERS
+let bankrunContext: ProgramTestContext;
+let bankrunClient: BanksClient;
+let bankrunProvider: BankrunProvider;
+let connection: Connection;
+let rpcUrl = "http://127.0.0.1:8899";
+
+let umi: Umi;
+
+const bondingCurveProgram = createLmaofunBondingCurveProgram();
+
+const loadProviders = async () => {
+  process.env.ANCHOR_WALLET = "./keys/test-kp.json";
+  if (USE_BANKRUN) {
+    console.log("using bankrun");
+    bankrunContext = await startAnchor(
+      "./",
+      [
+        // even though the program is loaded into the test validator, we need
+        // to tell banks test client to load it as well
+        {
+          name: "mpl_token_metadata",
+          programId: toWeb3JsPublicKey(MPL_TOKEN_METADATA_PROGRAM_ID),
+        },
+        // {
+        //   name: "lmaofun_bonding_curve",
+        //   programId: toWeb3JsPublicKey(LMAOFUN_BONDING_CURVE_PROGRAM_ID),
+        // },
+      ],
+      [
+        {
+          address: toWeb3JsPublicKey(masterKp.publicKey),
+          info: {
+            lamports: INITIAL_SOL,
+            executable: false,
+            data: Buffer.from([]),
+            owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
+          },
+        },
+        {
+          address: toWeb3JsPublicKey(creator.publicKey),
+          info: {
+            lamports: INITIAL_SOL,
+            executable: false,
+            data: Buffer.from([]),
+            owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
+          },
+        },
+        {
+          address: toWeb3JsPublicKey(trader.publicKey),
+          info: {
+            lamports: INITIAL_SOL,
+            executable: false,
+            data: Buffer.from([]),
+            owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
+          },
+        },
+      ]
+    );
+    // console.log("bankrunCtx: ", bankrunContext);
+    bankrunClient = bankrunContext.banksClient;
+    // console.log("bankrunClient: ", bankrunClient);
+    bankrunProvider = new BankrunProvider(bankrunContext);
+    // console.log("provider: ", provider);
+    // console.log(provider.connection.rpcEndpoint);
+
+    console.log("anchor connection: ", bankrunProvider.connection.rpcEndpoint);
+
+    //@ts-ignore
+    bankrunProvider.connection.rpcEndpoint = rpcUrl;
+    const conn = bankrunProvider.connection;
+
+    // rpcUrl = anchor.AnchorProvider.env().connection.rpcEndpoint;
+    umi = createUmi(rpcUrl).use(web3JsRpc(conn));
+    connection = conn;
+    console.log("using bankrun payer");
+    umi.use(keypairIdentity(fromWeb3JsKeypair(bankrunContext.payer)));
+  } else {
+    if (process.env.ANCHOR_PROVIDER_URL) {
+      rpcUrl = process.env.ANCHOR_PROVIDER_URL;
+    } else {
+      process.env.ANCHOR_PROVIDER_URL = rpcUrl;
+    }
+
+    const provider = anchor.AnchorProvider.env();
+    connection = provider.connection;
+    anchor.setProvider(provider);
+    umi = createUmi(rpcUrl);
+
+    console.log("using ../keys/test-kp.json");
+
+    umi.use(keypairIdentity(masterKp));
+  }
+
   umi.programs.add(createSplAssociatedTokenProgram());
   umi.programs.add(createSplTokenProgram());
   umi.programs.add(bondingCurveProgram);
+};
 
-  umi.use(keypairIdentity(fromWeb3JsKeypair(keypair)));
+// pdas and util accs
 
-  let globalPda = findGlobalPda(umi);
+let globalPda: Pda;
+let eventAuthorityPda: Pda;
+let eventAuthority: PublicKey;
+let evtAuthorityAccs: {
+  eventAuthority: PublicKey;
+  program: PublicKey;
+};
+
+const loadKeypairs = async (umi) => {
+  amman.addr.addLabel("master", umi.identity.publicKey);
+
+  globalPda = findGlobalPda(umi);
   amman.addr.addLabel("global", globalPda[0]);
-
-  let eventAuthorityPda = findEvtAuthorityPda(umi);
-  let eventAuthority = eventAuthorityPda[0];
-  const evtAuthorityAccs = {
+  eventAuthorityPda = findEvtAuthorityPda(umi);
+  eventAuthority = eventAuthorityPda[0];
+  amman.addr.addLabel("eventAuthority", eventAuthority);
+  evtAuthorityAccs = {
     eventAuthority,
     program: LMAOFUN_BONDING_CURVE_PROGRAM_ID,
   };
+};
+
+async function processTransaction(umi, txBuilder: TransactionBuilder) {
+  if (USE_BANKRUN) {
+    const bhash = await bankrunClient.getLatestBlockhash();
+    const tx = toWeb3JsTransaction(
+      await txBuilder.setBlockhash(bhash[0]).build(umi)
+    );
+    return await bankrunClient.processTransaction(tx);
+  } else {
+    return await txBuilder.sendAndConfirm(umi);
+  }
+}
+
+const getBalance = async (pubkey: PublicKey) => {
+  // cannot use umi helpers in bankrun
+  if (USE_BANKRUN) {
+    const balance = await bankrunClient.getBalance(toWeb3JsPublicKey(pubkey));
+    return balance;
+  } else {
+    const umiBalance = await umi.rpc.getBalance(pubkey);
+    return umiBalance.basisPoints;
+  }
+};
+const getTknAmount = async (pubkey: PublicKey) => {
+  // cannot use umi helpers and some rpc methods in bankrun
+  if (USE_BANKRUN) {
+    const accInfo = await bankrunClient.getAccount(toWeb3JsPublicKey(pubkey));
+    const info = AccountLayout.decode(accInfo.data);
+    return info.amount;
+  } else {
+    const umiBalance = await connection.getAccountInfo(
+      toWeb3JsPublicKey(pubkey)
+    );
+    const info = AccountLayout.decode(umiBalance.data);
+    return info.amount;
+  }
+};
+
+describe("lmaofun-bonding", () => {
   before(async () => {
+    await loadProviders();
+    await loadKeypairs(umi);
     try {
-      await Promise.all(
-        [
-          umi.identity.publicKey,
-          creator.publicKey,
-          withdrawAuthority.publicKey,
-          trader.publicKey,
-        ].map((pk) =>
-          umi.rpc.airdrop(pk, createAmount(100 * LAMPORTS_PER_SOL, "SOL", 9), {
-            commitment: "finalized",
+      if (!USE_BANKRUN) {
+        await Promise.all(
+          [
+            umi.identity.publicKey,
+            creator.publicKey,
+            withdrawAuthority.publicKey,
+            trader.publicKey,
+          ].map(async (pk) => {
+            const res = await umi.rpc.airdrop(
+              pk,
+              createAmount(INITIAL_SOL, "SOL", 9),
+              {
+                commitment: "finalized",
+              }
+            );
           })
-        )
-      );
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -147,13 +300,7 @@ describe("lmaofun-bonding", () => {
       ...evtAuthorityAccs,
     });
 
-    const txRes = await txBuilder.sendAndConfirm(umi);
-    // const events = await getTxEventsFromTxBuilderResponse(
-    //   connection,
-    //   program,
-    //   txRes
-    // );
-    // events.forEach(logEvent);
+    await processTransaction(umi, txBuilder);
 
     const global = await fetchGlobal(umi, globalPda);
     assertGlobal(global, INIT_DEFAULTS);
@@ -188,27 +335,18 @@ describe("lmaofun-bonding", () => {
     const txBuilder = createBondingCurve(umi, {
       global: globalPda[0],
       creator: createSignerFromKeypair(umi, creator),
-      mint: simpleMintKp,
-
+      mint: createSignerFromKeypair(umi, simpleMintKp),
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       metadata: metadataPda[0],
-
       ...mintMeta,
       ...evtAuthorityAccs,
-
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       startTime: none(),
     });
-    const txRes = await txBuilder.sendAndConfirm(umi);
 
-    // const events = await getTxEventsFromTxBuilderResponse(
-    //   connection,
-    //   program,
-    //   txRes
-    // );
-    // events.forEach(logEvent);
+    await processTransaction(umi, txBuilder);
 
     const bondingCurveData = await fetchBondingCurve(
       umi,
@@ -224,12 +362,11 @@ describe("lmaofun-bonding", () => {
     });
 
     // assert launch fee collection
-    const globalBalance = await umi.rpc.getBalance(globalPda[0]);
-    const globalBalanceInt = parseInt(globalBalance.basisPoints.toString());
-    const startingBalance = await connection.getMinimumBalanceForRentExemption(
-      getGlobalSize()
-    );
-    const accruedFees = globalBalanceInt - startingBalance;
+    const globalBalanceInt = await getBalance(globalPda[0]);
+    const startingBalance = await anchor
+      .getProvider()
+      .connection.getMinimumBalanceForRentExemption(getGlobalSize());
+    const accruedFees = Number(globalBalanceInt) - startingBalance;
 
     assert(accruedFees == INIT_DEFAULTS.launchFeeLamports);
   });
@@ -285,7 +422,8 @@ describe("lmaofun-bonding", () => {
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
     });
-    const txRes = await txBuilder.sendAndConfirm(umi);
+
+    await processTransaction(umi, txBuilder);
 
     // const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
     // events.forEach(logEvent);
@@ -294,7 +432,7 @@ describe("lmaofun-bonding", () => {
       umi,
       simpleMintBondingCurvePda[0]
     );
-    const traderAtaBalancePost = await umi.rpc.getBalance(traderAta[0]);
+    const traderAtaBalancePost = await getTknAmount(traderAta[0]);
     assert(
       bondingCurveDataPost.realTokenReserves + buyTokenAmount ==
         bondingCurveData.realTokenReserves
@@ -303,106 +441,107 @@ describe("lmaofun-bonding", () => {
       bondingCurveDataPost.realSolReserves ==
         bondingCurveData.realSolReserves + solAmount
     );
-    assert(traderAtaBalancePost.basisPoints == buyTokenAmount);
+    assert(traderAtaBalancePost == buyTokenAmount);
   });
 
-  // it("set_params: status:SwapOnly, withdrawAuthority", async () => {
-  //   const txBuilder = setParams(umi, {
-  //     global: globalPda[0],
-  //     authority: umi.identity,
-  //     params: {
-  //       launchFeeLamports: none(),
-  //       initialTokenSupply: none(),
-  //       initialRealSolReserves: none(),
-  //       initialRealTokenReserves: none(),
-  //       initialVirtualSolReserves: none(),
-  //       initialVirtualTokenReserves: none(),
-  //       solLaunchThreshold: none(),
-  //       tradeFeeBps: none(),
-  //       createdMintDecimals: none(),
-  //       status: ProgramStatus.SwapOnly,
-  //     },
-  //     newWithdrawAuthority: withdrawAuthority.publicKey,
-  //     ...evtAuthorityAccs,
-  //   });
+  it("set_params: status:SwapOnly, withdrawAuthority", async () => {
+    const txBuilder = setParams(umi, {
+      global: globalPda[0],
+      authority: umi.identity,
+      params: {
+        launchFeeLamports: none(),
+        initialTokenSupply: none(),
+        initialRealSolReserves: none(),
+        initialRealTokenReserves: none(),
+        initialVirtualSolReserves: none(),
+        initialVirtualTokenReserves: none(),
+        solLaunchThreshold: none(),
+        tradeFeeBps: none(),
+        createdMintDecimals: none(),
+        status: ProgramStatus.SwapOnly,
+      },
+      newWithdrawAuthority: withdrawAuthority.publicKey,
+      ...evtAuthorityAccs,
+    });
 
-  //   const txRes = await txBuilder.sendAndConfirm(umi);
-  //   // const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-  //   // events.forEach(logEvent)
-  //   const global = await fetchGlobal(umi, globalPda);
+    // const txRes = await txBuilder.sendAndConfirm(umi);
+    await processTransaction(umi, txBuilder);
+    // const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    // events.forEach(logEvent)
+    const global = await fetchGlobal(umi, globalPda);
 
-  //   assertGlobal(global, {
-  //     ...INIT_DEFAULTS,
-  //     status: ProgramStatus.SwapOnly,
-  //     withdrawAuthority: withdrawAuthority.publicKey,
-  //   });
-  // });
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+      status: ProgramStatus.SwapOnly,
+      withdrawAuthority: withdrawAuthority.publicKey,
+    });
+  });
 
-  // it("withdraw_fees using withdraw_authority", async () => {
-  //   const globalBalance = await umi.rpc.getBalance(globalPda[0]);
-  //   const globalBalanceInt = parseInt(globalBalance.basisPoints.toString());
-  //   const startingBalance = await connection.getMinimumBalanceForRentExemption(
-  //     getGlobalSize()
-  //   );
-  //   const accruedFees = globalBalanceInt - startingBalance;
+  it("withdraw_fees using withdraw_authority", async () => {
+    const globalBalanceInt = await getBalance(globalPda[0]);
+    const startingBalance = await connection.getMinimumBalanceForRentExemption(
+      getGlobalSize()
+    );
+    const accruedFees = Number(globalBalanceInt) - startingBalance;
 
-  //   assert(accruedFees > 0);
-  //   const txBuilder = withdrawFees(umi, {
-  //     global: globalPda[0],
-  //     authority: withdrawAuthority,
-  //     ...evtAuthorityAccs,
-  //   });
+    assert(accruedFees > 0);
+    const txBuilder = withdrawFees(umi, {
+      global: globalPda[0],
+      authority: createSignerFromKeypair(umi, withdrawAuthority),
+      ...evtAuthorityAccs,
+    });
 
-  //   const txRes = await txBuilder.sendAndConfirm(umi);
-  //   // const events = await getTxEventsFromTxBuilderResponse(
-  //   //   connection,
-  //   //   program,
-  //   //   txRes
-  //   // );
-  //   // events.forEach(logEvent);
+    // const txRes = await txBuilder.sendAndConfirm(umi);
+    await processTransaction(umi, txBuilder);
+    // const events = await getTxEventsFromTxBuilderResponse(
+    //   connection,
+    //   program,
+    //   txRes
+    // );
+    // events.forEach(logEvent);
 
-  //   const global = await fetchGlobal(umi, globalPda);
+    const global = await fetchGlobal(umi, globalPda);
 
-  //   assertGlobal(global, {
-  //     ...INIT_DEFAULTS,
-  //     status: ProgramStatus.SwapOnly,
-  //     withdrawAuthority: withdrawAuthority.publicKey,
-  //   });
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+      status: ProgramStatus.SwapOnly,
+      withdrawAuthority: withdrawAuthority.publicKey,
+    });
 
-  //   const globalBalancePost = await umi.rpc.getBalance(globalPda[0]);
-  //   const globalBalanceIntPost = parseInt(
-  //     globalBalancePost.basisPoints.toString()
-  //   );
-  //   assert(globalBalanceIntPost == startingBalance);
-  // });
+    const globalBalancePost = await umi.rpc.getBalance(globalPda[0]);
+    const globalBalanceIntPost = parseInt(
+      globalBalancePost.basisPoints.toString()
+    );
+    assert(globalBalanceIntPost == startingBalance);
+  });
 
-  // it("set_params: status:Running", async () => {
-  //   const txBuilder = setParams(umi, {
-  //     global: globalPda[0],
-  //     authority: umi.identity,
-  //     params: {
-  //       launchFeeLamports: none(),
-  //       initialTokenSupply: none(),
-  //       initialRealSolReserves: none(),
-  //       initialRealTokenReserves: none(),
-  //       initialVirtualSolReserves: none(),
-  //       initialVirtualTokenReserves: none(),
-  //       solLaunchThreshold: none(),
-  //       tradeFeeBps: none(),
-  //       createdMintDecimals: none(),
+  it("set_params: status:Running", async () => {
+    const txBuilder = setParams(umi, {
+      global: globalPda[0],
+      authority: umi.identity,
+      params: {
+        launchFeeLamports: none(),
+        initialTokenSupply: none(),
+        initialRealSolReserves: none(),
+        initialRealTokenReserves: none(),
+        initialVirtualSolReserves: none(),
+        initialVirtualTokenReserves: none(),
+        solLaunchThreshold: none(),
+        tradeFeeBps: none(),
+        createdMintDecimals: none(),
 
-  //       status: ProgramStatus.Running,
-  //     },
-  //     ...evtAuthorityAccs,
-  //   });
+        status: ProgramStatus.Running,
+      },
+      ...evtAuthorityAccs,
+    });
 
-  //   const txRes = await txBuilder.sendAndConfirm(umi);
-  //   //   const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
-  //   //   events.forEach(logEvent)
-  //   const global = await fetchGlobal(umi, globalPda);
+    await processTransaction(umi, txBuilder);
+    //   const events = await getTxEventsFromTxBuilderResponse(connection, program, txRes);
+    //   events.forEach(logEvent)
+    const global = await fetchGlobal(umi, globalPda);
 
-  //   assertGlobal(global, {
-  //     ...INIT_DEFAULTS,
-  //   });
-  // });
+    assertGlobal(global, {
+      ...INIT_DEFAULTS,
+    });
+  });
 });
