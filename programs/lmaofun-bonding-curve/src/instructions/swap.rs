@@ -130,10 +130,10 @@ impl Swap<'_> {
 
             sol_amount = buy_result.sol_amount;
             token_amount = buy_result.token_amount;
-            fee_lamports = global_state.calculate_fee(sol_amount);
+            fee_lamports = global_state.calculate_fee(exact_in_amount);
+            msg!("Fee: {} lamports", fee_lamports);
 
             msg!("BuyResult: {:#?}", buy_result);
-            msg!("Fee: {} lamports", fee_lamports);
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
         let bonding_curve = &mut ctx.accounts.bonding_curve;

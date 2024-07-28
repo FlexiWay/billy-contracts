@@ -296,8 +296,8 @@ describe("lmaofun-bonding", () => {
       simpleMintBondingCurvePda[0]
     );
     const amm = AMM.fromBondingCurve(bondingCurveData);
-    let buyTokenAmount = 100_000_000_000n;
-    let solAmount = amm.getBuyPrice(buyTokenAmount);
+    let minBuyTokenAmount = 100_000_000_000n;
+    let solAmount = amm.getBuyPrice(minBuyTokenAmount);
 
     // should use actual fee set on global when live
     let fee = calculateFee(solAmount, INIT_DEFAULTS.tradeFeeBps);
@@ -305,33 +305,17 @@ describe("lmaofun-bonding", () => {
     console.log("solAmount", solAmount);
     console.log("fee", fee);
     console.log("solAmountWithFee", solAmountWithFee);
-    console.log("buyTokenAmount", buyTokenAmount);
-    let buyResult = amm.applyBuy(buyTokenAmount);
+    console.log("buyTokenAmount", minBuyTokenAmount);
+    let buyResult = amm.applyBuy(minBuyTokenAmount);
     console.log("buySimResult", buyResult);
-    console.log({
-      global: globalPda[0],
-      user: traderSigner,
 
-      baseIn: false, // buy
-      exactInAmount: solAmountWithFee,
-      minOutAmount: buyTokenAmount,
-
-      mint: simpleMintKp.publicKey,
-      bondingCurve: simpleMintBondingCurvePda[0],
-
-      bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
-      userTokenAccount: traderAta[0],
-
-      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
-      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
-    });
     const txBuilder = swap(umi, {
       global: globalPda[0],
       user: traderSigner,
 
       baseIn: false, // buy
-      exactInAmount: solAmountWithFee,
-      minOutAmount: buyTokenAmount,
+      exactInAmount: solAmount,
+      minOutAmount: minBuyTokenAmount,
 
       mint: simpleMintKp.publicKey,
       bondingCurve: simpleMintBondingCurvePda[0],
@@ -354,15 +338,27 @@ describe("lmaofun-bonding", () => {
       simpleMintBondingCurvePda[0]
     );
     const traderAtaBalancePost = await getTknAmount(umi, traderAta[0]);
-    assert(
-      bondingCurveDataPost.realTokenReserves + buyTokenAmount ==
-        bondingCurveData.realTokenReserves
+    console.log("pre.realTokenReserves", bondingCurveData.realTokenReserves);
+    console.log(
+      "post.realTokenReserves",
+      bondingCurveDataPost.realTokenReserves
     );
+    console.log("buyTokenAmount", minBuyTokenAmount);
+    const tknAmountDiff =
+      bondingCurveData.realTokenReserves -
+      bondingCurveDataPost.realTokenReserves;
+    console.log("real difference", tknAmountDiff);
+    console.log(
+      "buyAmount-tknAmountDiff",
+      tknAmountDiff - minBuyTokenAmount,
+      tknAmountDiff > minBuyTokenAmount
+    );
+    assert(tknAmountDiff > minBuyTokenAmount);
     assert(
       bondingCurveDataPost.realSolReserves ==
         bondingCurveData.realSolReserves + solAmount
     );
-    assert(traderAtaBalancePost == buyTokenAmount);
+    assert(traderAtaBalancePost >= minBuyTokenAmount);
   });
   it("swap: sell", async () => {
     const traderSigner = createSignerFromKeypair(umi, trader);

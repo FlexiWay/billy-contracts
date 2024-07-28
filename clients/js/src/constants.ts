@@ -5,14 +5,15 @@ import { ProgramStatus } from "./generated";
 export const TOKEN_DECIMALS = 6;
 
 export const DECIMALS_MULTIPLIER = 10 ** TOKEN_DECIMALS;
-
-export const DEFAULT_TOKEN_SUPPLY= 1_000* 1_000_000 * DECIMALS_MULTIPLIER;
+export const TOKEN_SUPPLY_AMOUNT = 1_000* 1_000_000;
+export const VIRTUAL_TOKEN_MULTIPLIER = 107.3/100 // +7.3%
+export const DEFAULT_TOKEN_SUPPLY= TOKEN_SUPPLY_AMOUNT * DECIMALS_MULTIPLIER;
 
 export const INIT_DEFAULTS={
     initialRealSolReserves: 0,
     initialRealTokenReserves: DEFAULT_TOKEN_SUPPLY,
     initialVirtualSolReserves: 30 * LAMPORTS_PER_SOL,
-    initialVirtualTokenReserves: 1_073 * 1_000_000 * DECIMALS_MULTIPLIER,
+    initialVirtualTokenReserves:TOKEN_SUPPLY_AMOUNT *VIRTUAL_TOKEN_MULTIPLIER * DECIMALS_MULTIPLIER,
     initialTokenSupply:DEFAULT_TOKEN_SUPPLY,
     solLaunchThreshold: 100*LAMPORTS_PER_SOL,
     tradeFeeBps: 100,
