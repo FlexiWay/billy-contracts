@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AllocationData;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -145,7 +146,12 @@ pub struct CreateBondingCurveInstructionArgs {
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    pub start_time: Option<i64>,
+    pub start_time: i64,
+    pub token_total_supply: u64,
+    pub sol_launch_threshold: u64,
+    pub virtual_token_multiplier: f64,
+    pub virtual_sol_reserves: u64,
+    pub allocation: AllocationData,
 }
 
 /// Instruction builder for `CreateBondingCurve`.
@@ -186,6 +192,11 @@ pub struct CreateBondingCurveBuilder {
     symbol: Option<String>,
     uri: Option<String>,
     start_time: Option<i64>,
+    token_total_supply: Option<u64>,
+    sol_launch_threshold: Option<u64>,
+    virtual_token_multiplier: Option<f64>,
+    virtual_sol_reserves: Option<u64>,
+    allocation: Option<AllocationData>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -294,10 +305,34 @@ impl CreateBondingCurveBuilder {
         self.uri = Some(uri);
         self
     }
-    /// `[optional argument]`
     #[inline(always)]
     pub fn start_time(&mut self, start_time: i64) -> &mut Self {
         self.start_time = Some(start_time);
+        self
+    }
+    #[inline(always)]
+    pub fn token_total_supply(&mut self, token_total_supply: u64) -> &mut Self {
+        self.token_total_supply = Some(token_total_supply);
+        self
+    }
+    #[inline(always)]
+    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
+        self.sol_launch_threshold = Some(sol_launch_threshold);
+        self
+    }
+    #[inline(always)]
+    pub fn virtual_token_multiplier(&mut self, virtual_token_multiplier: f64) -> &mut Self {
+        self.virtual_token_multiplier = Some(virtual_token_multiplier);
+        self
+    }
+    #[inline(always)]
+    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
+        self.virtual_sol_reserves = Some(virtual_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn allocation(&mut self, allocation: AllocationData) -> &mut Self {
+        self.allocation = Some(allocation);
         self
     }
     /// Add an aditional account to the instruction.
@@ -353,7 +388,24 @@ impl CreateBondingCurveBuilder {
             name: self.name.clone().expect("name is not set"),
             symbol: self.symbol.clone().expect("symbol is not set"),
             uri: self.uri.clone().expect("uri is not set"),
-            start_time: self.start_time.clone(),
+            start_time: self.start_time.clone().expect("start_time is not set"),
+            token_total_supply: self
+                .token_total_supply
+                .clone()
+                .expect("token_total_supply is not set"),
+            sol_launch_threshold: self
+                .sol_launch_threshold
+                .clone()
+                .expect("sol_launch_threshold is not set"),
+            virtual_token_multiplier: self
+                .virtual_token_multiplier
+                .clone()
+                .expect("virtual_token_multiplier is not set"),
+            virtual_sol_reserves: self
+                .virtual_sol_reserves
+                .clone()
+                .expect("virtual_sol_reserves is not set"),
+            allocation: self.allocation.clone().expect("allocation is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -632,6 +684,11 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             symbol: None,
             uri: None,
             start_time: None,
+            token_total_supply: None,
+            sol_launch_threshold: None,
+            virtual_token_multiplier: None,
+            virtual_sol_reserves: None,
+            allocation: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -754,10 +811,34 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
-    /// `[optional argument]`
     #[inline(always)]
     pub fn start_time(&mut self, start_time: i64) -> &mut Self {
         self.instruction.start_time = Some(start_time);
+        self
+    }
+    #[inline(always)]
+    pub fn token_total_supply(&mut self, token_total_supply: u64) -> &mut Self {
+        self.instruction.token_total_supply = Some(token_total_supply);
+        self
+    }
+    #[inline(always)]
+    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
+        self.instruction.sol_launch_threshold = Some(sol_launch_threshold);
+        self
+    }
+    #[inline(always)]
+    pub fn virtual_token_multiplier(&mut self, virtual_token_multiplier: f64) -> &mut Self {
+        self.instruction.virtual_token_multiplier = Some(virtual_token_multiplier);
+        self
+    }
+    #[inline(always)]
+    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
+        self.instruction.virtual_sol_reserves = Some(virtual_sol_reserves);
+        self
+    }
+    #[inline(always)]
+    pub fn allocation(&mut self, allocation: AllocationData) -> &mut Self {
+        self.instruction.allocation = Some(allocation);
         self
     }
     /// Add an additional account to the instruction.
@@ -805,7 +886,36 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             name: self.instruction.name.clone().expect("name is not set"),
             symbol: self.instruction.symbol.clone().expect("symbol is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
-            start_time: self.instruction.start_time.clone(),
+            start_time: self
+                .instruction
+                .start_time
+                .clone()
+                .expect("start_time is not set"),
+            token_total_supply: self
+                .instruction
+                .token_total_supply
+                .clone()
+                .expect("token_total_supply is not set"),
+            sol_launch_threshold: self
+                .instruction
+                .sol_launch_threshold
+                .clone()
+                .expect("sol_launch_threshold is not set"),
+            virtual_token_multiplier: self
+                .instruction
+                .virtual_token_multiplier
+                .clone()
+                .expect("virtual_token_multiplier is not set"),
+            virtual_sol_reserves: self
+                .instruction
+                .virtual_sol_reserves
+                .clone()
+                .expect("virtual_sol_reserves is not set"),
+            allocation: self
+                .instruction
+                .allocation
+                .clone()
+                .expect("allocation is not set"),
         };
         let instruction = CreateBondingCurveCpi {
             __program: self.instruction.__program,
@@ -887,6 +997,11 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     symbol: Option<String>,
     uri: Option<String>,
     start_time: Option<i64>,
+    token_total_supply: Option<u64>,
+    sol_launch_threshold: Option<u64>,
+    virtual_token_multiplier: Option<f64>,
+    virtual_sol_reserves: Option<u64>,
+    allocation: Option<AllocationData>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

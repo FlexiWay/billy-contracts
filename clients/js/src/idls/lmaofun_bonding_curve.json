@@ -294,11 +294,15 @@
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
           },
           {
             "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualTokenReserves",
             "type": "u64"
           },
           {
@@ -318,12 +322,30 @@
             "type": "u64"
           },
           {
+            "name": "presaleSupply",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
             "name": "startTime",
             "type": "i64"
           },
           {
             "name": "complete",
             "type": "bool"
+          },
+          {
+            "name": "allocation",
+            "type": {
+              "defined": "AllocationData"
+            }
           }
         ]
       }
@@ -352,30 +374,6 @@
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialTokenSupply",
-            "type": "u64"
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
             "name": "tradeFeeBps",
             "type": "u32"
           },
@@ -392,6 +390,62 @@
     }
   ],
   "types": [
+    {
+      "name": "SwapParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseIn",
+            "type": "bool"
+          },
+          {
+            "name": "exactInAmount",
+            "type": "u64"
+          },
+          {
+            "name": "minOutAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllocationData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dev",
+            "type": "f64"
+          },
+          {
+            "name": "cex",
+            "type": "f64"
+          },
+          {
+            "name": "launchBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "lifetimeBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "platform",
+            "type": "f64"
+          },
+          {
+            "name": "presale",
+            "type": "f64"
+          },
+          {
+            "name": "poolReserve",
+            "type": "f64"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateBondingCurveParams",
       "type": {
@@ -411,29 +465,29 @@
           },
           {
             "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
+          },
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "allocation",
             "type": {
-              "option": "i64"
+              "defined": "AllocationData"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SwapParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "baseIn",
-            "type": "bool"
-          },
-          {
-            "name": "exactInAmount",
-            "type": "u64"
-          },
-          {
-            "name": "minOutAmount",
-            "type": "u64"
           }
         ]
       }
@@ -463,42 +517,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "initialTokenSupply",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": {
-              "option": "u64"
-            }
-          },
           {
             "name": "tradeFeeBps",
             "type": {
@@ -559,23 +577,8 @@
           "index": false
         },
         {
-          "name": "initialVirtualTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialVirtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialRealTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialTokenSupply",
-          "type": "u64",
+          "name": "withdrawAuthority",
+          "type": "publicKey",
           "index": false
         },
         {
@@ -589,11 +592,6 @@
           "index": false
         },
         {
-          "name": "solLaunchThreshold",
-          "type": "u64",
-          "index": false
-        },
-        {
           "name": "createdMintDecimals",
           "type": "u8",
           "index": false
@@ -603,6 +601,16 @@
     {
       "name": "CreateEvent",
       "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
         {
           "name": "name",
           "type": "string",
@@ -619,13 +627,8 @@
           "index": false
         },
         {
-          "name": "mint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "creator",
-          "type": "publicKey",
+          "name": "startTime",
+          "type": "i64",
           "index": false
         },
         {
@@ -639,7 +642,22 @@
           "index": false
         },
         {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "tokenTotalSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "solLaunchThreshold",
           "type": "u64",
           "index": false
         }
@@ -846,6 +864,16 @@
       "code": 6016,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidAllocation",
+      "msg": "Invalid Allocation Data supplied, percents must add up to 100"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidStartTime",
+      "msg": "Start time is in the past"
     }
   ],
   "metadata": {

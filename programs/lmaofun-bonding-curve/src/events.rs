@@ -3,26 +3,31 @@ use anchor_lang::prelude::*;
 #[event]
 pub struct GlobalUpdateEvent {
     pub global_authority: Pubkey,
-    pub initial_virtual_token_reserves: u64,
-    pub initial_virtual_sol_reserves: u64,
-    pub initial_real_token_reserves: u64,
-    pub initial_token_supply: u64,
+    pub withdraw_authority: Pubkey,
+    // pub initial_virtual_token_reserves: u64,
+    // pub initial_virtual_sol_reserves: u64,
+    // pub initial_real_token_reserves: u64,
+    // pub initial_token_supply: u64,
+    // pub sol_launch_threshold: u64,
     pub trade_fee_bps: u32,
     pub launch_fee_lamports: u64,
-    pub sol_launch_threshold: u64,
     pub created_mint_decimals: u8,
 }
 
 #[event]
 pub struct CreateEvent {
+    pub mint: Pubkey,
+    pub creator: Pubkey,
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    pub mint: Pubkey,
-    pub creator: Pubkey,
+    pub start_time: i64,
     pub virtual_sol_reserves: u64,
     pub virtual_token_reserves: u64,
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
     pub token_total_supply: u64,
+    pub sol_launch_threshold: u64,
 }
 
 #[event]

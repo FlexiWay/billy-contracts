@@ -233,6 +233,32 @@ export class CurveNotStartedError extends ProgramError {
 codeToErrorMap.set(0x1780, CurveNotStartedError);
 nameToErrorMap.set('CurveNotStarted', CurveNotStartedError);
 
+/** InvalidAllocation: Invalid Allocation Data supplied, percents must add up to 100 */
+export class InvalidAllocationError extends ProgramError {
+  override readonly name: string = 'InvalidAllocation';
+
+  readonly code: number = 0x1781; // 6017
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Allocation Data supplied, percents must add up to 100', program, cause);
+  }
+}
+codeToErrorMap.set(0x1781, InvalidAllocationError);
+nameToErrorMap.set('InvalidAllocation', InvalidAllocationError);
+
+/** InvalidStartTime: Start time is in the past */
+export class InvalidStartTimeError extends ProgramError {
+  override readonly name: string = 'InvalidStartTime';
+
+  readonly code: number = 0x1782; // 6018
+  
+  constructor(program: Program, cause?: Error) {
+    super('Start time is in the past', program, cause);
+  }
+}
+codeToErrorMap.set(0x1782, InvalidStartTimeError);
+nameToErrorMap.set('InvalidStartTime', InvalidStartTimeError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -46,4 +46,10 @@ pub enum ProgramError {
 
     #[msg("Curve Not Started")]
     CurveNotStarted,
+
+    #[msg("Invalid Allocation Data supplied, percents must add up to 100")]
+    InvalidAllocation,
+
+    #[msg("Start time is in the past")]
+    InvalidStartTime,
 }

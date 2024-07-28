@@ -61,6 +61,12 @@ pub enum LmaofunBondingCurveError {
     /// 6016 (0x1780) - Curve Not Started
     #[error("Curve Not Started")]
     CurveNotStarted,
+    /// 6017 (0x1781) - Invalid Allocation Data supplied, percents must add up to 100
+    #[error("Invalid Allocation Data supplied, percents must add up to 100")]
+    InvalidAllocation,
+    /// 6018 (0x1782) - Start time is in the past
+    #[error("Start time is in the past")]
+    InvalidStartTime,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

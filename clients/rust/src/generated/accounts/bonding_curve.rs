@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AllocationData;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -22,18 +23,23 @@ pub struct BondingCurve {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub creator: Pubkey,
-    pub initial_virtual_token_reserves: u64,
+    pub virtual_token_multiplier: f64,
     pub virtual_sol_reserves: u64,
+    pub initial_virtual_token_reserves: u64,
     pub virtual_token_reserves: u64,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
+    pub presale_supply: u64,
+    pub bonding_supply: u64,
+    pub sol_launch_threshold: u64,
     pub start_time: i64,
     pub complete: bool,
+    pub allocation: AllocationData,
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 97;
+    pub const LEN: usize = 185;
 
     /// Prefix values used to generate a PDA for this account.
     ///

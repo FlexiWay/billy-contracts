@@ -294,11 +294,15 @@ export type LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
           },
           {
             "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualTokenReserves",
             "type": "u64"
           },
           {
@@ -318,12 +322,30 @@ export type LmaofunBondingCurve = {
             "type": "u64"
           },
           {
+            "name": "presaleSupply",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
             "name": "startTime",
             "type": "i64"
           },
           {
             "name": "complete",
             "type": "bool"
+          },
+          {
+            "name": "allocation",
+            "type": {
+              "defined": "AllocationData"
+            }
           }
         ]
       }
@@ -352,30 +374,6 @@ export type LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialTokenSupply",
-            "type": "u64"
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
             "name": "tradeFeeBps",
             "type": "u32"
           },
@@ -392,6 +390,62 @@ export type LmaofunBondingCurve = {
     }
   ],
   "types": [
+    {
+      "name": "SwapParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseIn",
+            "type": "bool"
+          },
+          {
+            "name": "exactInAmount",
+            "type": "u64"
+          },
+          {
+            "name": "minOutAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllocationData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dev",
+            "type": "f64"
+          },
+          {
+            "name": "cex",
+            "type": "f64"
+          },
+          {
+            "name": "launchBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "lifetimeBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "platform",
+            "type": "f64"
+          },
+          {
+            "name": "presale",
+            "type": "f64"
+          },
+          {
+            "name": "poolReserve",
+            "type": "f64"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateBondingCurveParams",
       "type": {
@@ -411,29 +465,29 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
+          },
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "allocation",
             "type": {
-              "option": "i64"
+              "defined": "AllocationData"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SwapParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "baseIn",
-            "type": "bool"
-          },
-          {
-            "name": "exactInAmount",
-            "type": "u64"
-          },
-          {
-            "name": "minOutAmount",
-            "type": "u64"
           }
         ]
       }
@@ -463,42 +517,6 @@ export type LmaofunBondingCurve = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "initialTokenSupply",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": {
-              "option": "u64"
-            }
-          },
           {
             "name": "tradeFeeBps",
             "type": {
@@ -559,23 +577,8 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "initialVirtualTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialVirtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialRealTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialTokenSupply",
-          "type": "u64",
+          "name": "withdrawAuthority",
+          "type": "publicKey",
           "index": false
         },
         {
@@ -589,11 +592,6 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "solLaunchThreshold",
-          "type": "u64",
-          "index": false
-        },
-        {
           "name": "createdMintDecimals",
           "type": "u8",
           "index": false
@@ -603,6 +601,16 @@ export type LmaofunBondingCurve = {
     {
       "name": "CreateEvent",
       "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
         {
           "name": "name",
           "type": "string",
@@ -619,13 +627,8 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "mint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "creator",
-          "type": "publicKey",
+          "name": "startTime",
+          "type": "i64",
           "index": false
         },
         {
@@ -639,7 +642,22 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "tokenTotalSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "solLaunchThreshold",
           "type": "u64",
           "index": false
         }
@@ -846,6 +864,16 @@ export type LmaofunBondingCurve = {
       "code": 6016,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidAllocation",
+      "msg": "Invalid Allocation Data supplied, percents must add up to 100"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidStartTime",
+      "msg": "Start time is in the past"
     }
   ]
 };
@@ -1146,11 +1174,15 @@ export const IDL: LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
           },
           {
             "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "initialVirtualTokenReserves",
             "type": "u64"
           },
           {
@@ -1170,12 +1202,30 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u64"
           },
           {
+            "name": "presaleSupply",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
             "name": "startTime",
             "type": "i64"
           },
           {
             "name": "complete",
             "type": "bool"
+          },
+          {
+            "name": "allocation",
+            "type": {
+              "defined": "AllocationData"
+            }
           }
         ]
       }
@@ -1204,30 +1254,6 @@ export const IDL: LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "initialTokenSupply",
-            "type": "u64"
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
             "name": "tradeFeeBps",
             "type": "u32"
           },
@@ -1244,6 +1270,62 @@ export const IDL: LmaofunBondingCurve = {
     }
   ],
   "types": [
+    {
+      "name": "SwapParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseIn",
+            "type": "bool"
+          },
+          {
+            "name": "exactInAmount",
+            "type": "u64"
+          },
+          {
+            "name": "minOutAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllocationData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dev",
+            "type": "f64"
+          },
+          {
+            "name": "cex",
+            "type": "f64"
+          },
+          {
+            "name": "launchBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "lifetimeBrandkit",
+            "type": "f64"
+          },
+          {
+            "name": "platform",
+            "type": "f64"
+          },
+          {
+            "name": "presale",
+            "type": "f64"
+          },
+          {
+            "name": "poolReserve",
+            "type": "f64"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateBondingCurveParams",
       "type": {
@@ -1263,29 +1345,29 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "solLaunchThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "virtualTokenMultiplier",
+            "type": "f64"
+          },
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "allocation",
             "type": {
-              "option": "i64"
+              "defined": "AllocationData"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SwapParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "baseIn",
-            "type": "bool"
-          },
-          {
-            "name": "exactInAmount",
-            "type": "u64"
-          },
-          {
-            "name": "minOutAmount",
-            "type": "u64"
           }
         ]
       }
@@ -1315,42 +1397,6 @@ export const IDL: LmaofunBondingCurve = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "initialTokenSupply",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialRealTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualSolReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "solLaunchThreshold",
-            "type": {
-              "option": "u64"
-            }
-          },
           {
             "name": "tradeFeeBps",
             "type": {
@@ -1411,23 +1457,8 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "initialVirtualTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialVirtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialRealTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "initialTokenSupply",
-          "type": "u64",
+          "name": "withdrawAuthority",
+          "type": "publicKey",
           "index": false
         },
         {
@@ -1441,11 +1472,6 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "solLaunchThreshold",
-          "type": "u64",
-          "index": false
-        },
-        {
           "name": "createdMintDecimals",
           "type": "u8",
           "index": false
@@ -1455,6 +1481,16 @@ export const IDL: LmaofunBondingCurve = {
     {
       "name": "CreateEvent",
       "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
         {
           "name": "name",
           "type": "string",
@@ -1471,13 +1507,8 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "mint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "creator",
-          "type": "publicKey",
+          "name": "startTime",
+          "type": "i64",
           "index": false
         },
         {
@@ -1491,7 +1522,22 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "tokenTotalSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "solLaunchThreshold",
           "type": "u64",
           "index": false
         }
@@ -1698,6 +1744,16 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6016,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidAllocation",
+      "msg": "Invalid Allocation Data supplied, percents must add up to 100"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidStartTime",
+      "msg": "Start time is in the past"
     }
   ]
 };

@@ -23,13 +23,12 @@ pub struct Global {
     pub global_authority: Pubkey,
     pub withdraw_authority: Pubkey,
 
-    pub initial_virtual_token_reserves: u64,
-    pub initial_virtual_sol_reserves: u64,
-    pub initial_real_token_reserves: u64,
-    pub initial_real_sol_reserves: u64,
-    pub initial_token_supply: u64,
-    pub sol_launch_threshold: u64,
-
+    // pub initial_virtual_token_reserves: u64,
+    // pub initial_virtual_sol_reserves: u64,
+    // pub initial_real_token_reserves: u64,
+    // pub initial_real_sol_reserves: u64,
+    // pub initial_token_supply: u64,
+    // pub sol_launch_threshold: u64,
     pub trade_fee_bps: u32,
     pub launch_fee_lamports: u64,
 
@@ -37,13 +36,12 @@ pub struct Global {
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct GlobalSettingsInput {
-    pub initial_token_supply: Option<u64>,
-    pub initial_real_sol_reserves: Option<u64>,
-    pub initial_real_token_reserves: Option<u64>,
-    pub initial_virtual_sol_reserves: Option<u64>,
-    pub initial_virtual_token_reserves: Option<u64>,
-    pub sol_launch_threshold: Option<u64>,
-
+    // pub initial_token_supply: Option<u64>,
+    // pub initial_real_sol_reserves: Option<u64>,
+    // pub initial_real_token_reserves: Option<u64>,
+    // pub initial_virtual_sol_reserves: Option<u64>,
+    // pub initial_virtual_token_reserves: Option<u64>,
+    // pub sol_launch_threshold: Option<u64>,
     pub trade_fee_bps: Option<u32>,
     pub created_mint_decimals: Option<u8>,
     pub launch_fee_lamports: Option<u64>,
@@ -65,24 +63,25 @@ impl Global {
     }
 
     pub fn update_settings(&mut self, params: GlobalSettingsInput) {
-        if let Some(value) = params.initial_token_supply {
-            self.initial_token_supply = value;
-        }
-        if let Some(value) = params.initial_real_sol_reserves {
-            self.initial_real_sol_reserves = value;
-        }
-        if let Some(value) = params.initial_real_token_reserves {
-            self.initial_real_token_reserves = value;
-        }
-        if let Some(value) = params.initial_virtual_sol_reserves {
-            self.initial_virtual_sol_reserves = value;
-        }
-        if let Some(value) = params.initial_virtual_token_reserves {
-            self.initial_virtual_token_reserves = value;
-        }
-        if let Some(value) = params.sol_launch_threshold {
-            self.sol_launch_threshold = value;
-        }
+        // if let Some(value) = params.initial_token_supply {
+        //     self.initial_token_supply = value;
+        // }
+        // if let Some(value) = params.initial_real_sol_reserves {
+        //     self.initial_real_sol_reserves = value;
+        // }
+        // if let Some(value) = params.initial_real_token_reserves {
+        //     self.initial_real_token_reserves = value;
+        // }
+        // if let Some(value) = params.initial_virtual_sol_reserves {
+        //     self.initial_virtual_sol_reserves = value;
+        // }
+        // if let Some(value) = params.initial_virtual_token_reserves {
+        //     self.initial_virtual_token_reserves = value;
+        // }
+        // if let Some(value) = params.sol_launch_threshold {
+        //     self.sol_launch_threshold = value;
+        // }
+
         if let Some(trade_fee_bps) = params.trade_fee_bps {
             self.trade_fee_bps = trade_fee_bps;
         }
@@ -111,14 +110,15 @@ impl IntoEvent<GlobalUpdateEvent> for Global {
     fn into_event(&self) -> GlobalUpdateEvent {
         GlobalUpdateEvent {
             global_authority: self.global_authority,
-            initial_virtual_token_reserves: self.initial_virtual_token_reserves,
-            initial_virtual_sol_reserves: self.initial_virtual_sol_reserves,
-            initial_real_token_reserves: self.initial_real_token_reserves,
-            initial_token_supply: self.initial_token_supply,
-            trade_fee_bps: self.trade_fee_bps,
-            sol_launch_threshold: self.sol_launch_threshold,
-            created_mint_decimals: self.created_mint_decimals,
+            withdraw_authority: self.withdraw_authority,
+            // initial_virtual_token_reserves: self.initial_virtual_token_reserves,
+            // initial_virtual_sol_reserves: self.initial_virtual_sol_reserves,
+            // initial_real_token_reserves: self.initial_real_token_reserves,
+            // initial_token_supply: self.initial_token_supply,
+            // sol_launch_threshold: self.sol_launch_threshold,
             launch_fee_lamports: self.launch_fee_lamports,
+            trade_fee_bps: self.trade_fee_bps,
+            created_mint_decimals: self.created_mint_decimals,
         }
     }
 }
@@ -139,12 +139,12 @@ mod tests {
             initialized: true,
             global_authority: Pubkey::default(),
             withdraw_authority: Pubkey::default(),
-            initial_virtual_token_reserves: 1000,
-            initial_virtual_sol_reserves: 1000,
-            initial_real_token_reserves: 1000,
-            initial_real_sol_reserves: 1000,
-            initial_token_supply: 1000,
-            sol_launch_threshold: 1000,
+            // initial_virtual_token_reserves: 1000,
+            // initial_virtual_sol_reserves: 1000,
+            // initial_real_token_reserves: 1000,
+            // initial_real_sol_reserves: 1000,
+            // initial_token_supply: 1000,
+            // sol_launch_threshold: 1000,
             trade_fee_bps: 0,
             launch_fee_lamports: 1000,
             created_mint_decimals: 0,

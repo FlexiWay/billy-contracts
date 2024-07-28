@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './allocationData';
 export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';

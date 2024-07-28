@@ -7,6 +7,7 @@ pub mod state;
 use instructions::{
     create_bonding_curve::*, initialize::*, set_params::*, swap::*, withdraw_fees::*,
 };
+use state::bonding_curve::CreateBondingCurveParams;
 use state::global::*;
 declare_id!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
 

@@ -5,10 +5,12 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#allocation_data;
 pub(crate) mod r#global_authority_input;
 pub(crate) mod r#global_settings_input;
 pub(crate) mod r#program_status;
 
+pub use self::r#allocation_data::*;
 pub use self::r#global_authority_input::*;
 pub use self::r#global_settings_input::*;
 pub use self::r#program_status::*;

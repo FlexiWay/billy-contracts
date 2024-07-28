@@ -16,19 +16,12 @@ use anchor_spl::{
     },
 };
 
+use crate::state::bonding_curve::CreateBondingCurveParams;
 use crate::state::global;
 use crate::{
     errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,
 };
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct CreateBondingCurveParams {
-    name: String,
-    symbol: String,
-    uri: String,
-    start_time: Option<i64>,
-}
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -99,16 +92,29 @@ pub struct CreateBondingCurve<'info> {
 }
 
 impl CreateBondingCurve<'_> {
+    pub fn validate(
+        ctx: Context<CreateBondingCurve>,
+        params: CreateBondingCurveParams,
+    ) -> Result<()> {
+        if !params.allocation.is_valid() {
+            return Err(ProgramError::InvalidAllocation.into());
+        }
+        // validate start time
+        if params.start_time < Clock::get()?.unix_timestamp {
+            return Err(ProgramError::InvalidStartTime.into());
+        }
+        Ok(())
+    }
     pub fn handler(
         ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,
     ) -> Result<()> {
-        let CreateBondingCurveParams {
-            name,
-            symbol,
-            uri,
-            start_time,
-        } = params;
+        let bonding_curve: BondingCurve =
+            BondingCurve::new_from_params(ctx.accounts.creator.key(), &params);
+
+        msg!("CreateBondingCurve::new_from_params");
+        bonding_curve.msg();
+
         let creator_info = ctx.accounts.creator.to_account_info();
         let mint_info = ctx.accounts.mint.to_account_info();
         let mint_authority_info = ctx.accounts.global.to_account_info();
@@ -118,7 +124,7 @@ impl CreateBondingCurve<'_> {
         let bonding_curve_token_account_info =
             ctx.accounts.bonding_curve_token_account.to_account_info();
 
-        let initial_supply = ctx.accounts.global.initial_token_supply;
+        let initial_supply = params.token_total_supply;
         msg!(
             "create::BondingCurve::get_lamports: {:?}",
             &ctx.accounts.bonding_curve.get_lamports()
@@ -128,9 +134,9 @@ impl CreateBondingCurve<'_> {
         let signer_seeds = &[&signer[..]];
 
         let token_data: DataV2 = DataV2 {
-            name: name.clone(),
-            symbol: symbol.clone(),
-            uri: uri.clone(),
+            name: params.name.clone(),
+            symbol: params.symbol.clone(),
+            uri: params.uri.clone(),
             seller_fee_basis_points: 0,
             creators: None,
             collection: None,
@@ -216,24 +222,23 @@ impl CreateBondingCurve<'_> {
             &[],
         )?;
 
-        //create bonding curve
-        let clock = Clock::get()?;
-        let pool_start_time = start_time.unwrap_or(clock.unix_timestamp);
-        let bonding_curve = &mut ctx.accounts.bonding_curve.new_from_global(
-            &ctx.accounts.global,
-            ctx.accounts.creator.key(),
-            pool_start_time,
-        );
-
         emit_cpi!(CreateEvent {
-            name,
-            symbol,
-            uri,
+            name: params.name,
+            symbol: params.symbol,
+            uri: params.uri,
             mint: *ctx.accounts.mint.to_account_info().key,
             creator: *ctx.accounts.creator.to_account_info().key,
+
             virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
             virtual_token_reserves: bonding_curve.virtual_token_reserves,
+
             token_total_supply: bonding_curve.token_total_supply,
+            sol_launch_threshold: bonding_curve.sol_launch_threshold,
+
+            real_sol_reserves: bonding_curve.real_sol_reserves,
+            real_token_reserves: bonding_curve.real_token_reserves,
+
+            start_time: bonding_curve.start_time,
         });
 
         Ok(())
