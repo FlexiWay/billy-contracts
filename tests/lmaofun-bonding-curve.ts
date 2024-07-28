@@ -364,6 +364,92 @@ describe("lmaofun-bonding", () => {
     );
     assert(traderAtaBalancePost == buyTokenAmount);
   });
+  it("swap: sell", async () => {
+    const traderSigner = createSignerFromKeypair(umi, trader);
+    const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+
+    const simpleMintBondingCurveTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: simpleMintBondingCurvePda[0],
+    });
+    const traderAta = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: traderSigner.publicKey,
+    });
+    const traderAtaBalancePre = await getTknAmount(umi, traderAta[0]);
+    const bondingCurveData = await fetchBondingCurve(
+      umi,
+      simpleMintBondingCurvePda[0]
+    );
+    const amm = AMM.fromBondingCurve(bondingCurveData);
+    let sellTokenAmount = 100_000_000_000n;
+    let solAmount = amm.getSellPrice(sellTokenAmount);
+
+    // should use actual fee set on global when live
+    let fee = calculateFee(solAmount, INIT_DEFAULTS.tradeFeeBps);
+    const solAmountAfterFee = solAmount - fee;
+    console.log("solAmount", solAmount);
+    console.log("fee", fee);
+    console.log("solAmountAfterFee", solAmountAfterFee);
+    console.log("sellTokenAmount", sellTokenAmount);
+    let sellResult = amm.applySell(sellTokenAmount);
+    console.log("sellSimResult", sellResult);
+    console.log({
+      global: globalPda[0],
+      user: traderSigner,
+
+      baseIn: true, // sell
+      exactInAmount: sellTokenAmount,
+      minOutAmount: solAmountAfterFee,
+
+      mint: simpleMintKp.publicKey,
+      bondingCurve: simpleMintBondingCurvePda[0],
+
+      bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
+      userTokenAccount: traderAta[0],
+
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+    });
+    const txBuilder = swap(umi, {
+      global: globalPda[0],
+      user: traderSigner,
+
+      baseIn: true, // sell
+      exactInAmount: sellTokenAmount,
+      minOutAmount: solAmountAfterFee,
+
+      mint: simpleMintKp.publicKey,
+      bondingCurve: simpleMintBondingCurvePda[0],
+
+      bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
+      userTokenAccount: traderAta[0],
+
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+      ...evtAuthorityAccs,
+    });
+
+    await processTransaction(umi, txBuilder);
+
+    // Post-transaction checks
+    const bondingCurveDataPost = await fetchBondingCurve(
+      umi,
+      simpleMintBondingCurvePda[0]
+    );
+    const traderAtaBalancePost = await getTknAmount(umi, traderAta[0]);
+    assert(
+      bondingCurveDataPost.realTokenReserves ==
+        bondingCurveData.realTokenReserves + sellTokenAmount
+    );
+    assert(
+      bondingCurveDataPost.realSolReserves ==
+        bondingCurveData.realSolReserves - solAmount
+    );
+    assert(traderAtaBalancePost == traderAtaBalancePre - sellTokenAmount);
+  });
 
   it("set_params: status:SwapOnly, withdrawAuthority", async () => {
     const txBuilder = setParams(umi, {
