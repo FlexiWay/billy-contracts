@@ -183,7 +183,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1035,7 +1035,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

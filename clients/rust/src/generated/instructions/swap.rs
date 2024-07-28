@@ -54,7 +54,7 @@ impl Swap {
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.user, true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.global,
             false,
         ));
@@ -138,7 +138,7 @@ pub struct SwapInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` user
-///   1. `[]` global
+///   1. `[writable]` global
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` bonding_curve_token_account
@@ -442,7 +442,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             *self.user.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.global.key,
             false,
         ));
@@ -533,7 +533,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` user
-///   1. `[]` global
+///   1. `[writable]` global
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` bonding_curve_token_account

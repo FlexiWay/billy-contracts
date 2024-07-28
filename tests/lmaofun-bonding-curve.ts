@@ -104,9 +104,6 @@ amman.addr.addLabel("creator", creator.publicKey);
 amman.addr.addLabel("trader", trader.publicKey);
 
 // --- PROVIDERS
-let bankrunContext: ProgramTestContext;
-let bankrunClient: BanksClient;
-let bankrunProvider: BankrunProvider;
 let connection: Connection;
 let rpcUrl = "http://127.0.0.1:8899";
 

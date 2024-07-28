@@ -183,7 +183,7 @@
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

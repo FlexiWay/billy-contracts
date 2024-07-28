@@ -33,6 +33,7 @@ pub struct Swap<'info> {
     user: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ProgramError::NotInitialized,
         bump,
@@ -87,9 +88,10 @@ impl Swap<'_> {
         require!(exact_in_amount > 0, ProgramError::MinSwap);
 
         msg!(
-            "Swap started. BaseIn: {}, AmountIn: {}",
+            "Swap started. BaseIn: {}, AmountIn: {}, MinOutAmount: {}",
             base_in,
-            exact_in_amount
+            exact_in_amount,
+            min_out_amount
         );
 
         let global_state = &ctx.accounts.global;
@@ -131,7 +133,7 @@ impl Swap<'_> {
             fee_lamports = global_state.calculate_fee(sol_amount);
 
             msg!("BuyResult: {:#?}", buy_result);
-            msg!("Fee: {} SOL", fee_lamports.div(10u64.pow(9))); // lamports to SOL
+            msg!("Fee: {} lamports", fee_lamports);
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
         let bonding_curve = &mut ctx.accounts.bonding_curve;
@@ -206,7 +208,7 @@ impl Swap<'_> {
             ],
             &[],
         )?;
-
+        msg!("SOL to bonding curve transfer complete");
         // Transfer SOL to fee recipient
         let fee_transfer_instruction = system_instruction::transfer(
             ctx.accounts.user.key,
@@ -223,6 +225,7 @@ impl Swap<'_> {
             ],
             &[],
         )?;
+        msg!("Fee transfer complete");
 
         // Transfer tokens to user
         let cpi_accounts = Transfer {
@@ -245,7 +248,7 @@ impl Swap<'_> {
             ),
             buy_result.token_amount,
         )?;
-
+        msg!("Token transfer complete");
         Ok(())
     }
 
@@ -274,20 +277,18 @@ impl Swap<'_> {
             CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts),
             sell_result.token_amount,
         )?;
-
+        msg!("Token to bonding curve transfer complete");
         // Transfer SOL to user
         bonding_curve.sub_lamports(sell_amount_minus_fee).unwrap();
         ctx.accounts
             .user
             .add_lamports(sell_amount_minus_fee)
             .unwrap();
-
+        msg!("SOL to user transfer complete");
         // Transfer accrued fee to the global account
         bonding_curve.sub_lamports(fee_lamports).unwrap();
         ctx.accounts.global.add_lamports(fee_lamports).unwrap();
-
+        msg!("Fee to global transfer complete");
         Ok(())
     }
 }
-
-// TODO tests
