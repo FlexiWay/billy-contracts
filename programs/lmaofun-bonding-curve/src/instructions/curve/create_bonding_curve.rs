@@ -1,4 +1,3 @@
-
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
 use anchor_spl::{
@@ -7,20 +6,14 @@ use anchor_spl::{
         create_metadata_accounts_v3, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3,
         Metadata as Metaplex,
     },
-    token::{
-        mint_to, Mint, MintTo, Token, TokenAccount,
-    },
+    token::{mint_to, Mint, MintTo, Token, TokenAccount},
 };
 
-use crate::{
-    state::{
-        allocation::AllocationData,
-        bonding_curve::*,
-        distributors::{
-            BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor,
-        },
-        global::*,
-    },
+use crate::state::{
+    allocation::AllocationData,
+    bonding_curve::*,
+    distributors::{BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor},
+    global::*,
 };
 
 use crate::{errors::ContractError, events::CreateEvent};
@@ -120,6 +113,7 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + BondingCurve::INIT_SPACE,
     )]
     bonding_curve: Box<Account<'info, BondingCurve>>,
+
     #[account(
         init_if_needed,
         payer = creator,
