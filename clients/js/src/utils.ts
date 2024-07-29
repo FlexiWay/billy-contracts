@@ -1,21 +1,20 @@
 import { Context, Pda, RpcConfirmTransactionResult , TransactionSignature} from '@metaplex-foundation/umi';
 import { string } from "@metaplex-foundation/umi/serializers";
-import { LMAOFUN_BONDING_CURVE_PROGRAM_ID } from './generated/programs/lmaofunBondingCurve';
 import * as anchor from "@coral-xyz/anchor";
-import { LmaofunBondingCurve } from './idls/lmaofun_bonding_curve';
 import { Connection, PublicKey, } from '@solana/web3.js';
 
 import {
-    toWeb3JsPublicKey,
-  } from "@metaplex-foundation/umi-web3js-adapters";
+  toWeb3JsPublicKey,
+} from "@metaplex-foundation/umi-web3js-adapters";
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
 import { IdlEvent } from '@coral-xyz/anchor/dist/cjs/idl';
 import { BN } from '@coral-xyz/anchor';
 
-export const calculateFee = (amount: bigint, feeBps: number): bigint => {
-  return (amount * BigInt(feeBps)) / 10000n;
-};
+// eslint-disable-next-line import/extensions
+import  {LmaofunBondingCurve}  from './idls/lmaofun_bonding_curve';
+import { LMAOFUN_BONDING_CURVE_PROGRAM_ID } from './generated/programs/lmaofunBondingCurve';
 
+export const calculateFee = (amount: bigint, feeBps: number): bigint => (amount * BigInt(feeBps)) / 10000n
 const EVENT_AUTHORITY_PDA_SEED = "__event_authority";
 export function findEvtAuthorityPda(
     context: Pick<Context, 'eddsa' | 'programs'>,
@@ -47,7 +46,7 @@ const validEventNames: Array<keyof anchor.IdlEvents<LmaofunBondingCurve>> = [
 export const logEvent = (event: anchor.Event<IdlEvent, Record<string, string>>)=> {
   const normalizeVal = (val: string | number | bigint | PublicKey | unknown) => {
     if (val instanceof BN || typeof val === 'number') {
-      return parseInt(val.toString());
+      return Number(val.toString());
     }
 
     return val?.toString() || val;
@@ -61,7 +60,7 @@ export const getTxEventsFromTxBuilderResponse = async (conn:Connection, program:
     result: RpcConfirmTransactionResult;
 }) => {
     const sig = bs58.encode(txBuilderRes.signature)
-    return await getTransactionEvents(conn, program, sig);
+    return  getTransactionEvents(conn, program, sig);
 }
 
 export const getTransactionEvents = async (conn:Connection, program: anchor.Program<LmaofunBondingCurve>, sig: string) => {
@@ -77,9 +76,9 @@ export const getTransactionEventsFromDetails = (
     return [];
   }
 
-  let eventPDA= findEvtAuthorityPdaRaw()[0];
+  const eventPDA= findEvtAuthorityPdaRaw()[0];
 
-  let indexOfEventPDA =
+  const indexOfEventPDA =
     txResponse.transaction.message.staticAccountKeys.findIndex((key) =>
       key.equals(eventPDA)
     );
@@ -97,28 +96,25 @@ export const getTransactionEventsFromDetails = (
     );
 
   if (matchingInstructions) {
-    let events = matchingInstructions.map((instruction) => {
+    const events = matchingInstructions.map((instruction) => {
       const ixData = anchor.utils.bytes.bs58.decode(instruction.data);
       const eventData = anchor.utils.bytes.base64.encode(ixData.slice(8));
       const event = program.coder.events.decode(eventData);
       return event;
     });
-    const isNotNull = <T>(value: T | null): value is T => {
-      return value !== null;
-    };
+    const isNotNull = <T>(value: T | null): value is T => value !== null
     return events.filter(isNotNull);
-  } else {
-    return [];
   }
+
+    return [];
+
 };
 
 const isEventName = (
   eventName: string
-): eventName is keyof anchor.IdlEvents<LmaofunBondingCurve> => {
-  return validEventNames.includes(
-    eventName as keyof anchor.IdlEvents<LmaofunBondingCurve>
-  );
-};
+): eventName is keyof anchor.IdlEvents<LmaofunBondingCurve> => validEventNames.includes(
+  eventName as keyof anchor.IdlEvents<LmaofunBondingCurve>
+);
 
 export const toEvent = <E extends EventKeys>(
   eventName: E,
@@ -133,9 +129,7 @@ export const toEvent = <E extends EventKeys>(
 const getEvent = <E extends EventKeys>(
   eventName: E,
   event: anchor.IdlEvents<LmaofunBondingCurve>[E]
-): anchor.IdlEvents<LmaofunBondingCurve>[E] => {
-  return event;
-};
+): anchor.IdlEvents<LmaofunBondingCurve>[E] => event
 
 export const getTxDetails = async (connection: anchor.web3.Connection, sig: string) => {
   const latestBlockHash = await connection.getLatestBlockhash("processed");
@@ -149,7 +143,7 @@ export const getTxDetails = async (connection: anchor.web3.Connection, sig: stri
     "confirmed"
   );
 
-  return await connection.getTransaction(sig, {
+  return connection.getTransaction(sig, {
     maxSupportedTransactionVersion: 0,
     commitment: "confirmed",
   });

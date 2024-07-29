@@ -8,6 +8,7 @@ import {
   generateSigner,
   TransactionBuilder,
   Umi,
+  transactionBuilder,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
@@ -17,6 +18,7 @@ import {
   findAssociatedTokenPda,
   SPL_SYSTEM_PROGRAM_ID,
   SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+  setComputeUnitLimit,
 } from "@metaplex-foundation/mpl-toolbox";
 import {
   Connection,
@@ -40,6 +42,9 @@ import {
   findBondingCurvePda,
   withdrawFees,
   swap,
+  findBrandDistributorPda,
+  findCreatorDistributorPda,
+  findPlatformDistributorPda,
 } from "../clients/js/src";
 import {
   fromWeb3JsKeypair,
@@ -162,7 +167,11 @@ const loadKeypairs = async (umi) => {
 };
 
 async function processTransaction(umi, txBuilder: TransactionBuilder) {
-  return await txBuilder.sendAndConfirm(umi);
+  let txWithBudget = await transactionBuilder().add(
+    setComputeUnitLimit(umi, { units: 600_000 })
+  );
+  const fullBuilder = txBuilder.prepend(txWithBudget);
+  return await fullBuilder.sendAndConfirm(umi);
 }
 
 const getBalance = async (umi: Umi, pubkey: PublicKey) => {
@@ -255,18 +264,59 @@ describe("lmaofun-bonding", () => {
     console.log("bondingCurveTknAcc[0]", simpleMintBondingCurveTknAcc[0]);
     console.log("metadataPda[0]", metadataPda[0]);
 
+    // THIS SHIT WILL BE MOVED
+    const creatorDistributor = await findCreatorDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creatorDistributor[0],
+    });
+
+    const brandDistributor = await findBrandDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const brandDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: brandDistributor[0],
+    });
+
+    const platformDistributor = await findPlatformDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const platformDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: platformDistributor[0],
+    });
+
     const txBuilder = createBondingCurve(umi, {
       global: globalPda[0],
+
       creator: createSignerFromKeypair(umi, creator),
       mint: createSignerFromKeypair(umi, simpleMintKp),
+
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
+
+      creatorDistributor: creatorDistributor[0],
+      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+
+      brandAuthority: creator.publicKey,
+      brandDistributor: brandDistributor[0],
+      brandDistributorTokenAccount: brandDistributorTknAcc[0],
+
+      platformAuthority: creator.publicKey,
+      platformDistributor: platformDistributor[0],
+      platformDistributorTokenAccount: platformDistributorTknAcc[0],
+
+      ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
+
       metadata: metadataPda[0],
       ...mintMeta,
+
       ...evtAuthorityAccs,
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
-      ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
     });
 
     await processTransaction(umi, txBuilder);
@@ -282,7 +332,7 @@ describe("lmaofun-bonding", () => {
     // });
 
     // // assert launch fee collection
-    // const globalBalanceInt = await getBalance(umi,umi, globalPda[0]);
+    // const globalBalanceInt = await getBalance(umi, globalPda[0]);
     // const startingBalance = GLOBAL_STARTING_BALANCE_INT;
     // const accruedFees = Number(globalBalanceInt) - startingBalance;
 

@@ -47,7 +47,7 @@ pub enum ContractError {
     #[msg("Curve Not Started")]
     CurveNotStarted,
 
-    #[msg("Invalid Allocation Data supplied, percents must add up to 100")]
+    #[msg("Invalid Allocation Data supplied, basis points must add up to 10000")]
     InvalidAllocation,
 
     #[msg("Start time is in the past")]

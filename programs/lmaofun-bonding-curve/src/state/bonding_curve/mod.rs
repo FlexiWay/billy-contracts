@@ -3,6 +3,8 @@ pub mod tests;
 use crate::state::allocation::AllocationData;
 use anchor_lang::prelude::*;
 
+use super::allocation::AllocationDataParams;
+
 #[derive(Debug, Clone)]
 pub struct BuyResult {
     pub token_amount: u64,
@@ -22,7 +24,7 @@ pub struct BondingCurve {
     pub platform_authority: Pubkey,
     pub brand_authority: Pubkey,
 
-    pub virtual_token_multiplier: f64,
+    pub virtual_token_multiplier_bps: u64,
 
     pub virtual_sol_reserves: u64,
 
@@ -58,8 +60,8 @@ pub struct CreateBondingCurveParams {
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
 
-    pub virtual_token_multiplier: f64,
+    pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64, // should this be fixed instead?
 
-    pub allocation: AllocationData,
+    pub allocation: AllocationDataParams,
 }

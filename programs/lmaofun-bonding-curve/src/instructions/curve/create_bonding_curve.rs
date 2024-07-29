@@ -14,6 +14,7 @@ use anchor_spl::{
 };
 
 use crate::state::{
+    allocation::AllocationData,
     bonding_curve::{self, *},
     global::*,
     roles::{BrandDistributor, CreatorDistributor, PlatformDistributor},
@@ -148,7 +149,7 @@ impl CreateBondingCurve<'_> {
         msg!("allocation: {:#?}", params.allocation);
         // todo complete validation for params,allocations and start time
         require!(
-            params.allocation.is_valid(),
+            AllocationData::from(params.allocation).is_valid(),
             ContractError::InvalidAllocation
         );
 

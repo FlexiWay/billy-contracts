@@ -1,7 +1,9 @@
 use crate::state::bonding_curve::*;
+use crate::util::{bps_mul, bps_mul_raw};
 use crate::{errors::ContractError, state::bonding_curve};
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
+use anchor_spl::token_2022::spl_token_2022::extension::interest_bearing_mint::BasisPoints;
 use std::fmt::{self};
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
@@ -30,21 +32,22 @@ impl BondingCurve {
         let token_total_supply = params.token_total_supply;
 
         let virtual_sol_reserves = params.virtual_sol_reserves;
-        let virtual_token_multiplier = params.virtual_token_multiplier;
+        let virtual_token_multiplier = params.virtual_token_multiplier_bps;
 
-        let allocation = params.allocation;
+        let allocation: AllocationData = params.allocation.into();
 
-        let presale_supply = (token_total_supply as f64 * allocation.presale / 100.0) as u64;
-        let bonding_supply = (token_total_supply as f64 * allocation.pool_reserve / 100.0) as u64;
-        let cex_supply = (token_total_supply as f64 * allocation.cex / 100.0) as u64;
+        let presale_supply = bps_mul(allocation.presale, token_total_supply).unwrap();
+        let bonding_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
+        let cex_supply = bps_mul(allocation.cex, token_total_supply).unwrap();
         let launch_brandkit_supply =
-            (token_total_supply as f64 * allocation.launch_brandkit / 100.0) as u64;
+            bps_mul(allocation.launch_brandkit, token_total_supply).unwrap();
         let lifetime_brandkit_supply =
-            (token_total_supply as f64 * allocation.lifetime_brandkit / 100.0) as u64;
-        let platform_supply = (token_total_supply as f64 * allocation.platform / 100.0) as u64;
+            bps_mul(allocation.lifetime_brandkit, token_total_supply).unwrap();
+        let platform_supply = bps_mul(allocation.platform, token_total_supply).unwrap();
+
         let real_token_reserves = bonding_supply;
-        let virtual_token_reserves =
-            (bonding_supply as f64 * ((100f64 + virtual_token_multiplier) / 100f64)) as u128;
+        let virtual_token_reserves = bonding_supply as u128
+            + bps_mul_raw(params.virtual_token_multiplier_bps, bonding_supply).unwrap();
 
         let initial_virtual_token_reserves = virtual_token_reserves;
 
@@ -59,7 +62,7 @@ impl BondingCurve {
             platform_authority,
 
             initial_virtual_token_reserves,
-            virtual_token_multiplier,
+            virtual_token_multiplier_bps: virtual_token_multiplier,
             virtual_sol_reserves,
             virtual_token_reserves,
             real_sol_reserves,
@@ -366,7 +369,6 @@ impl BondingCurve {
             msg!("Invariant failed: invalid token acc supplied");
             return Err(ContractError::BondingCurveInvariant.into());
         }
-        bonding_curve.reload()?;
         tkn_account.reload()?;
 
         let lamports = bonding_curve.get_lamports();
@@ -378,6 +380,11 @@ impl BondingCurve {
 
         // Ensure real sol reserves are equal to bonding curve pool lamports
         if bonding_curve_pool_lamports != bonding_curve.real_sol_reserves {
+            msg!(
+                "real_sol_r:{}, bonding_lamps:{}",
+                bonding_curve.real_sol_reserves,
+                bonding_curve_pool_lamports
+            );
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
             return Err(ContractError::BondingCurveInvariant.into());
         }

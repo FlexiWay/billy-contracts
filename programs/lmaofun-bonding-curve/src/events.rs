@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 pub struct GlobalUpdateEvent {
     pub global_authority: Pubkey,
     pub withdraw_authority: Pubkey,
-    pub trade_fee_bps: u32,
+    pub trade_fee_bps: u64,
     pub launch_fee_lamports: u64,
     pub created_mint_decimals: u8,
 }

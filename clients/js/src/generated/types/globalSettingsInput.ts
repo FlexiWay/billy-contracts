@@ -7,17 +7,17 @@
  */
 
 import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
-import { Serializer, option, struct, u32, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, option, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 import { ProgramStatus, ProgramStatusArgs, getProgramStatusSerializer } from '.';
 
 
-export type GlobalSettingsInput = { tradeFeeBps: Option<number>; createdMintDecimals: Option<number>; launchFeeLamports: Option<bigint>; status: Option<ProgramStatus>;  };
+export type GlobalSettingsInput = { tradeFeeBps: Option<bigint>; createdMintDecimals: Option<number>; launchFeeLamports: Option<bigint>; status: Option<ProgramStatus>;  };
 
-export type GlobalSettingsInputArgs = { tradeFeeBps: OptionOrNullable<number>; createdMintDecimals: OptionOrNullable<number>; launchFeeLamports: OptionOrNullable<number | bigint>; status: OptionOrNullable<ProgramStatusArgs>;  };
+export type GlobalSettingsInputArgs = { tradeFeeBps: OptionOrNullable<number | bigint>; createdMintDecimals: OptionOrNullable<number>; launchFeeLamports: OptionOrNullable<number | bigint>; status: OptionOrNullable<ProgramStatusArgs>;  };
 
 
 export function getGlobalSettingsInputSerializer(): Serializer<GlobalSettingsInputArgs, GlobalSettingsInput> {
-  return struct<GlobalSettingsInput>([['tradeFeeBps', option(u32())], ['createdMintDecimals', option(u8())], ['launchFeeLamports', option(u64())], ['status', option(getProgramStatusSerializer())]], { description: 'GlobalSettingsInput' }) as Serializer<GlobalSettingsInputArgs, GlobalSettingsInput>;
+  return struct<GlobalSettingsInput>([['tradeFeeBps', option(u64())], ['createdMintDecimals', option(u8())], ['launchFeeLamports', option(u64())], ['status', option(getProgramStatusSerializer())]], { description: 'GlobalSettingsInput' }) as Serializer<GlobalSettingsInputArgs, GlobalSettingsInput>;
 }
 
 

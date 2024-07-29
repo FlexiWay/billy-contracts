@@ -30,13 +30,13 @@ pub struct Global {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub withdraw_authority: Pubkey,
-    pub trade_fee_bps: u32,
+    pub trade_fee_bps: u64,
     pub launch_fee_lamports: u64,
     pub created_mint_decimals: u8,
 }
 
 impl Global {
-    pub const LEN: usize = 87;
+    pub const LEN: usize = 91;
 
     /// Prefix values used to generate a PDA for this account.
     ///

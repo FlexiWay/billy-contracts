@@ -6,16 +6,16 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, f64, struct } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 
 
-export type AllocationData = { creator: number; cex: number; launchBrandkit: number; lifetimeBrandkit: number; platform: number; presale: number; poolReserve: number;  };
+export type AllocationData = { creator: bigint; cex: bigint; launchBrandkit: bigint; lifetimeBrandkit: bigint; platform: bigint; presale: bigint; poolReserve: bigint;  };
 
-export type AllocationDataArgs = AllocationData;
+export type AllocationDataArgs = { creator: number | bigint; cex: number | bigint; launchBrandkit: number | bigint; lifetimeBrandkit: number | bigint; platform: number | bigint; presale: number | bigint; poolReserve: number | bigint;  };
 
 
 export function getAllocationDataSerializer(): Serializer<AllocationDataArgs, AllocationData> {
-  return struct<AllocationData>([['creator', f64()], ['cex', f64()], ['launchBrandkit', f64()], ['lifetimeBrandkit', f64()], ['platform', f64()], ['presale', f64()], ['poolReserve', f64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
+  return struct<AllocationData>([['creator', u64()], ['cex', u64()], ['launchBrandkit', u64()], ['lifetimeBrandkit', u64()], ['platform', u64()], ['presale', u64()], ['poolReserve', u64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
 }
 
 

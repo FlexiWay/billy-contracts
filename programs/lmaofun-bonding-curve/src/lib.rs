@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
-
 pub mod errors;
 pub mod events;
 pub mod instructions;
 pub mod state;
+pub mod util;
 use instructions::{
     create_bonding_curve::*, initialize::*, set_params::*, swap::*, withdraw_fees::*,
 };

@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AllocationData;
+use crate::generated::types::AllocationDataParams;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -197,9 +197,9 @@ pub struct CreateBondingCurveInstructionArgs {
     pub start_time: Option<i64>,
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
-    pub virtual_token_multiplier: f64,
+    pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64,
-    pub allocation: AllocationData,
+    pub allocation: AllocationDataParams,
 }
 
 /// Instruction builder for `CreateBondingCurve`.
@@ -258,9 +258,9 @@ pub struct CreateBondingCurveBuilder {
     start_time: Option<i64>,
     token_total_supply: Option<u64>,
     sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier: Option<f64>,
+    virtual_token_multiplier_bps: Option<u64>,
     virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationData>,
+    allocation: Option<AllocationDataParams>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -450,8 +450,8 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn virtual_token_multiplier(&mut self, virtual_token_multiplier: f64) -> &mut Self {
-        self.virtual_token_multiplier = Some(virtual_token_multiplier);
+    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
+        self.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
         self
     }
     #[inline(always)]
@@ -460,7 +460,7 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationData) -> &mut Self {
+    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
         self.allocation = Some(allocation);
         self
     }
@@ -548,10 +548,10 @@ impl CreateBondingCurveBuilder {
                 .sol_launch_threshold
                 .clone()
                 .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier: self
-                .virtual_token_multiplier
+            virtual_token_multiplier_bps: self
+                .virtual_token_multiplier_bps
                 .clone()
-                .expect("virtual_token_multiplier is not set"),
+                .expect("virtual_token_multiplier_bps is not set"),
             virtual_sol_reserves: self
                 .virtual_sol_reserves
                 .clone()
@@ -933,7 +933,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             start_time: None,
             token_total_supply: None,
             sol_launch_threshold: None,
-            virtual_token_multiplier: None,
+            virtual_token_multiplier_bps: None,
             virtual_sol_reserves: None,
             allocation: None,
             __remaining_accounts: Vec::new(),
@@ -1141,8 +1141,8 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn virtual_token_multiplier(&mut self, virtual_token_multiplier: f64) -> &mut Self {
-        self.instruction.virtual_token_multiplier = Some(virtual_token_multiplier);
+    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
+        self.instruction.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
         self
     }
     #[inline(always)]
@@ -1151,7 +1151,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationData) -> &mut Self {
+    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
         self.instruction.allocation = Some(allocation);
         self
     }
@@ -1211,11 +1211,11 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
                 .sol_launch_threshold
                 .clone()
                 .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier: self
+            virtual_token_multiplier_bps: self
                 .instruction
-                .virtual_token_multiplier
+                .virtual_token_multiplier_bps
                 .clone()
-                .expect("virtual_token_multiplier is not set"),
+                .expect("virtual_token_multiplier_bps is not set"),
             virtual_sol_reserves: self
                 .instruction
                 .virtual_sol_reserves
@@ -1357,9 +1357,9 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     start_time: Option<i64>,
     token_total_supply: Option<u64>,
     sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier: Option<f64>,
+    virtual_token_multiplier_bps: Option<u64>,
     virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationData>,
+    allocation: Option<AllocationDataParams>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

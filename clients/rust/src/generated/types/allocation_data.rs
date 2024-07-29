@@ -15,11 +15,11 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AllocationData {
-    pub creator: f64,
-    pub cex: f64,
-    pub launch_brandkit: f64,
-    pub lifetime_brandkit: f64,
-    pub platform: f64,
-    pub presale: f64,
-    pub pool_reserve: f64,
+    pub creator: u64,
+    pub cex: u64,
+    pub launch_brandkit: u64,
+    pub lifetime_brandkit: u64,
+    pub platform: u64,
+    pub presale: u64,
+    pub pool_reserve: u64,
 }

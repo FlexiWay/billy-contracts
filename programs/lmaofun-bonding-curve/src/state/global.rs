@@ -1,4 +1,7 @@
-use crate::events::{GlobalUpdateEvent, IntoEvent};
+use crate::{
+    events::{GlobalUpdateEvent, IntoEvent},
+    util::bps_mul,
+};
 use anchor_lang::prelude::*;
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
@@ -23,14 +26,14 @@ pub struct Global {
     pub global_authority: Pubkey,
     pub withdraw_authority: Pubkey,
 
-    pub trade_fee_bps: u32,
+    pub trade_fee_bps: u64,
     pub launch_fee_lamports: u64,
 
     pub created_mint_decimals: u8,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct GlobalSettingsInput {
-    pub trade_fee_bps: Option<u32>,
+    pub trade_fee_bps: Option<u64>,
     pub created_mint_decimals: Option<u8>,
     pub launch_fee_lamports: Option<u64>,
 
@@ -47,7 +50,7 @@ impl Global {
     }
 
     pub fn calculate_fee(&self, amount: u64) -> u64 {
-        amount * self.trade_fee_bps as u64 / 10000
+        bps_mul(self.trade_fee_bps, amount).unwrap()
     }
 
     pub fn update_settings(&mut self, params: GlobalSettingsInput) {

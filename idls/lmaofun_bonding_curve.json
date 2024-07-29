@@ -342,8 +342,8 @@
             "type": "publicKey"
           },
           {
-            "name": "virtualTokenMultiplier",
-            "type": "f64"
+            "name": "virtualTokenMultiplierBps",
+            "type": "u64"
           },
           {
             "name": "virtualSolReserves",
@@ -439,7 +439,7 @@
           },
           {
             "name": "tradeFeeBps",
-            "type": "u32"
+            "type": "u64"
           },
           {
             "name": "launchFeeLamports",
@@ -496,37 +496,87 @@
       }
     },
     {
+      "name": "AllocationDataParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "cex",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "launchBrandkit",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "lifetimeBrandkit",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "platform",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "presale",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "poolReserve",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "AllocationData",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "creator",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "cex",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "launchBrandkit",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "lifetimeBrandkit",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "platform",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "presale",
-            "type": "f64"
+            "type": "u64"
           },
           {
             "name": "poolReserve",
-            "type": "f64"
+            "type": "u64"
           }
         ]
       }
@@ -563,8 +613,8 @@
             "type": "u64"
           },
           {
-            "name": "virtualTokenMultiplier",
-            "type": "f64"
+            "name": "virtualTokenMultiplierBps",
+            "type": "u64"
           },
           {
             "name": "virtualSolReserves",
@@ -573,7 +623,7 @@
           {
             "name": "allocation",
             "type": {
-              "defined": "AllocationData"
+              "defined": "AllocationDataParams"
             }
           }
         ]
@@ -607,7 +657,7 @@
           {
             "name": "tradeFeeBps",
             "type": {
-              "option": "u32"
+              "option": "u64"
             }
           },
           {
@@ -670,7 +720,7 @@
         },
         {
           "name": "tradeFeeBps",
-          "type": "u32",
+          "type": "u64",
           "index": false
         },
         {
@@ -955,7 +1005,7 @@
     {
       "code": 6017,
       "name": "InvalidAllocation",
-      "msg": "Invalid Allocation Data supplied, percents must add up to 100"
+      "msg": "Invalid Allocation Data supplied, basis points must add up to 10000"
     },
     {
       "code": 6018,

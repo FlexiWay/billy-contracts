@@ -233,14 +233,14 @@ export class CurveNotStartedError extends ProgramError {
 codeToErrorMap.set(0x1780, CurveNotStartedError);
 nameToErrorMap.set('CurveNotStarted', CurveNotStartedError);
 
-/** InvalidAllocation: Invalid Allocation Data supplied, percents must add up to 100 */
+/** InvalidAllocation: Invalid Allocation Data supplied, basis points must add up to 10000 */
 export class InvalidAllocationError extends ProgramError {
   override readonly name: string = 'InvalidAllocation';
 
   readonly code: number = 0x1781; // 6017
   
   constructor(program: Program, cause?: Error) {
-    super('Invalid Allocation Data supplied, percents must add up to 100', program, cause);
+    super('Invalid Allocation Data supplied, basis points must add up to 10000', program, cause);
   }
 }
 codeToErrorMap.set(0x1781, InvalidAllocationError);

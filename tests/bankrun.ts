@@ -245,7 +245,7 @@ let evtAuthorityAccs: {
   program: PublicKey;
 };
 
-const GLOBAL_STARTING_BALANCE_INT = 1496400; // cant getMinimumBalanceForRentExemption on bankrun
+const GLOBAL_STARTING_BALANCE_INT = 1524240; // cant getMinimumBalanceForRentExemption on bankrun
 
 const loadKeypairs = async (umi) => {
   amman.addr.addLabel("master", umi.identity.publicKey);

@@ -33,7 +33,7 @@ pub struct BondingCurve {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub brand_authority: Pubkey,
-    pub virtual_token_multiplier: f64,
+    pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64,
     pub virtual_token_reserves: u128,
     pub initial_virtual_token_reserves: u128,

@@ -1,28 +1,73 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize, InitSpace};
 
+use crate::util::BASIS_POINTS_DIVISOR;
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq)]
-pub struct AllocationData {
-    // percents
-    pub creator: f64,
-    pub cex: f64,
-    pub launch_brandkit: f64,
-    pub lifetime_brandkit: f64,
-    pub platform: f64,
-    pub presale: f64,
-    pub pool_reserve: f64,
+pub struct AllocationDataParams {
+    // BASIS POINTS
+    pub creator: Option<u64>,
+    pub cex: Option<u64>,
+    pub launch_brandkit: Option<u64>,
+    pub lifetime_brandkit: Option<u64>,
+    pub platform: Option<u64>,
+    pub presale: Option<u64>,
+    pub pool_reserve: Option<u64>,
 }
+impl Default for AllocationDataParams {
+    fn default() -> Self {
+        Self {
+            creator: None,
+            cex: None,
+            launch_brandkit: None,
+            lifetime_brandkit: None,
+            platform: None,
+            presale: None,
+            pool_reserve: None,
+        }
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq)]
+
+pub struct AllocationData {
+    // BASIS POINTS
+    pub creator: u64,
+    pub cex: u64,
+    pub launch_brandkit: u64,
+    pub lifetime_brandkit: u64,
+    pub platform: u64,
+    pub presale: u64,
+    pub pool_reserve: u64,
+}
+
+impl From<AllocationDataParams> for AllocationData {
+    fn from(params: AllocationDataParams) -> Self {
+        let default = Self::default();
+        Self {
+            creator: params.creator.unwrap_or(default.creator),
+            cex: params.cex.unwrap_or(default.cex),
+            launch_brandkit: params.launch_brandkit.unwrap_or(default.launch_brandkit),
+            lifetime_brandkit: params
+                .lifetime_brandkit
+                .unwrap_or(default.lifetime_brandkit),
+            platform: params.platform.unwrap_or(default.platform),
+            presale: params.presale.unwrap_or(default.presale),
+            pool_reserve: params.pool_reserve.unwrap_or(default.pool_reserve),
+        }
+    }
+}
+
 impl Default for AllocationData {
     fn default() -> Self {
-        let _10f64 = 10f64;
         Self {
-            creator: _10f64,
-            cex: _10f64,
-            launch_brandkit: _10f64,
-            lifetime_brandkit: _10f64,
-            platform: _10f64,
-            presale: 0f64,
-            pool_reserve: 50f64,
+            creator: 1000,
+            cex: 1000,
+            launch_brandkit: 1000,
+            lifetime_brandkit: 1000,
+            platform: 1000,
+            presale: 0u64,
+            pool_reserve: 5000,
         }
     }
 }
@@ -35,7 +80,7 @@ impl AllocationData {
             + self.platform
             + self.presale
             + self.pool_reserve
-            == 100f64;
-        sum_is_right && self.pool_reserve > 0.0
+            == BASIS_POINTS_DIVISOR;
+        sum_is_right && self.pool_reserve > 0
     }
 }

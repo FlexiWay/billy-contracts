@@ -3,7 +3,10 @@ mod tests {
     use anchor_lang::prelude::{Clock, Pubkey};
     use once_cell::sync::Lazy;
 
-    use crate::state::{allocation::AllocationData, bonding_curve::*};
+    use crate::{
+        state::{allocation::AllocationData, bonding_curve::*},
+        util::BASIS_POINTS_DIVISOR,
+    };
     use std::{
         ops::Mul,
         time::{SystemTime, UNIX_EPOCH},
@@ -22,7 +25,7 @@ mod tests {
     #[test]
     fn test_buy_and_sell_too_much() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -33,7 +36,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -75,7 +78,7 @@ mod tests {
     #[test]
     fn test_apply_sell() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -86,7 +89,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -110,7 +113,7 @@ mod tests {
     #[test]
     fn test_get_sell_price() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -121,7 +124,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -145,7 +148,7 @@ mod tests {
     #[test]
     fn test_apply_buy() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -156,7 +159,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -186,7 +189,7 @@ mod tests {
     #[test]
     fn test_get_buy_price() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -197,7 +200,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -217,7 +220,7 @@ mod tests {
     #[test]
     fn test_get_tokens_for_buy_sol() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -228,7 +231,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -256,7 +259,7 @@ mod tests {
     #[test]
     fn test_get_tokens_for_sell_sol() {
         let creator = Pubkey::default();
-        let allocation = AllocationData::default();
+        let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
             name: "test".to_string(),
@@ -267,7 +270,7 @@ mod tests {
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier: 7.3,
+            virtual_token_multiplier_bps: 730,
             virtual_sol_reserves: 600,
 
             allocation,
@@ -302,13 +305,13 @@ mod tests {
             virtual_sol_reserves in 1..u64::MAX,
             token_total_supply in 1..u64::MAX,
             sol_amount in 1..u64::MAX,
-            virtual_token_multiplier in 0.0..100.0,
+            virtual_token_multiplier_bps in 1..BASIS_POINTS_DIVISOR,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
         ) {
             let creator = Pubkey::default();
-            let allocation = AllocationData::default();
+            let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
                 name: "test".to_string(),
@@ -319,7 +322,7 @@ mod tests {
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                virtual_token_multiplier,
+                virtual_token_multiplier_bps,
                 virtual_sol_reserves,
 
                 allocation,
@@ -340,13 +343,13 @@ mod tests {
 
             token_amount in 1..u64::MAX,
             buy_sol_amount in 1..u64::MAX,
-            virtual_token_multiplier in 0.1..100.0,
+            virtual_token_multiplier_bps in 1..BASIS_POINTS_DIVISOR,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
         ) {
             let creator = Pubkey::default();
-            let allocation = AllocationData::default();
+            let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
                 name: "test".to_string(),
@@ -357,7 +360,7 @@ mod tests {
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                virtual_token_multiplier,
+                virtual_token_multiplier_bps,
                 virtual_sol_reserves,
 
                 allocation,
