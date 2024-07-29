@@ -5,13 +5,14 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{self, Mint, Token, TokenAccount, Transfer},
 };
-use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
 use crate::{
     errors::ContractError,
     events::*,
     state::{bonding_curve::*, global::*},
 };
+
+use crate::state::bonding_curve::locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct SwapParams {
@@ -71,6 +72,7 @@ impl<'info> IntoBondingCurveLockerCtx<'info> for Swap<'info> {
     fn into_bonding_curve_locker_ctx(&self) -> BondingCurveLockerCtx<'info> {
         BondingCurveLockerCtx {
             mint: self.mint.clone(),
+            global: self.global.clone(),
             bonding_curve: self.bonding_curve.clone(),
             bonding_curve_token_account: self.bonding_curve_token_account.clone(),
             token_program: self.token_program.clone(),
@@ -107,10 +109,15 @@ impl Swap<'_> {
             min_out_amount
         );
 
+        ctx.accounts
+            .into_bonding_curve_locker_ctx()
+            .unlock_ata(ctx.bumps.global)?;
+
         let global_state = &ctx.accounts.global;
         let sol_amount: u64;
         let token_amount: u64;
         let fee_lamports: u64;
+        let locker: &mut BondingCurveLockerCtx = &mut ctx.accounts.into_bonding_curve_locker_ctx();
 
         if base_in {
             // Sell tokens
@@ -146,11 +153,18 @@ impl Swap<'_> {
             msg!("Fee: {} lamports", fee_lamports);
 
             msg!("BuyResult: {:#?}", buy_result);
+
+            // can be completed only after a buy
+            if ctx.accounts.bonding_curve.real_token_reserves == 0 {
+                // has been completed
+                ctx.accounts.bonding_curve.complete = true;
+                locker.revoke_freeze_authority(ctx.bumps.global)?;
+            }
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
-        BondingCurve::invariant(ctx.accounts.into_bonding_curve_locker_ctx())?;
 
-        let bonding_curve = &mut ctx.accounts.bonding_curve;
+        BondingCurve::invariant(&mut ctx.accounts.into_bonding_curve_locker_ctx())?;
+        let bonding_curve = &ctx.accounts.bonding_curve;
         emit_cpi!(TradeEvent {
             mint: *ctx.accounts.mint.to_account_info().key,
             sol_amount: sol_amount,
@@ -164,10 +178,7 @@ impl Swap<'_> {
             real_sol_reserves: bonding_curve.real_sol_reserves,
             real_token_reserves: bonding_curve.real_token_reserves,
         });
-
-        if bonding_curve.real_token_reserves == 0 {
-            bonding_curve.complete = true;
-
+        if bonding_curve.complete {
             emit_cpi!(CompleteEvent {
                 user: *ctx.accounts.user.to_account_info().key,
                 mint: *ctx.accounts.mint.to_account_info().key,
@@ -190,6 +201,8 @@ impl Swap<'_> {
         min_out_amount: u64,
         fee_lamports: u64,
     ) -> Result<()> {
+        msg!("fee_lamports: {}", fee_lamports);
+
         let bonding_curve = &ctx.accounts.bonding_curve;
 
         // Buy tokens
@@ -204,41 +217,6 @@ impl Swap<'_> {
             ctx.accounts.user.get_lamports() >= buy_amount_with_fee,
             ContractError::InsufficientUserSOL,
         );
-
-        // Transfer SOL to bonding curve
-        let transfer_instruction = system_instruction::transfer(
-            ctx.accounts.user.key,
-            bonding_curve.to_account_info().key,
-            buy_result.sol_amount,
-        );
-
-        anchor_lang::solana_program::program::invoke_signed(
-            &transfer_instruction,
-            &[
-                ctx.accounts.user.to_account_info(),
-                bonding_curve.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-        msg!("SOL to bonding curve transfer complete");
-        // Transfer SOL to fee recipient
-        let fee_transfer_instruction = system_instruction::transfer(
-            ctx.accounts.user.key,
-            &ctx.accounts.global.key(),
-            fee_lamports,
-        );
-
-        anchor_lang::solana_program::program::invoke_signed(
-            &fee_transfer_instruction,
-            &[
-                ctx.accounts.user.to_account_info(),
-                ctx.accounts.global.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-        msg!("Fee transfer complete");
 
         // Transfer tokens to user
         let cpi_accounts = Transfer {
@@ -260,7 +238,46 @@ impl Swap<'_> {
             ),
             buy_result.token_amount,
         )?;
+        let locker = &mut ctx.accounts.into_bonding_curve_locker_ctx();
+        locker.lock_ata(ctx.bumps.global)?;
         msg!("Token transfer complete");
+
+        // Transfer SOL to bonding curve
+        let transfer_instruction = system_instruction::transfer(
+            ctx.accounts.user.key,
+            bonding_curve.to_account_info().key,
+            buy_result.sol_amount,
+        );
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.user.to_account_info(),
+                bonding_curve.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+        msg!("SOL to bonding curve transfer complete");
+
+        // Transfer SOL to fee recipient
+        let fee_transfer_instruction = system_instruction::transfer(
+            ctx.accounts.user.key,
+            &ctx.accounts.global.key(),
+            fee_lamports,
+        );
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &fee_transfer_instruction,
+            &[
+                ctx.accounts.user.to_account_info(),
+                ctx.accounts.global.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+        msg!("Fee transfer complete");
+
         Ok(())
     }
 
@@ -272,6 +289,8 @@ impl Swap<'_> {
     ) -> Result<()> {
         // Sell tokens
         let sell_amount_minus_fee = sell_result.sol_amount - fee_lamports;
+        msg!("fee_lamports: {}", fee_lamports);
+        msg!("sell_amount_minus_fee: {}", sell_amount_minus_fee);
         require!(
             sell_amount_minus_fee >= min_out_amount,
             ContractError::SlippageExceeded,
@@ -289,16 +308,26 @@ impl Swap<'_> {
             CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts),
             sell_result.token_amount,
         )?;
+        let locker = &mut ctx.accounts.into_bonding_curve_locker_ctx();
+        locker.lock_ata(ctx.bumps.global)?;
+
         msg!("Token to bonding curve transfer complete");
+
         // Transfer SOL to user
-        bonding_curve.sub_lamports(sell_amount_minus_fee).unwrap();
+        ctx.accounts
+            .bonding_curve
+            .sub_lamports(sell_amount_minus_fee)
+            .unwrap();
         ctx.accounts
             .user
             .add_lamports(sell_amount_minus_fee)
             .unwrap();
         msg!("SOL to user transfer complete");
         // Transfer accrued fee to the global account
-        bonding_curve.sub_lamports(fee_lamports).unwrap();
+        ctx.accounts
+            .bonding_curve
+            .sub_lamports(fee_lamports)
+            .unwrap();
         ctx.accounts.global.add_lamports(fee_lamports).unwrap();
         msg!("Fee to global transfer complete");
         Ok(())

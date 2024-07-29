@@ -33,6 +33,7 @@ pub struct ClaimCreatorVesting<'info> {
     #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ContractError::NotInitialized,
+        constraint = global.status != ProgramStatus::Paused @ ContractError::ProgramNotRunning,
         bump,
     )]
     global: Box<Account<'info, Global>>,

@@ -50,6 +50,8 @@ pub struct BondingCurve {
     pub complete: bool,
 
     pub allocation: AllocationData,
+
+    pub bump: u8,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct CreateBondingCurveParams {

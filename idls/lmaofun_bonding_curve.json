@@ -428,6 +428,10 @@
             "type": {
               "defined": "AllocationData"
             }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

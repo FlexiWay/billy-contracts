@@ -47,7 +47,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         let curve_initial = curve.clone();
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
@@ -101,7 +101,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -137,7 +137,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -173,7 +173,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         let curve_initial = curve.clone();
 
         let purchase_amount = 100;
@@ -215,7 +215,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // let _curve_initial = curve.clone();
         assert_eq!(curve.get_buy_price(0), None);
 
@@ -247,7 +247,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
@@ -287,7 +287,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // let _curve_initial = curve.clone();
         // first apply buy
         curve.apply_buy(1000).unwrap();
@@ -340,7 +340,7 @@ mod tests {
                 allocation,
             };
             let mut bc = BondingCurve::default();
-            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK);
+            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
             let _curve_initial = curve.clone();
 
             if let Some(result) = curve.apply_buy(sol_amount) {
@@ -379,7 +379,7 @@ mod tests {
                 allocation,
             };
             let mut bc = BondingCurve::default();
-            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK);
+            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
             let buy_result = curve.apply_buy(buy_sol_amount);
             if buy_result.is_none() {
                 return Ok(())

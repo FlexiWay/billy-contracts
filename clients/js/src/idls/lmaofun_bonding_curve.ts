@@ -428,6 +428,10 @@ export type LmaofunBondingCurve = {
             "type": {
               "defined": "AllocationData"
             }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -1494,6 +1498,10 @@ export const IDL: LmaofunBondingCurve = {
             "type": {
               "defined": "AllocationData"
             }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

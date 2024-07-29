@@ -13,16 +13,22 @@ use anchor_spl::{
         self, mint_to, spl_token::instruction::AuthorityType, Mint, MintTo, Token, TokenAccount,
     },
 };
-use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
-use crate::state::{
-    allocation::AllocationData,
-    bonding_curve::*,
-    distributors::{BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor},
-    global::*,
+use crate::{
+    lmaofun_bonding_curve,
+    state::{
+        allocation::AllocationData,
+        bonding_curve::*,
+        distributors::{
+            BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor,
+        },
+        global::*,
+    },
 };
 
 use crate::{errors::ContractError, events::CreateEvent};
+
+use crate::state::bonding_curve::locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -164,6 +170,7 @@ impl<'info> IntoBondingCurveLockerCtx<'info> for CreateBondingCurve<'info> {
     fn into_bonding_curve_locker_ctx(&self) -> BondingCurveLockerCtx<'info> {
         BondingCurveLockerCtx {
             mint: self.mint.clone(),
+            global: self.global.clone(),
             bonding_curve: self.bonding_curve.clone(),
             bonding_curve_token_account: self.bonding_curve_token_account.clone(),
             token_program: self.token_program.clone(),
@@ -198,6 +205,7 @@ impl CreateBondingCurve<'_> {
             self.platform_authority.key(),
             &params,
             &clock,
+            0,
         );
         match bc.get_max_attainable_sol() {
             Some(max_sol) => {
@@ -226,6 +234,7 @@ impl CreateBondingCurve<'_> {
             ctx.accounts.platform_authority.key(),
             &params,
             &clock,
+            ctx.bumps.bonding_curve,
         );
         msg!("CreateBondingCurve::update_from_params");
 
@@ -234,10 +243,14 @@ impl CreateBondingCurve<'_> {
 
         ctx.accounts.intialize_meta(global_signer_seeds, &params)?;
         ctx.accounts.mint_allocations(global_signer_seeds)?;
-        ctx.accounts.revoke_authorities(global_signer_seeds)?;
         ctx.accounts.pay_launch_fee()?;
 
-        BondingCurve::invariant(ctx.accounts.into_bonding_curve_locker_ctx())?;
+        let locker = &mut ctx.accounts.into_bonding_curve_locker_ctx();
+        locker.revoke_mint_authority(ctx.bumps.global)?;
+
+        locker.lock_ata(ctx.bumps.global)?;
+        BondingCurve::invariant(locker)?;
+
         let bonding_curve = ctx.accounts.bonding_curve.as_mut();
         emit_cpi!(CreateEvent {
             name: params.name,
@@ -384,42 +397,6 @@ impl CreateBondingCurve<'_> {
         )?;
         msg!("CreateBondingCurve::mint_allocations:bonding_curve.bonding_supply minted");
         msg!("CreateBondingCurve::mint_allocations: done");
-        Ok(())
-    }
-
-    pub fn revoke_authorities(&mut self, global_signer_seeds: &[&[&[u8]]; 1]) -> Result<()> {
-        let mint_info = self.mint.to_account_info();
-        let mint_authority_info = self.global.to_account_info();
-        //remove mint_authority
-        token::set_authority(
-            CpiContext::new_with_signer(
-                self.token_program.to_account_info(),
-                token::SetAuthority {
-                    current_authority: mint_authority_info.clone(),
-                    account_or_mint: mint_info.clone(),
-                },
-                global_signer_seeds,
-            ),
-            AuthorityType::MintTokens,
-            None,
-        )?;
-
-        // revoke freeze authority
-        token::set_authority(
-            CpiContext::new_with_signer(
-                self.token_program.to_account_info(),
-                token::SetAuthority {
-                    current_authority: mint_authority_info.clone(),
-                    account_or_mint: mint_info.clone(),
-                },
-                global_signer_seeds,
-            ),
-            AuthorityType::FreezeAccount,
-            None,
-        )?;
-
-        msg!("CreateBondingCurve::revoke_authorities: done");
-
         Ok(())
     }
 

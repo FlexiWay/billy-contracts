@@ -30,31 +30,6 @@ impl Initialize<'_> {
         });
         global.update_settings(params);
 
-        // require_gt!(
-        //     global.initial_token_supply,
-        //     0,
-        //     ProgramError::InvalidArgument
-        // );
-        // require_gt!(
-        //     global.initial_real_token_reserves,
-        //     0,
-        //     ProgramError::InvalidArgument
-        // );
-        // require_gt!(
-        //     global.initial_virtual_sol_reserves,
-        //     0,
-        //     ProgramError::InvalidArgument
-        // );
-        // require_gt!(
-        //     global.initial_virtual_token_reserves,
-        //     0,
-        //     ProgramError::InvalidArgument
-        // );
-        // require_gt!(
-        //     global.sol_launch_threshold,
-        //     0,
-        //     ProgramError::InvalidArgument
-        // );
         require_gt!(
             global.created_mint_decimals,
             0,

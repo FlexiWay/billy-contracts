@@ -1,4 +1,5 @@
 use crate::state::allocation::AllocationData;
+use crate::state::bonding_curve::locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 use crate::state::bonding_curve::*;
 use crate::util::{bps_mul, bps_mul_raw};
 use crate::Global;
@@ -8,7 +9,6 @@ use anchor_lang::Accounts;
 use anchor_lang::{prelude::*, Bumps};
 use anchor_spl::token::{FreezeAccount, TokenAccount};
 use anchor_spl::{mint, token};
-use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 use std::fmt::{self};
 use structs::BondingCurve;
 
@@ -31,6 +31,7 @@ impl BondingCurve {
         platform_authority: Pubkey,
         params: &CreateBondingCurveParams,
         clock: &Clock,
+        bump: u8,
     ) -> &mut Self {
         let start_time = if let Some(start_time) = params.start_time {
             start_time
@@ -91,6 +92,8 @@ impl BondingCurve {
             start_time,
             complete,
             allocation,
+
+            bump,
         });
         self
     }
@@ -269,8 +272,7 @@ impl BondingCurve {
             "apply_sell: new_virtual_sol_reserves: {}",
             new_virtual_sol_reserves
         );
-        let new_real_sol_reserves =
-            (self.real_sol_reserves as u128).checked_sub(sol_amount as u128)?;
+        let new_real_sol_reserves = self.real_sol_reserves.checked_sub(sol_amount)?;
         msg!(
             "apply_sell: new_real_sol_reserves: {}",
             new_real_sol_reserves
@@ -372,9 +374,7 @@ impl BondingCurve {
         msg!("{:#?}", self);
     }
 
-    pub fn invariant<'info>(mut ctx: BondingCurveLockerCtx<'info>) -> Result<()>
-where {
-        // let mut ctx: BondingCurveLockerCtx<'a> = (*ctx).clone().into();
+    pub fn invariant<'info>(ctx: &mut BondingCurveLockerCtx<'info>) -> Result<()> {
         let bonding_curve = &mut ctx.bonding_curve;
         let tkn_account = &mut ctx.bonding_curve_token_account;
         if tkn_account.owner != bonding_curve.key() {
@@ -425,6 +425,10 @@ where {
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
+        if !bonding_curve.complete && !tkn_account.is_frozen() {
+            msg!("Active BondingCurve TokenAccount must always be frozen at the end");
+            return Err(ContractError::BondingCurveInvariant.into());
+        }
         Ok(())
     }
 }

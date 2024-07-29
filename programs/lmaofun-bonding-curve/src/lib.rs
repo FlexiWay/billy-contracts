@@ -36,6 +36,13 @@ pub mod lmaofun_bonding_curve {
         Swap::handler(ctx, params)
     }
 
+    // pub fn lock_ata(ctx: Context<BondingCurveLockerCtx>) -> Result<()> {
+    //     BondingCurveLockerCtx::lock_ata(ctx)
+    // }
+    // pub fn unlock_ata(ctx: Context<BondingCurveLockerCtx>) -> Result<()> {
+    //     BondingCurveLockerCtx::unlock_ata(ctx)
+    // }
+
     pub fn withdraw_fees(ctx: Context<WithdrawFees>) -> Result<()> {
         WithdrawFees::handler(ctx)
     }

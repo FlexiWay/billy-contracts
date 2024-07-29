@@ -56,10 +56,11 @@ pub struct BondingCurve {
     pub start_time: i64,
     pub complete: bool,
     pub allocation: AllocationData,
+    pub bump: u8,
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 337;
+    pub const LEN: usize = 338;
 
     /// Prefix values used to generate a PDA for this account.
     ///
