@@ -3,10 +3,7 @@ mod tests {
     use anchor_lang::prelude::{Clock, Pubkey};
     use once_cell::sync::Lazy;
 
-    use crate::state::{
-        allocation::AllocationData,
-        bonding_curve::{BondingCurve, CreateBondingCurveParams},
-    };
+    use crate::state::{allocation::AllocationData, bonding_curve::*};
     use std::{
         ops::Mul,
         time::{SystemTime, UNIX_EPOCH},
@@ -42,7 +39,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         let curve_initial = curve.clone();
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
@@ -95,7 +92,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -130,7 +127,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -165,7 +162,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         let curve_initial = curve.clone();
 
         let purchase_amount = 100;
@@ -276,7 +273,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
         // first apply buy
         curve.apply_buy(1000).unwrap();
@@ -328,7 +325,7 @@ mod tests {
                 allocation,
             };
             let mut bc = BondingCurve::default();
-            let mut curve = bc.update_from_params(creator, &params, &CLOCK);
+            let curve = bc.update_from_params(creator, &params, &CLOCK);
             let _curve_initial = curve.clone();
 
             if let Some(result) = curve.apply_buy(sol_amount) {

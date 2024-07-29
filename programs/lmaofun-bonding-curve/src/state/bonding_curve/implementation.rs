@@ -1,13 +1,7 @@
 use crate::errors::ContractError;
-use crate::state::bonding_curve::structs::SellResult;
+use crate::state::bonding_curve::*;
 use anchor_lang::prelude::*;
-use anchor_lang::Lamports;
 use std::fmt::{self};
-
-use super::structs::BondingCurve;
-use super::structs::BuyResult;
-use super::structs::CreateBondingCurveParams;
-
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
 

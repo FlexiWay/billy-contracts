@@ -11,7 +11,7 @@ use anchor_spl::{
     },
 };
 
-use crate::state::bonding_curve::{self, CreateBondingCurveParams};
+use crate::state::bonding_curve::{CreateBondingCurveParams};
 use crate::{
     errors::ContractError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,

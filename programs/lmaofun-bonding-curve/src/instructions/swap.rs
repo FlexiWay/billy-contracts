@@ -7,7 +7,6 @@ use anchor_spl::{
 };
 
 use crate::{
-    accounts,
     errors::ContractError,
     events::*,
     state::{bonding_curve::*, global::*},

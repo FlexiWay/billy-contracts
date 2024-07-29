@@ -1,9 +1,8 @@
 use crate::{
     errors::ContractError,
-    events::*,
     state::{bonding_curve::BondingCurve, global::*},
 };
-use anchor_lang::{prelude::*, solana_program::clock};
+use anchor_lang::{prelude::*};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Token, TokenAccount},
