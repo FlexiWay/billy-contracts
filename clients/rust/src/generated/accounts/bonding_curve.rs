@@ -25,8 +25,8 @@ pub struct BondingCurve {
     pub creator: Pubkey,
     pub virtual_token_multiplier: f64,
     pub virtual_sol_reserves: u64,
-    pub initial_virtual_token_reserves: u64,
-    pub virtual_token_reserves: u64,
+    pub virtual_token_reserves: u128,
+    pub initial_virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
@@ -39,7 +39,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 185;
+    pub const LEN: usize = 201;
 
     /// Prefix values used to generate a PDA for this account.
     ///

@@ -87,9 +87,10 @@ pub struct CreateBondingCurve<'info> {
 
 impl CreateBondingCurve<'_> {
     pub fn validate(
-        ctx: Context<CreateBondingCurve>,
+        _ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,
     ) -> Result<()> {
+        // todo complete validation for params,allocations and start time
         if !params.allocation.is_valid() {
             return Err(ProgramError::InvalidAllocation.into());
         }

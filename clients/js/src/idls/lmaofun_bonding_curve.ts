@@ -302,12 +302,12 @@ export type LmaofunBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
+            "name": "virtualTokenReserves",
+            "type": "u128"
           },
           {
-            "name": "virtualTokenReserves",
-            "type": "u64"
+            "name": "initialVirtualTokenReserves",
+            "type": "u128"
           },
           {
             "name": "realSolReserves",
@@ -638,7 +638,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -723,7 +723,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -758,7 +758,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -1182,12 +1182,12 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "initialVirtualTokenReserves",
-            "type": "u64"
+            "name": "virtualTokenReserves",
+            "type": "u128"
           },
           {
-            "name": "virtualTokenReserves",
-            "type": "u64"
+            "name": "initialVirtualTokenReserves",
+            "type": "u128"
           },
           {
             "name": "realSolReserves",
@@ -1518,7 +1518,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -1603,7 +1603,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -1638,7 +1638,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "virtualTokenReserves",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
