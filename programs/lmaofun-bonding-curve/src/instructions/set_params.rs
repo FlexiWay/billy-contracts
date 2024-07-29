@@ -1,4 +1,4 @@
-use crate::{errors::ProgramError, events::*, state::global::*};
+use crate::{errors::ContractError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]
@@ -6,14 +6,14 @@ use anchor_lang::prelude::*;
 #[instruction( params: GlobalSettingsInput)]
 pub struct SetParams<'info> {
     #[account(mut,
-    constraint = authority.key() == global.global_authority.key() @ ProgramError::InvalidGlobalAuthority
+    constraint = authority.key() == global.global_authority.key() @ ContractError::InvalidGlobalAuthority
     )]
     authority: Signer<'info>,
 
     #[account(
         mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.initialized == true @ ProgramError::NotInitialized,
+        constraint = global.initialized == true @ ContractError::NotInitialized,
         bump,
     )]
     global: Box<Account<'info, Global>>,

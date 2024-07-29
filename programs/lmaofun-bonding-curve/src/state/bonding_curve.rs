@@ -1,4 +1,4 @@
-use crate::errors::ProgramError;
+use crate::errors::ContractError;
 use anchor_lang::prelude::*;
 use anchor_lang::Lamports;
 use std::fmt::{self};
@@ -421,17 +421,17 @@ impl BondingCurve {
         // Ensure real sol reserves are equal to bonding curve pool lamports
         if bonding_curve_pool_lamports != self.real_sol_reserves {
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
-            return Err(ProgramError::BondingCurveInvariant.into());
+            return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the virtual reserves are always positive
         if self.virtual_sol_reserves <= 0 {
             msg!("Invariant failed: virtual_sol_reserves <= 0");
-            return Err(ProgramError::BondingCurveInvariant.into());
+            return Err(ContractError::BondingCurveInvariant.into());
         }
         if self.virtual_token_reserves <= 0 {
             msg!("Invariant failed: virtual_token_reserves <= 0");
-            return Err(ProgramError::BondingCurveInvariant.into());
+            return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the token total supply is consistent with the reserves
@@ -439,13 +439,13 @@ impl BondingCurve {
             msg!("Invariant failed: real_token_reserves != tkn_balance");
             msg!("real_token_reserves: {}", self.real_token_reserves);
             msg!("tkn_balance: {}", tkn_balance);
-            return Err(ProgramError::BondingCurveInvariant.into());
+            return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the bonding curve is complete only if real token reserves are zero
         if self.complete && self.real_token_reserves != 0 {
             msg!("Invariant failed: bonding curve marked as complete but real_token_reserves != 0");
-            return Err(ProgramError::BondingCurveInvariant.into());
+            return Err(ContractError::BondingCurveInvariant.into());
         }
 
         Ok(())

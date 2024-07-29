@@ -13,7 +13,7 @@ use anchor_spl::{
 
 use crate::state::bonding_curve::{self, CreateBondingCurveParams};
 use crate::{
-    errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
+    errors::ContractError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,
 };
 
@@ -53,8 +53,8 @@ pub struct CreateBondingCurve<'info> {
     #[account(
         mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.initialized == true @ ProgramError::NotInitialized,
-        constraint = global.status == ProgramStatus::Running @ ProgramError::ProgramNotRunning,
+        constraint = global.initialized == true @ ContractError::NotInitialized,
+        constraint = global.status == ProgramStatus::Running @ ContractError::ProgramNotRunning,
         bump,
     )]
     global: Box<Account<'info, Global>>,
@@ -92,14 +92,14 @@ impl CreateBondingCurve<'_> {
         // todo complete validation for params,allocations and start time
         require!(
             params.allocation.is_valid(),
-            ProgramError::InvalidAllocation
+            ContractError::InvalidAllocation
         );
 
         // validate start time
         if let Some(start_time) = params.start_time {
             require!(
                 start_time <= clock.unix_timestamp,
-                ProgramError::InvalidStartTime
+                ContractError::InvalidStartTime
             )
         }
         // validate sol_launch_threshold
@@ -110,11 +110,11 @@ impl CreateBondingCurve<'_> {
                 msg!("max:{}, thresh:{}", max_sol, params.sol_launch_threshold);
                 require!(
                     params.sol_launch_threshold <= max_sol,
-                    ProgramError::SOLLaunchThresholdTooHigh
+                    ContractError::SOLLaunchThresholdTooHigh
                 )
             }
             None => {
-                return Err(ProgramError::NoMaxAttainableSOL.into());
+                return Err(ContractError::NoMaxAttainableSOL.into());
             }
         }
         Ok(())

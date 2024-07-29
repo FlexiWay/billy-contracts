@@ -1,7 +1,7 @@
 use anchor_lang::error_code;
 
 #[error_code]
-pub enum ProgramError {
+pub enum ContractError {
     #[msg("Invalid Global Authority")]
     InvalidGlobalAuthority,
     #[msg("Invalid Withdraw Authority")]

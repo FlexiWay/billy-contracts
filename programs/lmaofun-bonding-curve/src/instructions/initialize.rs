@@ -1,4 +1,4 @@
-use crate::{errors::ProgramError, events::*, state::global::*};
+use crate::{errors::ContractError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]
@@ -12,7 +12,7 @@ pub struct Initialize<'info> {
         init,
         space = 8 + Global::INIT_SPACE,
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.initialized != true @ ProgramError::AlreadyInitialized,
+        constraint = global.initialized != true @ ContractError::AlreadyInitialized,
         bump,
         payer = authority,
     )]
@@ -58,7 +58,7 @@ impl Initialize<'_> {
         require_gt!(
             global.created_mint_decimals,
             0,
-            ProgramError::InvalidArgument
+            ContractError::InvalidArgument
         );
 
         global.status = ProgramStatus::Running;

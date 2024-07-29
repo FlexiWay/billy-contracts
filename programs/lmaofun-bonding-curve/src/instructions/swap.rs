@@ -8,7 +8,7 @@ use anchor_spl::{
 
 use crate::{
     accounts,
-    errors::ProgramError,
+    errors::ContractError,
     events::*,
     state::{bonding_curve::*, global::*},
 };
@@ -30,7 +30,7 @@ pub struct Swap<'info> {
     #[account(
         mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.initialized == true @ ProgramError::NotInitialized,
+        constraint = global.initialized == true @ ContractError::NotInitialized,
         bump,
     )]
     global: Box<Account<'info, Global>>,
@@ -40,7 +40,7 @@ pub struct Swap<'info> {
     #[account(
         mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        constraint = bonding_curve.complete == false @ ProgramError::BondingCurveComplete,
+        constraint = bonding_curve.complete == false @ ContractError::BondingCurveComplete,
         bump,
     )]
     bonding_curve: Box<Account<'info, BondingCurve>>,
@@ -78,9 +78,9 @@ impl Swap<'_> {
 
         require!(
             self.bonding_curve.is_started(&clock),
-            ProgramError::CurveNotStarted
+            ContractError::CurveNotStarted
         );
-        require!(exact_in_amount > &0, ProgramError::MinSwap);
+        require!(exact_in_amount > &0, ContractError::MinSwap);
         Ok(())
     }
     pub fn handler(ctx: Context<Swap>, params: SwapParams) -> Result<()> {
@@ -107,14 +107,14 @@ impl Swap<'_> {
             // Sell tokens
             require!(
                 ctx.accounts.user_token_account.amount >= exact_in_amount,
-                ProgramError::InsufficientUserTokens,
+                ContractError::InsufficientUserTokens,
             );
 
             let sell_result = &mut ctx
                 .accounts
                 .bonding_curve
                 .apply_sell(exact_in_amount)
-                .ok_or(ProgramError::SellFailed)?;
+                .ok_or(ContractError::SellFailed)?;
 
             sol_amount = sell_result.sol_amount;
             token_amount = sell_result.token_amount;
@@ -129,7 +129,7 @@ impl Swap<'_> {
                 .accounts
                 .bonding_curve
                 .apply_buy(exact_in_amount)
-                .ok_or(ProgramError::BuyFailed)?;
+                .ok_or(ContractError::BuyFailed)?;
 
             sol_amount = buy_result.sol_amount;
             token_amount = buy_result.token_amount;
@@ -192,12 +192,12 @@ impl Swap<'_> {
 
         require!(
             buy_result.token_amount >= min_out_amount,
-            ProgramError::SlippageExceeded,
+            ContractError::SlippageExceeded,
         );
 
         require!(
             ctx.accounts.user.get_lamports() >= buy_amount_with_fee,
-            ProgramError::InsufficientUserSOL,
+            ContractError::InsufficientUserSOL,
         );
 
         // Transfer SOL to bonding curve
@@ -269,7 +269,7 @@ impl Swap<'_> {
         let sell_amount_minus_fee = sell_result.sol_amount - fee_lamports;
         require!(
             sell_amount_minus_fee >= min_out_amount,
-            ProgramError::SlippageExceeded,
+            ContractError::SlippageExceeded,
         );
 
         let bonding_curve = &ctx.accounts.bonding_curve;

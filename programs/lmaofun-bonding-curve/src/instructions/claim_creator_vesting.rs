@@ -1,5 +1,5 @@
 use crate::{
-    errors::ProgramError,
+    errors::ContractError,
     events::*,
     state::{bonding_curve::BondingCurve, global::*},
 };
@@ -13,7 +13,7 @@ use anchor_spl::{
 #[derive(Accounts)]
 pub struct ClaimCreatorVesting<'info> {
     #[account(mut,
-    constraint = creator.key() == bonding_curve.creator.key() @ ProgramError::InvalidCreatorAuthority
+    constraint = creator.key() == bonding_curve.creator.key() @ ContractError::InvalidCreatorAuthority
     )]
     creator: Signer<'info>,
 
@@ -33,7 +33,7 @@ pub struct ClaimCreatorVesting<'info> {
 
     #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.initialized == true @ ProgramError::NotInitialized,
+        constraint = global.initialized == true @ ContractError::NotInitialized,
         bump,
     )]
     global: Box<Account<'info, Global>>,
@@ -53,7 +53,7 @@ impl ClaimCreatorVesting<'_> {
         let clock = Clock::get()?;
         require!(
             self.bonding_curve.is_started(&clock),
-            ProgramError::CurveNotStarted
+            ContractError::CurveNotStarted
         );
         Ok(())
     }

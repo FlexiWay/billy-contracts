@@ -1,7 +1,7 @@
-use anchor_lang::{prelude::*};
+use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 
-use crate::{errors::ProgramError, events::WithdrawEvent};
+use crate::{errors::ContractError, events::WithdrawEvent};
 
 use crate::state::global::*;
 
@@ -14,8 +14,8 @@ pub struct WithdrawFees<'info> {
     #[account(
         mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
-        constraint = global.withdraw_authority == *authority.key @ ProgramError::InvalidWithdrawAuthority,
-        constraint = global.initialized == true @ ProgramError::NotInitialized,
+        constraint = global.withdraw_authority == *authority.key @ ContractError::InvalidWithdrawAuthority,
+        constraint = global.initialized == true @ ContractError::NotInitialized,
         bump,
     )]
     global: Box<Account<'info, Global>>,
