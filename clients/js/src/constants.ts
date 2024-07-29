@@ -1,21 +1,21 @@
 // import { InitializeInstructionArgs } from "./generated";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import BN from "bn.js";
+import { none } from "@metaplex-foundation/umi";
 import { CreateBondingCurveInstructionArgs, ProgramStatus } from "./generated";
 
 import { AllocationData } from './generated/types/allocationData';
-import { none } from "@metaplex-foundation/umi";
 
 
 export const TOKEN_DECIMALS = 6;
 export const INIT_ALLOCATIONS_PCS = {
-    creator:10,
-    cex:10,
-    launchBrandkit:10,
-    lifetimeBrandkit:10,
-    platform:10,
-    presale:0,
-    poolReserve:50,
+    creator:10.0,
+    cex:10.0,
+    launchBrandkit:10.0,
+    lifetimeBrandkit:10.0,
+    platform:10.0,
+    presale:0.0,
+    poolReserve:50.0,
 }
 
 export const DECIMALS_MULTIPLIER = 10 ** TOKEN_DECIMALS;

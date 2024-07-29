@@ -104,13 +104,43 @@ export type LmaofunBondingCurve = {
           "isSigner": true
         },
         {
+          "name": "creatorDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "creatorDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
+          "name": "brandDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "brandDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "platformAuthority",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributorTokenAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -423,21 +453,21 @@ export type LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creatorData",
+      "name": "creatorDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "platformDistributorData",
+      "name": "platformDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "brandDistributorData",
+      "name": "brandDistributor",
       "type": {
         "kind": "struct",
         "fields": []
@@ -1056,13 +1086,43 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": true
         },
         {
+          "name": "creatorDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "creatorDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
+          "name": "brandDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "brandDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "platformAuthority",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributorTokenAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1375,21 +1435,21 @@ export const IDL: LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creatorData",
+      "name": "creatorDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "platformDistributorData",
+      "name": "platformDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "brandDistributorData",
+      "name": "brandDistributor",
       "type": {
         "kind": "struct",
         "fields": []

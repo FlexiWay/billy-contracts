@@ -16,6 +16,8 @@ kinobi.update(
   })
 );
 
+const MINT_NODE_DESC = "The mint of the bonding curve tkn";
+
 // Update accounts.
 kinobi.update(
   new k.updateAccountsVisitor({
@@ -25,11 +27,25 @@ kinobi.update(
     bondingCurve: {
       seeds: [
         k.constantPdaSeedNodeFromString("bonding-curve"),
-        k.variablePdaSeedNode(
-          "mint",
-          k.publicKeyTypeNode(),
-          "The mint of the bonding curve tkn"
-        ),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
+    brandDistributor: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("brand-distributor-data"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
+    platformDistributor: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("platform-distributor-data"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
+    creatorDistributor: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("creator-distributor-data"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
     eventAuthority: {

@@ -17,9 +17,21 @@ pub struct CreateBondingCurve {
 
     pub creator: solana_program::pubkey::Pubkey,
 
+    pub creator_distributor: solana_program::pubkey::Pubkey,
+
+    pub creator_distributor_token_account: solana_program::pubkey::Pubkey,
+
     pub brand_authority: solana_program::pubkey::Pubkey,
 
+    pub brand_distributor: solana_program::pubkey::Pubkey,
+
+    pub brand_distributor_token_account: solana_program::pubkey::Pubkey,
+
     pub platform_authority: solana_program::pubkey::Pubkey,
+
+    pub platform_distributor: solana_program::pubkey::Pubkey,
+
+    pub platform_distributor_token_account: solana_program::pubkey::Pubkey,
 
     pub bonding_curve: solana_program::pubkey::Pubkey,
 
@@ -59,7 +71,7 @@ impl CreateBondingCurve {
         args: CreateBondingCurveInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(16 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(22 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.mint, true,
         ));
@@ -67,12 +79,36 @@ impl CreateBondingCurve {
             self.creator,
             true,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.creator_distributor,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.creator_distributor_token_account,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.brand_authority,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.brand_distributor,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.brand_distributor_token_account,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.platform_authority,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.platform_distributor,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.platform_distributor_token_account,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -172,26 +208,38 @@ pub struct CreateBondingCurveInstructionArgs {
 ///
 ///   0. `[writable, signer]` mint
 ///   1. `[writable, signer]` creator
-///   2. `[]` brand_authority
-///   3. `[]` platform_authority
-///   4. `[writable]` bonding_curve
-///   5. `[writable]` bonding_curve_token_account
-///   6. `[writable]` global
-///   7. `[writable]` metadata
-///   8. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   9. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   10. `[]` associated_token_program
-///   11. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
-///   12. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
-///   13. `[]` clock
-///   14. `[]` event_authority
-///   15. `[]` program
+///   2. `[writable]` creator_distributor
+///   3. `[writable]` creator_distributor_token_account
+///   4. `[]` brand_authority
+///   5. `[writable]` brand_distributor
+///   6. `[writable]` brand_distributor_token_account
+///   7. `[]` platform_authority
+///   8. `[writable]` platform_distributor
+///   9. `[writable]` platform_distributor_token_account
+///   10. `[writable]` bonding_curve
+///   11. `[writable]` bonding_curve_token_account
+///   12. `[writable]` global
+///   13. `[writable]` metadata
+///   14. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   15. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   16. `[]` associated_token_program
+///   17. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
+///   18. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
+///   19. `[]` clock
+///   20. `[]` event_authority
+///   21. `[]` program
 #[derive(Default)]
 pub struct CreateBondingCurveBuilder {
     mint: Option<solana_program::pubkey::Pubkey>,
     creator: Option<solana_program::pubkey::Pubkey>,
+    creator_distributor: Option<solana_program::pubkey::Pubkey>,
+    creator_distributor_token_account: Option<solana_program::pubkey::Pubkey>,
     brand_authority: Option<solana_program::pubkey::Pubkey>,
+    brand_distributor: Option<solana_program::pubkey::Pubkey>,
+    brand_distributor_token_account: Option<solana_program::pubkey::Pubkey>,
     platform_authority: Option<solana_program::pubkey::Pubkey>,
+    platform_distributor: Option<solana_program::pubkey::Pubkey>,
+    platform_distributor_token_account: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve_token_account: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
@@ -231,6 +279,22 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
+    pub fn creator_distributor(
+        &mut self,
+        creator_distributor: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.creator_distributor = Some(creator_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn creator_distributor_token_account(
+        &mut self,
+        creator_distributor_token_account: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.creator_distributor_token_account = Some(creator_distributor_token_account);
+        self
+    }
+    #[inline(always)]
     pub fn brand_authority(
         &mut self,
         brand_authority: solana_program::pubkey::Pubkey,
@@ -239,11 +303,43 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
+    pub fn brand_distributor(
+        &mut self,
+        brand_distributor: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.brand_distributor = Some(brand_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn brand_distributor_token_account(
+        &mut self,
+        brand_distributor_token_account: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.brand_distributor_token_account = Some(brand_distributor_token_account);
+        self
+    }
+    #[inline(always)]
     pub fn platform_authority(
         &mut self,
         platform_authority: solana_program::pubkey::Pubkey,
     ) -> &mut Self {
         self.platform_authority = Some(platform_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn platform_distributor(
+        &mut self,
+        platform_distributor: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.platform_distributor = Some(platform_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn platform_distributor_token_account(
+        &mut self,
+        platform_distributor_token_account: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.platform_distributor_token_account = Some(platform_distributor_token_account);
         self
     }
     #[inline(always)]
@@ -392,10 +488,28 @@ impl CreateBondingCurveBuilder {
             CreateBondingCurve {
                 mint: self.mint.expect("mint is not set"),
                 creator: self.creator.expect("creator is not set"),
+                creator_distributor: self
+                    .creator_distributor
+                    .expect("creator_distributor is not set"),
+                creator_distributor_token_account: self
+                    .creator_distributor_token_account
+                    .expect("creator_distributor_token_account is not set"),
                 brand_authority: self.brand_authority.expect("brand_authority is not set"),
+                brand_distributor: self
+                    .brand_distributor
+                    .expect("brand_distributor is not set"),
+                brand_distributor_token_account: self
+                    .brand_distributor_token_account
+                    .expect("brand_distributor_token_account is not set"),
                 platform_authority: self
                     .platform_authority
                     .expect("platform_authority is not set"),
+                platform_distributor: self
+                    .platform_distributor
+                    .expect("platform_distributor is not set"),
+                platform_distributor_token_account: self
+                    .platform_distributor_token_account
+                    .expect("platform_distributor_token_account is not set"),
                 bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
                 bonding_curve_token_account: self
                     .bonding_curve_token_account
@@ -455,9 +569,21 @@ pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
 
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub brand_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub brand_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub platform_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub platform_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -493,9 +619,21 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
 
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub brand_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub brand_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub platform_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub platform_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -534,8 +672,14 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             __program: program,
             mint: accounts.mint,
             creator: accounts.creator,
+            creator_distributor: accounts.creator_distributor,
+            creator_distributor_token_account: accounts.creator_distributor_token_account,
             brand_authority: accounts.brand_authority,
+            brand_distributor: accounts.brand_distributor,
+            brand_distributor_token_account: accounts.brand_distributor_token_account,
             platform_authority: accounts.platform_authority,
+            platform_distributor: accounts.platform_distributor,
+            platform_distributor_token_account: accounts.platform_distributor_token_account,
             bonding_curve: accounts.bonding_curve,
             bonding_curve_token_account: accounts.bonding_curve_token_account,
             global: accounts.global,
@@ -584,7 +728,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(16 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(22 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.mint.key,
             true,
@@ -593,12 +737,36 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             *self.creator.key,
             true,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.creator_distributor.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.creator_distributor_token_account.key,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.brand_authority.key,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.brand_distributor.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.brand_distributor_token_account.key,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.platform_authority.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.platform_distributor.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.platform_distributor_token_account.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -667,12 +835,18 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(16 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(22 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.creator.clone());
+        account_infos.push(self.creator_distributor.clone());
+        account_infos.push(self.creator_distributor_token_account.clone());
         account_infos.push(self.brand_authority.clone());
+        account_infos.push(self.brand_distributor.clone());
+        account_infos.push(self.brand_distributor_token_account.clone());
         account_infos.push(self.platform_authority.clone());
+        account_infos.push(self.platform_distributor.clone());
+        account_infos.push(self.platform_distributor_token_account.clone());
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve_token_account.clone());
         account_infos.push(self.global.clone());
@@ -703,20 +877,26 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
 ///
 ///   0. `[writable, signer]` mint
 ///   1. `[writable, signer]` creator
-///   2. `[]` brand_authority
-///   3. `[]` platform_authority
-///   4. `[writable]` bonding_curve
-///   5. `[writable]` bonding_curve_token_account
-///   6. `[writable]` global
-///   7. `[writable]` metadata
-///   8. `[]` system_program
-///   9. `[]` token_program
-///   10. `[]` associated_token_program
-///   11. `[]` token_metadata_program
-///   12. `[]` rent
-///   13. `[]` clock
-///   14. `[]` event_authority
-///   15. `[]` program
+///   2. `[writable]` creator_distributor
+///   3. `[writable]` creator_distributor_token_account
+///   4. `[]` brand_authority
+///   5. `[writable]` brand_distributor
+///   6. `[writable]` brand_distributor_token_account
+///   7. `[]` platform_authority
+///   8. `[writable]` platform_distributor
+///   9. `[writable]` platform_distributor_token_account
+///   10. `[writable]` bonding_curve
+///   11. `[writable]` bonding_curve_token_account
+///   12. `[writable]` global
+///   13. `[writable]` metadata
+///   14. `[]` system_program
+///   15. `[]` token_program
+///   16. `[]` associated_token_program
+///   17. `[]` token_metadata_program
+///   18. `[]` rent
+///   19. `[]` clock
+///   20. `[]` event_authority
+///   21. `[]` program
 pub struct CreateBondingCurveCpiBuilder<'a, 'b> {
     instruction: Box<CreateBondingCurveCpiBuilderInstruction<'a, 'b>>,
 }
@@ -727,8 +907,14 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             __program: program,
             mint: None,
             creator: None,
+            creator_distributor: None,
+            creator_distributor_token_account: None,
             brand_authority: None,
+            brand_distributor: None,
+            brand_distributor_token_account: None,
             platform_authority: None,
+            platform_distributor: None,
+            platform_distributor_token_account: None,
             bonding_curve: None,
             bonding_curve_token_account: None,
             global: None,
@@ -768,6 +954,23 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
+    pub fn creator_distributor(
+        &mut self,
+        creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.creator_distributor = Some(creator_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn creator_distributor_token_account(
+        &mut self,
+        creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.creator_distributor_token_account =
+            Some(creator_distributor_token_account);
+        self
+    }
+    #[inline(always)]
     pub fn brand_authority(
         &mut self,
         brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
@@ -776,11 +979,44 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
+    pub fn brand_distributor(
+        &mut self,
+        brand_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.brand_distributor = Some(brand_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn brand_distributor_token_account(
+        &mut self,
+        brand_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.brand_distributor_token_account = Some(brand_distributor_token_account);
+        self
+    }
+    #[inline(always)]
     pub fn platform_authority(
         &mut self,
         platform_authority: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.platform_authority = Some(platform_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn platform_distributor(
+        &mut self,
+        platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.platform_distributor = Some(platform_distributor);
+        self
+    }
+    #[inline(always)]
+    pub fn platform_distributor_token_account(
+        &mut self,
+        platform_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.platform_distributor_token_account =
+            Some(platform_distributor_token_account);
         self
     }
     #[inline(always)]
@@ -998,15 +1234,45 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
 
             creator: self.instruction.creator.expect("creator is not set"),
 
+            creator_distributor: self
+                .instruction
+                .creator_distributor
+                .expect("creator_distributor is not set"),
+
+            creator_distributor_token_account: self
+                .instruction
+                .creator_distributor_token_account
+                .expect("creator_distributor_token_account is not set"),
+
             brand_authority: self
                 .instruction
                 .brand_authority
                 .expect("brand_authority is not set"),
 
+            brand_distributor: self
+                .instruction
+                .brand_distributor
+                .expect("brand_distributor is not set"),
+
+            brand_distributor_token_account: self
+                .instruction
+                .brand_distributor_token_account
+                .expect("brand_distributor_token_account is not set"),
+
             platform_authority: self
                 .instruction
                 .platform_authority
                 .expect("platform_authority is not set"),
+
+            platform_distributor: self
+                .instruction
+                .platform_distributor
+                .expect("platform_distributor is not set"),
+
+            platform_distributor_token_account: self
+                .instruction
+                .platform_distributor_token_account
+                .expect("platform_distributor_token_account is not set"),
 
             bonding_curve: self
                 .instruction
@@ -1065,8 +1331,14 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     creator: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator_distributor: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator_distributor_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     brand_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    brand_distributor: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    brand_distributor_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     platform_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    platform_distributor: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    platform_distributor_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,

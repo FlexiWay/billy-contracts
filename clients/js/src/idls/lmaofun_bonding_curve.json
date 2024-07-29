@@ -104,13 +104,43 @@
           "isSigner": true
         },
         {
+          "name": "creatorDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "creatorDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
+          "name": "brandDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "brandDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "platformAuthority",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformDistributorTokenAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -423,21 +453,21 @@
       }
     },
     {
-      "name": "CreatorData",
+      "name": "CreatorDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "PlatformDistributorData",
+      "name": "PlatformDistributor",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "BrandDistributorData",
+      "name": "BrandDistributor",
       "type": {
         "kind": "struct",
         "fields": []

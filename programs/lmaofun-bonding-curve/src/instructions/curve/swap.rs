@@ -97,7 +97,6 @@ impl Swap<'_> {
         );
 
         let global_state = &ctx.accounts.global;
-
         let sol_amount: u64;
         let token_amount: u64;
         let fee_lamports: u64;
@@ -109,7 +108,7 @@ impl Swap<'_> {
                 ContractError::InsufficientUserTokens,
             );
 
-            let sell_result = &mut ctx
+            let sell_result = ctx
                 .accounts
                 .bonding_curve
                 .apply_sell(exact_in_amount)
@@ -124,7 +123,7 @@ impl Swap<'_> {
             Swap::complete_sell(&ctx, sell_result.clone(), min_out_amount, fee_lamports)?;
         } else {
             // Buy tokens
-            let buy_result = &mut ctx
+            let buy_result = ctx
                 .accounts
                 .bonding_curve
                 .apply_buy(exact_in_amount)
@@ -153,10 +152,9 @@ impl Swap<'_> {
             real_token_reserves: bonding_curve.real_token_reserves,
         });
 
-        ctx.accounts.bonding_curve_token_account.reload().unwrap();
-        bonding_curve.invariant(
-            &bonding_curve.get_lamports(),
-            &ctx.accounts.bonding_curve_token_account.amount,
+        BondingCurve::invariant(
+            bonding_curve,
+            ctx.accounts.bonding_curve_token_account.as_mut(),
         )?;
 
         if bonding_curve.real_token_reserves == 0 {

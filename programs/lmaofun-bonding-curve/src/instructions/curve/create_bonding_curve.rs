@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
 use anchor_spl::{
@@ -11,7 +13,11 @@ use anchor_spl::{
     },
 };
 
-use crate::state::{bonding_curve::*, global::*};
+use crate::state::{
+    bonding_curve::{self, *},
+    global::*,
+    roles::{BrandDistributor, CreatorDistributor, PlatformDistributor},
+};
 
 use crate::{errors::ContractError, events::CreateEvent};
 
@@ -30,14 +36,59 @@ pub struct CreateBondingCurve<'info> {
 
     #[account(mut)]
     creator: Signer<'info>,
+    #[account(
+        init,
+        payer = creator,
+        seeds = [CreatorDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + CreatorDistributor::INIT_SPACE,
+        bump,
+    )]
+    creator_distributor: Box<Account<'info, CreatorDistributor>>,
+    #[account(
+        init_if_needed,
+        payer = creator,
+        associated_token::mint = mint,
+        associated_token::authority = creator_distributor,
+    )]
+    creator_distributor_token_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account()]
     brand_authority: UncheckedAccount<'info>,
+    #[account(
+        init,
+        payer = creator,
+        seeds = [BrandDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + BrandDistributor::INIT_SPACE,
+        bump,
+    )]
+    brand_distributor: Box<Account<'info, BrandDistributor>>,
+    #[account(
+        init_if_needed,
+        payer = creator,
+        associated_token::mint = mint,
+        associated_token::authority = brand_distributor,
+    )]
+    brand_distributor_token_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account()]
     platform_authority: UncheckedAccount<'info>,
+    #[account(
+        init,
+        payer = creator,
+        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + PlatformDistributor::INIT_SPACE,
+        bump,
+    )]
+    platform_distributor: Box<Account<'info, PlatformDistributor>>,
+    #[account(
+        init_if_needed,
+        payer = creator,
+        associated_token::mint = mint,
+        associated_token::authority = platform_distributor,
+    )]
+    platform_distributor_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -94,12 +145,14 @@ pub struct CreateBondingCurve<'info> {
 impl CreateBondingCurve<'_> {
     pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
         let clock = Clock::get()?;
-
+        msg!("allocation: {:#?}", params.allocation);
         // todo complete validation for params,allocations and start time
         require!(
             params.allocation.is_valid(),
             ContractError::InvalidAllocation
         );
+
+        msg!("not_allc");
 
         // validate start time
         if let Some(start_time) = params.start_time {
@@ -136,7 +189,7 @@ impl CreateBondingCurve<'_> {
         params: CreateBondingCurveParams,
     ) -> Result<()> {
         let clock = Clock::get()?;
-        ctx.accounts.bonding_curve.update_from_params(
+        let bonding_curve = ctx.accounts.bonding_curve.as_mut().update_from_params(
             ctx.accounts.creator.key(),
             ctx.accounts.brand_authority.key(),
             ctx.accounts.platform_authority.key(),
@@ -198,7 +251,7 @@ impl CreateBondingCurve<'_> {
                 },
                 signer_seeds,
             ),
-            ctx.accounts.bonding_curve.bonding_supply,
+            bonding_curve.bonding_supply,
         )?;
 
         //remove mint_authority
@@ -248,7 +301,6 @@ impl CreateBondingCurve<'_> {
             &[],
         )?;
 
-        let bonding_curve = &ctx.accounts.bonding_curve;
         emit_cpi!(CreateEvent {
             name: params.name,
             symbol: params.symbol,

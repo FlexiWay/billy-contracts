@@ -1,6 +1,7 @@
-use crate::errors::ContractError;
 use crate::state::bonding_curve::*;
+use crate::{errors::ContractError, state::bonding_curve};
 use anchor_lang::prelude::*;
+use anchor_spl::token::TokenAccount;
 use std::fmt::{self};
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
@@ -357,37 +358,50 @@ impl BondingCurve {
         msg!("{:#?}", self);
     }
 
-    pub fn invariant<'a>(&self, lamports: &u64, tkn_balance: &u64) -> Result<()> {
+    pub fn invariant<'a>(
+        bonding_curve: &mut Account<'a, Self>,
+        tkn_account: &mut Account<'a, TokenAccount>,
+    ) -> Result<()> {
+        if tkn_account.owner != bonding_curve.key() {
+            msg!("Invariant failed: invalid token acc supplied");
+            return Err(ContractError::BondingCurveInvariant.into());
+        }
+        bonding_curve.reload()?;
+        tkn_account.reload()?;
+
+        let lamports = bonding_curve.get_lamports();
+        let tkn_balance = tkn_account.amount;
+
         let rent_exemption_balance: u64 =
             Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
         let bonding_curve_pool_lamports: u64 = lamports - rent_exemption_balance;
 
         // Ensure real sol reserves are equal to bonding curve pool lamports
-        if bonding_curve_pool_lamports != self.real_sol_reserves {
+        if bonding_curve_pool_lamports != bonding_curve.real_sol_reserves {
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the virtual reserves are always positive
-        if self.virtual_sol_reserves <= 0 {
+        if bonding_curve.virtual_sol_reserves <= 0 {
             msg!("Invariant failed: virtual_sol_reserves <= 0");
             return Err(ContractError::BondingCurveInvariant.into());
         }
-        if self.virtual_token_reserves <= 0 {
+        if bonding_curve.virtual_token_reserves <= 0 {
             msg!("Invariant failed: virtual_token_reserves <= 0");
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the token total supply is consistent with the reserves
-        if self.real_token_reserves != *tkn_balance {
+        if bonding_curve.real_token_reserves != tkn_balance {
             msg!("Invariant failed: real_token_reserves != tkn_balance");
-            msg!("real_token_reserves: {}", self.real_token_reserves);
+            msg!("real_token_reserves: {}", bonding_curve.real_token_reserves);
             msg!("tkn_balance: {}", tkn_balance);
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
         // Ensure the bonding curve is complete only if real token reserves are zero
-        if self.complete && self.real_token_reserves != 0 {
+        if bonding_curve.complete && bonding_curve.real_token_reserves != 0 {
             msg!("Invariant failed: bonding curve marked as complete but real_token_reserves != 0");
             return Err(ContractError::BondingCurveInvariant.into());
         }
