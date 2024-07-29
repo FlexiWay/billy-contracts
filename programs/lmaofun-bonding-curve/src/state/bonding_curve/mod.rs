@@ -19,6 +19,8 @@ pub struct SellResult {
 #[derive(InitSpace, Debug, Default)]
 pub struct BondingCurve {
     pub creator: Pubkey,
+    pub platform_authority: Pubkey,
+    pub brand_authority: Pubkey,
 
     pub virtual_token_multiplier: f64,
 

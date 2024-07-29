@@ -11,11 +11,9 @@ use anchor_spl::{
     },
 };
 
-use crate::state::bonding_curve::{CreateBondingCurveParams};
-use crate::{
-    errors::ContractError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
-    ProgramStatus,
-};
+use crate::state::{bonding_curve::*, global::*};
+
+use crate::{errors::ContractError, events::CreateEvent};
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -32,6 +30,14 @@ pub struct CreateBondingCurve<'info> {
 
     #[account(mut)]
     creator: Signer<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account()]
+    brand_authority: UncheckedAccount<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account()]
+    platform_authority: UncheckedAccount<'info>,
 
     #[account(
         init,
@@ -104,7 +110,13 @@ impl CreateBondingCurve<'_> {
         }
         // validate sol_launch_threshold
         let mut d = BondingCurve::default();
-        let bc = d.update_from_params(self.creator.key(), &params, &clock);
+        let bc = d.update_from_params(
+            self.creator.key(),
+            self.brand_authority.key(),
+            self.platform_authority.key(),
+            &params,
+            &clock,
+        );
         match bc.get_max_attainable_sol() {
             Some(max_sol) => {
                 msg!("max:{}, thresh:{}", max_sol, params.sol_launch_threshold);
@@ -124,9 +136,13 @@ impl CreateBondingCurve<'_> {
         params: CreateBondingCurveParams,
     ) -> Result<()> {
         let clock = Clock::get()?;
-        ctx.accounts
-            .bonding_curve
-            .update_from_params(ctx.accounts.creator.key(), &params, &clock);
+        ctx.accounts.bonding_curve.update_from_params(
+            ctx.accounts.creator.key(),
+            ctx.accounts.brand_authority.key(),
+            ctx.accounts.platform_authority.key(),
+            &params,
+            &clock,
+        );
 
         msg!("CreateBondingCurve::update_from_params");
         // msg!("{:#?}", bonding_curve);

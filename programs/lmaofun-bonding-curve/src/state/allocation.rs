@@ -4,7 +4,7 @@ use anchor_lang::{AnchorDeserialize, AnchorSerialize, InitSpace};
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq)]
 pub struct AllocationData {
     // percents
-    pub dev: f64,
+    pub creator: f64,
     pub cex: f64,
     pub launch_brandkit: f64,
     pub lifetime_brandkit: f64,
@@ -16,7 +16,7 @@ impl Default for AllocationData {
     fn default() -> Self {
         let _10f64 = 10f64;
         Self {
-            dev: _10f64,
+            creator: _10f64,
             cex: _10f64,
             launch_brandkit: _10f64,
             lifetime_brandkit: _10f64,
@@ -28,7 +28,7 @@ impl Default for AllocationData {
 }
 impl AllocationData {
     pub fn is_valid(&self) -> bool {
-        let sum_is_right = self.dev
+        let sum_is_right = self.creator
             + self.cex
             + self.launch_brandkit
             + self.lifetime_brandkit

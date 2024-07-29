@@ -10,75 +10,75 @@ import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, Rpc
 import { Serializer, array, mapSerializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 
   
-  export type Creator = Account<CreatorAccountData>;
+  export type CreatorData = Account<CreatorDataAccountData>;
 
-  export type CreatorAccountData = { discriminator: Array<number>;  };
+  export type CreatorDataAccountData = { discriminator: Array<number>;  };
 
-export type CreatorAccountDataArgs = {  };
+export type CreatorDataAccountDataArgs = {  };
 
 
-  export function getCreatorAccountDataSerializer(): Serializer<CreatorAccountDataArgs, CreatorAccountData> {
-  return mapSerializer<CreatorAccountDataArgs, any, CreatorAccountData>(struct<CreatorAccountData>([['discriminator', array(u8(), { size: 8 })]], { description: 'CreatorAccountData' }), (value) => ({ ...value, discriminator: [237, 37, 233, 153, 165, 132, 54, 103] }) ) as Serializer<CreatorAccountDataArgs, CreatorAccountData>;
+  export function getCreatorDataAccountDataSerializer(): Serializer<CreatorDataAccountDataArgs, CreatorDataAccountData> {
+  return mapSerializer<CreatorDataAccountDataArgs, any, CreatorDataAccountData>(struct<CreatorDataAccountData>([['discriminator', array(u8(), { size: 8 })]], { description: 'CreatorDataAccountData' }), (value) => ({ ...value, discriminator: [205, 109, 39, 22, 34, 249, 243, 16] }) ) as Serializer<CreatorDataAccountDataArgs, CreatorDataAccountData>;
 }
 
 
-export function deserializeCreator(rawAccount: RpcAccount): Creator {
-  return deserializeAccount(rawAccount, getCreatorAccountDataSerializer());
+export function deserializeCreatorData(rawAccount: RpcAccount): CreatorData {
+  return deserializeAccount(rawAccount, getCreatorDataAccountDataSerializer());
 }
 
-export async function fetchCreator(
+export async function fetchCreatorData(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions,
-): Promise<Creator> {
+): Promise<CreatorData> {
   const maybeAccount = await context.rpc.getAccount(toPublicKey(publicKey, false), options);
-  assertAccountExists(maybeAccount, 'Creator');
-  return deserializeCreator(maybeAccount);
+  assertAccountExists(maybeAccount, 'CreatorData');
+  return deserializeCreatorData(maybeAccount);
 }
 
-export async function safeFetchCreator(
+export async function safeFetchCreatorData(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions,
-): Promise<Creator | null> {
+): Promise<CreatorData | null> {
   const maybeAccount = await context.rpc.getAccount(toPublicKey(publicKey, false), options);
   return maybeAccount.exists
-    ? deserializeCreator(maybeAccount)
+    ? deserializeCreatorData(maybeAccount)
     : null;
 }
 
-export async function fetchAllCreator(
+export async function fetchAllCreatorData(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions,
-): Promise<Creator[]> {
+): Promise<CreatorData[]> {
   const maybeAccounts = await context.rpc.getAccounts(publicKeys.map(key => toPublicKey(key, false)), options);
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'Creator');
-    return deserializeCreator(maybeAccount);
+    assertAccountExists(maybeAccount, 'CreatorData');
+    return deserializeCreatorData(maybeAccount);
   });
 }
 
-export async function safeFetchAllCreator(
+export async function safeFetchAllCreatorData(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions,
-): Promise<Creator[]> {
+): Promise<CreatorData[]> {
   const maybeAccounts = await context.rpc.getAccounts(publicKeys.map(key => toPublicKey(key, false)), options);
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) => deserializeCreator(maybeAccount as RpcAccount));
+    .map((maybeAccount) => deserializeCreatorData(maybeAccount as RpcAccount));
 }
 
-export function getCreatorGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
+export function getCreatorDataGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number> }>({ 'discriminator': [0, array(u8(), { size: 8 })] })
-    .deserializeUsing<Creator>((account) => deserializeCreator(account))      .whereField('discriminator', [237, 37, 233, 153, 165, 132, 54, 103])
+    .deserializeUsing<CreatorData>((account) => deserializeCreatorData(account))      .whereField('discriminator', [205, 109, 39, 22, 34, 249, 243, 16])
     ;
 }
 
-export function getCreatorSize(): number {
+export function getCreatorDataSize(): number {
   return 8;
 }
 

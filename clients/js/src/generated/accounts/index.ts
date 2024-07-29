@@ -7,5 +7,7 @@
  */
 
 export * from './bondingCurve';
-export * from './creator';
+export * from './brandDistributorData';
+export * from './creatorData';
 export * from './global';
+export * from './platformDistributorData';

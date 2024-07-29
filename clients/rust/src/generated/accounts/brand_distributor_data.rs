@@ -14,12 +14,27 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AllocationData {
-    pub creator: f64,
-    pub cex: f64,
-    pub launch_brandkit: f64,
-    pub lifetime_brandkit: f64,
-    pub platform: f64,
-    pub presale: f64,
-    pub pool_reserve: f64,
+pub struct BrandDistributorData {
+    pub discriminator: [u8; 8],
+}
+
+impl BrandDistributorData {
+    pub const LEN: usize = 8;
+
+    #[inline(always)]
+    pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
+        let mut data = data;
+        Self::deserialize(&mut data)
+    }
+}
+
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for BrandDistributorData {
+    type Error = std::io::Error;
+
+    fn try_from(
+        account_info: &solana_program::account_info::AccountInfo<'a>,
+    ) -> Result<Self, Self::Error> {
+        let mut data: &[u8] = &(*account_info.data).borrow();
+        Self::deserialize(&mut data)
+    }
 }

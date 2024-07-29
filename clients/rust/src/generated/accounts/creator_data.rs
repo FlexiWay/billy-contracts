@@ -14,11 +14,11 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Creator {
+pub struct CreatorData {
     pub discriminator: [u8; 8],
 }
 
-impl Creator {
+impl CreatorData {
     pub const LEN: usize = 8;
 
     #[inline(always)]
@@ -28,7 +28,7 @@ impl Creator {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Creator {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for CreatorData {
     type Error = std::io::Error;
 
     fn try_from(

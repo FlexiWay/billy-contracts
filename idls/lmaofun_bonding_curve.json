@@ -104,6 +104,16 @@
           "isSigner": true
         },
         {
+          "name": "brandAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
@@ -294,6 +304,14 @@
             "type": "publicKey"
           },
           {
+            "name": "platformAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "brandAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualTokenMultiplier",
             "type": "f64"
           },
@@ -405,7 +423,21 @@
       }
     },
     {
-      "name": "Creator",
+      "name": "CreatorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "PlatformDistributorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "BrandDistributorData",
       "type": {
         "kind": "struct",
         "fields": []
@@ -439,7 +471,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "dev",
+            "name": "creator",
             "type": "f64"
           },
           {

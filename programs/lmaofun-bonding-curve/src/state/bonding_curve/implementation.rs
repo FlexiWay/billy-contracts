@@ -16,6 +16,8 @@ impl BondingCurve {
     pub fn update_from_params(
         &mut self,
         creator: Pubkey,
+        brand_authority: Pubkey,
+        platform_authority: Pubkey,
         params: &CreateBondingCurveParams,
         clock: &Clock,
     ) -> &mut Self {
@@ -52,6 +54,9 @@ impl BondingCurve {
 
         self.clone_from(&BondingCurve {
             creator,
+            brand_authority,
+            platform_authority,
+
             initial_virtual_token_reserves,
             virtual_token_multiplier,
             virtual_sol_reserves,

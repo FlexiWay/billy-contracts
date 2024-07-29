@@ -69,9 +69,9 @@ pub struct Swap<'info> {
 impl Swap<'_> {
     pub fn validate(&self, params: &SwapParams) -> Result<()> {
         let SwapParams {
-            base_in,
+            base_in: _,
             exact_in_amount,
-            min_out_amount,
+            min_out_amount: _,
         } = params;
         let clock = Clock::get()?;
 

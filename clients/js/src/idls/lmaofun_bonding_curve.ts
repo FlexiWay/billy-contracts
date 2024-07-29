@@ -104,6 +104,16 @@ export type LmaofunBondingCurve = {
           "isSigner": true
         },
         {
+          "name": "brandAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
@@ -294,6 +304,14 @@ export type LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
+            "name": "platformAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "brandAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualTokenMultiplier",
             "type": "f64"
           },
@@ -405,7 +423,21 @@ export type LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creator",
+      "name": "creatorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "platformDistributorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "brandDistributorData",
       "type": {
         "kind": "struct",
         "fields": []
@@ -439,7 +471,7 @@ export type LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
-            "name": "dev",
+            "name": "creator",
             "type": "f64"
           },
           {
@@ -1024,6 +1056,16 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": true
         },
         {
+          "name": "brandAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "platformAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
@@ -1214,6 +1256,14 @@ export const IDL: LmaofunBondingCurve = {
             "type": "publicKey"
           },
           {
+            "name": "platformAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "brandAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "virtualTokenMultiplier",
             "type": "f64"
           },
@@ -1325,7 +1375,21 @@ export const IDL: LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creator",
+      "name": "creatorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "platformDistributorData",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "brandDistributorData",
       "type": {
         "kind": "struct",
         "fields": []
@@ -1359,7 +1423,7 @@ export const IDL: LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
-            "name": "dev",
+            "name": "creator",
             "type": "f64"
           },
           {

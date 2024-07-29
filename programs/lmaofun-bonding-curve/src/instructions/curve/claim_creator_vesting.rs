@@ -2,7 +2,7 @@ use crate::{
     errors::ContractError,
     state::{bonding_curve::BondingCurve, global::*},
 };
-use anchor_lang::{prelude::*};
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Token, TokenAccount},

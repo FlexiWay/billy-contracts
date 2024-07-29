@@ -9,7 +9,7 @@ import { none } from "@metaplex-foundation/umi";
 
 export const TOKEN_DECIMALS = 6;
 export const INIT_ALLOCATIONS_PCS = {
-    dev:10,
+    creator:10,
     cex:10,
     launchBrandkit:10,
     lifetimeBrandkit:10,

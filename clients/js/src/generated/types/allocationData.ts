@@ -9,13 +9,13 @@
 import { Serializer, f64, struct } from '@metaplex-foundation/umi/serializers';
 
 
-export type AllocationData = { dev: number; cex: number; launchBrandkit: number; lifetimeBrandkit: number; platform: number; presale: number; poolReserve: number;  };
+export type AllocationData = { creator: number; cex: number; launchBrandkit: number; lifetimeBrandkit: number; platform: number; presale: number; poolReserve: number;  };
 
 export type AllocationDataArgs = AllocationData;
 
 
 export function getAllocationDataSerializer(): Serializer<AllocationDataArgs, AllocationData> {
-  return struct<AllocationData>([['dev', f64()], ['cex', f64()], ['launchBrandkit', f64()], ['lifetimeBrandkit', f64()], ['platform', f64()], ['presale', f64()], ['poolReserve', f64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
+  return struct<AllocationData>([['creator', f64()], ['cex', f64()], ['launchBrandkit', f64()], ['lifetimeBrandkit', f64()], ['platform', f64()], ['presale', f64()], ['poolReserve', f64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
 }
 
 
