@@ -31,6 +31,7 @@ pub mod lmaofun_bonding_curve {
         CreateBondingCurve::handler(ctx, params)
     }
 
+    #[access_control(ctx.accounts.validate(&params))]
     pub fn swap(ctx: Context<Swap>, params: SwapParams) -> Result<()> {
         Swap::handler(ctx, params)
     }
