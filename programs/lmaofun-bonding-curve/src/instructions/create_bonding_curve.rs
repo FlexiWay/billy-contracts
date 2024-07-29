@@ -1,7 +1,5 @@
+use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
-use anchor_lang::{
-    prelude::*,
-};
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{
@@ -109,7 +107,7 @@ impl CreateBondingCurve<'_> {
             BondingCurve::new_from_params(ctx.accounts.creator.key(), &params);
 
         msg!("CreateBondingCurve::new_from_params");
-        bonding_curve.msg();
+        msg!("{:#?}", bonding_curve);
 
         let creator_info = ctx.accounts.creator.to_account_info();
         let mint_info = ctx.accounts.mint.to_account_info();

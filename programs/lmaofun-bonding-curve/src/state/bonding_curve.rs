@@ -1,6 +1,6 @@
 use crate::errors::ProgramError;
 use anchor_lang::prelude::*;
-use std::fmt;
+use std::fmt::{self, Display};
 
 #[derive(Debug, Clone)]
 pub struct BuyResult {
@@ -17,7 +17,7 @@ pub struct SellResult {
 use super::allocation::AllocationData;
 
 #[account]
-#[derive(InitSpace)]
+#[derive(InitSpace, Debug)]
 pub struct BondingCurve {
     pub creator: Pubkey,
 
@@ -74,8 +74,8 @@ impl BondingCurve {
         let virtual_token_multiplier = params.virtual_token_multiplier;
 
         let allocation = params.allocation;
-        let presale_supply = token_total_supply * allocation.presale as u64 / 100;
-        let bonding_supply = token_total_supply * allocation.pool_reserve as u64 / 100;
+        let presale_supply = token_total_supply * (100.0 + allocation.presale / 100.0) as u64;
+        let bonding_supply = token_total_supply * (100.0 + allocation.pool_reserve / 100.0) as u64;
         let real_token_reserves = bonding_supply;
         let virtual_token_reserves =
             (bonding_supply as f64 * ((100f64 + virtual_token_multiplier) / 100f64)) as u64;
@@ -183,7 +183,7 @@ impl BondingCurve {
             "ApplyBuy: updated real_sol_reserves: {}",
             self.real_sol_reserves
         );
-
+        self.msg();
         Some(BuyResult {
             token_amount: final_token_amount,
             sol_amount,
@@ -270,7 +270,7 @@ impl BondingCurve {
             "apply_sell: updated real_sol_reserves: {}",
             self.real_sol_reserves
         );
-
+        self.msg();
         Some(SellResult {
             token_amount,
             sol_amount,
@@ -343,18 +343,7 @@ impl BondingCurve {
     }
 
     pub fn msg(&self) -> () {
-        msg!("creator: {}", self.creator);
-        msg!(
-            "initial_virtual_token_reserves: {}",
-            self.initial_virtual_token_reserves
-        );
-        msg!("virtual_sol_reserves: {}", self.virtual_sol_reserves);
-        msg!("virtual_token_reserves: {}", self.virtual_token_reserves);
-        msg!("real_sol_reserves: {}", self.real_sol_reserves);
-        msg!("real_token_reserves: {}", self.real_token_reserves);
-        msg!("token_total_supply: {}", self.token_total_supply);
-        msg!("complete: {}", self.complete);
-        msg!("start_time: {}", self.start_time);
+        msg!("{:#?}", self);
     }
 
     pub fn invariant(bonding_curve_acc: &Account<BondingCurve>) -> Result<()> {
@@ -399,13 +388,13 @@ impl fmt::Display for BondingCurve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "virtual_sol_reserves: {}, virtual_token_reserves: {}, real_sol_reserves: {}, real_token_reserves: {}, token_total_supply: {}, complete: {}",
-            self.virtual_sol_reserves,
-            self.virtual_token_reserves,
-            self.real_sol_reserves,
-            self.real_token_reserves,
-            self.token_total_supply,
-            self.complete
+            "BondingCurve {{ creator: {:?}, initial_virtual_token_reserves: {:?}, virtual_sol_reserves: {:?}, virtual_token_reserves: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, complete: {:?}, allocation: \n{:?} \n}}",
+            self.creator,
+            self.initial_virtual_token_reserves,
+            self.virtual_sol_reserves, self.virtual_token_reserves, self.real_sol_reserves,
+            self.real_token_reserves, self.token_total_supply, self.presale_supply,
+            self.bonding_supply, self.sol_launch_threshold, self.start_time, self.complete,
+            self.allocation
         )
     }
 }
@@ -710,7 +699,7 @@ mod tests {
 
     // todo redo for new params
 
-    // // fuzz
+    // fuzz
 
     // use proptest::prelude::*;
 
@@ -720,29 +709,34 @@ mod tests {
     //     #[test]
     //     fn fuzz_test_apply_buy(
     //         virtual_sol_reserves in 1..u64::MAX,
-    //         virtual_token_reserves in 1..u64::MAX,
-    //         real_sol_reserves in 1..u64::MAX,
     //         real_token_reserves in 1..u64::MAX,
-    //         initial_virtual_token_reserves in 1..u64::MAX,
     //         token_total_supply in 1..u64::MAX,
     //         sol_amount in 1..u64::MAX,
+    //         virtual_token_multiplier in 0.0..50.0,
+    //         // virtual_token_reserves in 1..u64::MAX,
+    //         // real_sol_reserves in 1..u64::MAX,
+    //         // initial_virtual_token_reserves in 1..u64::MAX,
     //     ) {
     //         let creator = Pubkey::default();
-    //         let complete = false;
+    //         let allocation = AllocationData::default();
 
-    //         let mut curve = BondingCurve {
-    //             virtual_sol_reserves,
-    //             virtual_token_reserves,
-    //             real_sol_reserves,
-    //             real_token_reserves,
-    //             initial_virtual_token_reserves,
-    //             token_total_supply,
-    //             creator,
-    //             complete,
+    //         let params = CreateBondingCurveParams {
+    //             name: "test".to_string(),
+    //             symbol: "test".to_string(),
+    //             uri: "test".to_string(),
     //             start_time: *START_TIME,
+
+    //             token_total_supply,
     //             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
+    //             virtual_token_multiplier,
+    //             virtual_sol_reserves,
+
+    //             allocation,
     //         };
+
+    //         let mut curve = BondingCurve::new_from_params(creator, &params);
+    //         // let _curve_initial = curve.clone();
 
     //         if let Some(result) = curve.apply_buy(sol_amount) {
     //             prop_assert!(result.token_amount <= real_token_reserves, "Token amount bought should not exceed real token reserves");
@@ -752,33 +746,40 @@ mod tests {
     //     #[test]
     //     fn fuzz_test_apply_sell(
     //         virtual_sol_reserves in 1..u64::MAX,
-    //         virtual_token_reserves in 1..u64::MAX,
-    //         real_sol_reserves in 1..u64::MAX,
-    //         real_token_reserves in 1..u64::MAX,
-    //         initial_virtual_token_reserves in 1..u64::MAX,
     //         token_total_supply in 1..u64::MAX,
+
     //         token_amount in 1..u64::MAX,
+    //         buy_sol_amount in 1..u64::MAX,
+    //         virtual_token_multiplier in 0.1..50.0,
+    //         // virtual_token_reserves in 1..u64::MAX,
+    //         // real_sol_reserves in 1..u64::MAX,
+    //         // initial_virtual_token_reserves in 1..u64::MAX,
     //     ) {
     //         let creator = Pubkey::default();
-    //         let complete = false;
+    //         let allocation = AllocationData::default();
 
-    //         let mut curve = BondingCurve {
-    //             virtual_sol_reserves,
-    //             virtual_token_reserves,
-    //             real_sol_reserves,
-    //             real_token_reserves,
-    //             initial_virtual_token_reserves,
-    //             token_total_supply,
-    //             creator,
-    //             complete,
+    //         let params = CreateBondingCurveParams {
+    //             name: "test".to_string(),
+    //             symbol: "test".to_string(),
+    //             uri: "test".to_string(),
     //             start_time: *START_TIME,
+
+    //             token_total_supply,
     //             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
+    //             virtual_token_multiplier,
+    //             virtual_sol_reserves,
+
+    //             allocation,
     //         };
 
+    //         let mut curve = BondingCurve::new_from_params(creator, &params);
+    //         curve.apply_buy(buy_sol_amount).unwrap();
+    //         let _curve_after_buy = curve.clone();
     //         if let Some(result) = curve.apply_sell(token_amount) {
-    //             prop_assert!(result.sol_amount <= real_sol_reserves, "SOL amount to send to seller should not exceed real SOL reserves");
+    //             prop_assert!(result.sol_amount <= _curve_after_buy.real_sol_reserves, "SOL amount to send to seller should not exceed real SOL reserves");
     //         }
     //     }
+
     // }
 }

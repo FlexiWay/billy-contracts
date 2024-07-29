@@ -1,6 +1,4 @@
-use std::{
-    ops::{Div},
-};
+use std::ops::Div;
 
 use anchor_lang::{prelude::*, solana_program::system_instruction};
 use anchor_spl::{
@@ -11,10 +9,7 @@ use anchor_spl::{
 use crate::{
     errors::ProgramError,
     events::*,
-    state::{
-        bonding_curve::{*},
-        global::*,
-    },
+    state::{bonding_curve::*, global::*},
 };
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -150,6 +145,8 @@ impl Swap<'_> {
             real_token_reserves: bonding_curve.real_token_reserves,
         });
 
+        BondingCurve::invariant(bonding_curve)?;
+
         if bonding_curve.real_token_reserves == 0 {
             bonding_curve.complete = true;
 
@@ -164,8 +161,7 @@ impl Swap<'_> {
             });
         }
 
-        bonding_curve.msg();
-        BondingCurve::invariant(bonding_curve)?;
+        msg!("{:#?}", bonding_curve);
 
         Ok(())
     }
