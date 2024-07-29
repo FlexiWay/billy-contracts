@@ -29,6 +29,7 @@
     "@metaplex-foundation/umi": "^0.9.1",
     "@metaplex-foundation/umi-bundle-defaults": "^0.9.1",
     "@noble/hashes": "^1.4.0",
+    "@solana/web3.js": "^1.95.2",
     "install": "^0.13.0",
     "merkletreejs": "^0.3.11"
   },

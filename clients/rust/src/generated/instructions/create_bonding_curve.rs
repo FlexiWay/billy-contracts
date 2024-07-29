@@ -146,7 +146,7 @@ pub struct CreateBondingCurveInstructionArgs {
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    pub start_time: i64,
+    pub start_time: Option<i64>,
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
     pub virtual_token_multiplier: f64,
@@ -305,6 +305,7 @@ impl CreateBondingCurveBuilder {
         self.uri = Some(uri);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn start_time(&mut self, start_time: i64) -> &mut Self {
         self.start_time = Some(start_time);
@@ -388,7 +389,7 @@ impl CreateBondingCurveBuilder {
             name: self.name.clone().expect("name is not set"),
             symbol: self.symbol.clone().expect("symbol is not set"),
             uri: self.uri.clone().expect("uri is not set"),
-            start_time: self.start_time.clone().expect("start_time is not set"),
+            start_time: self.start_time.clone(),
             token_total_supply: self
                 .token_total_supply
                 .clone()
@@ -811,6 +812,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn start_time(&mut self, start_time: i64) -> &mut Self {
         self.instruction.start_time = Some(start_time);
@@ -886,11 +888,7 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             name: self.instruction.name.clone().expect("name is not set"),
             symbol: self.instruction.symbol.clone().expect("symbol is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
-            start_time: self
-                .instruction
-                .start_time
-                .clone()
-                .expect("start_time is not set"),
+            start_time: self.instruction.start_time.clone(),
             token_total_supply: self
                 .instruction
                 .token_total_supply

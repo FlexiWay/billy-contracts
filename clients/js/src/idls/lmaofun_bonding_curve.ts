@@ -465,7 +465,9 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "startTime",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "tokenTotalSupply",
@@ -877,8 +879,13 @@ export type LmaofunBondingCurve = {
     },
     {
       "code": 6019,
-      "name": "InvalidSolLaunchThreshold",
+      "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
+    },
+    {
+      "code": 6020,
+      "name": "NoMaxAttainableSOL",
+      "msg": "Cannot compute max_attainable_sol"
     }
   ]
 };
@@ -1350,7 +1357,9 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "startTime",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "tokenTotalSupply",
@@ -1762,8 +1771,13 @@ export const IDL: LmaofunBondingCurve = {
     },
     {
       "code": 6019,
-      "name": "InvalidSolLaunchThreshold",
+      "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
+    },
+    {
+      "code": 6020,
+      "name": "NoMaxAttainableSOL",
+      "msg": "Cannot compute max_attainable_sol"
     }
   ]
 };

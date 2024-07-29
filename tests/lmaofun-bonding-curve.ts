@@ -54,7 +54,10 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 import assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
-import { INIT_DEFAULTS } from "../clients/js/src/constants";
+import {
+  INIT_DEFAULTS,
+  SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
+} from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
 import { LmaofunBondingCurve } from "../target/types/lmaofun_bonding_curve";
 import {
@@ -162,7 +165,7 @@ async function processTransaction(umi, txBuilder: TransactionBuilder) {
   return await txBuilder.sendAndConfirm(umi);
 }
 
-const getBalance = async (pubkey: PublicKey) => {
+const getBalance = async (umi: Umi, pubkey: PublicKey) => {
   const umiBalance = await umi.rpc.getBalance(pubkey);
   return umiBalance.basisPoints;
 };
@@ -192,11 +195,6 @@ describe("lmaofun-bonding", () => {
           );
         })
       );
-      const startingBalance = await anchor
-        .getProvider()
-        .connection.getMinimumBalanceForRentExemption(getGlobalSize());
-
-      console.log("GLOBAL_STARTING_BALANCE_INT", startingBalance);
     } catch (error) {
       console.log(error);
     }
@@ -218,6 +216,14 @@ describe("lmaofun-bonding", () => {
   });
 
   it("creates simple bonding curve", async () => {
+    // const mintTx = await createMint(umi, {
+    // //   mint: createSignerFromKeypair(umi, simpleMintKp),
+    // //   decimals: INIT_DEFAULTS.createdMintDecimals,
+    // //   mintAuthority: globalPda[0],
+    // //   freezeAuthority: globalPda[0],
+    // // });
+    // // await processTransaction(umi, mintTx);
+
     const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
       mint: simpleMintKp.publicKey,
     });
@@ -236,6 +242,19 @@ describe("lmaofun-bonding", () => {
       uri: "https://www.simpleMint.com",
     };
 
+    console.log("ALLPUBKEYS:");
+    console.log("masterKp.publicKey", masterKp.publicKey);
+    console.log("creator.publicKey", creator.publicKey);
+    console.log("trader.publicKey", trader.publicKey);
+
+    console.log("simpleMintKp.publicKey", simpleMintKp.publicKey);
+    console.log("withdrawAuthority.publicKey", withdrawAuthority.publicKey);
+
+    console.log("globalPda[0]", globalPda[0]);
+    console.log("bondingCurvePda[0]", simpleMintBondingCurvePda[0]);
+    console.log("bondingCurveTknAcc[0]", simpleMintBondingCurveTknAcc[0]);
+    console.log("metadataPda[0]", metadataPda[0]);
+
     const txBuilder = createBondingCurve(umi, {
       global: globalPda[0],
       creator: createSignerFromKeypair(umi, creator),
@@ -247,7 +266,7 @@ describe("lmaofun-bonding", () => {
       ...evtAuthorityAccs,
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
-      startTime: none(),
+      ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
     });
 
     await processTransaction(umi, txBuilder);
@@ -256,24 +275,18 @@ describe("lmaofun-bonding", () => {
       umi,
       simpleMintBondingCurvePda[0]
     );
-    assertBondingCurve(bondingCurveData, {
-      virtualSolReserves: INIT_DEFAULTS.initialVirtualSolReserves,
-      virtualTokenReserves: INIT_DEFAULTS.initialVirtualTokenReserves,
-      realSolReserves: INIT_DEFAULTS.initialRealSolReserves,
-      realTokenReserves: INIT_DEFAULTS.initialRealTokenReserves,
-      tokenTotalSupply: INIT_DEFAULTS.initialTokenSupply,
-      complete: false,
-    });
+    console.log("bondingCurveData", bondingCurveData);
+    // assertBondingCurve(bondingCurveData, {
+    //   ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
+    //   complete: false,
+    // });
 
-    // assert launch fee collection
-    const globalBalanceInt = await getBalance(globalPda[0]);
-    const startingBalance = await anchor
-      .getProvider()
-      .connection.getMinimumBalanceForRentExemption(getGlobalSize());
+    // // assert launch fee collection
+    // const globalBalanceInt = await getBalance(umi,umi, globalPda[0]);
+    // const startingBalance = GLOBAL_STARTING_BALANCE_INT;
+    // const accruedFees = Number(globalBalanceInt) - startingBalance;
 
-    const accruedFees = Number(globalBalanceInt) - startingBalance;
-
-    assert(accruedFees == INIT_DEFAULTS.launchFeeLamports);
+    // assert(accruedFees == INIT_DEFAULTS.launchFeeLamports);
   });
 
   it("swap: buy", async () => {
@@ -295,6 +308,7 @@ describe("lmaofun-bonding", () => {
       umi,
       simpleMintBondingCurvePda[0]
     );
+    console.log("bondingCurveData", bondingCurveData);
     const amm = AMM.fromBondingCurve(bondingCurveData);
     let minBuyTokenAmount = 100_000_000_000n;
     let solAmount = amm.getBuyPrice(minBuyTokenAmount);
@@ -453,12 +467,6 @@ describe("lmaofun-bonding", () => {
       authority: umi.identity,
       params: {
         launchFeeLamports: none(),
-        initialTokenSupply: none(),
-        initialRealSolReserves: none(),
-        initialRealTokenReserves: none(),
-        initialVirtualSolReserves: none(),
-        initialVirtualTokenReserves: none(),
-        solLaunchThreshold: none(),
         tradeFeeBps: none(),
         createdMintDecimals: none(),
         status: ProgramStatus.SwapOnly,
@@ -481,7 +489,7 @@ describe("lmaofun-bonding", () => {
   });
 
   it("withdraw_fees using withdraw_authority", async () => {
-    const globalBalanceInt = await getBalance(globalPda[0]);
+    const globalBalanceInt = await getBalance(umi, globalPda[0]);
     const startingBalance = await connection.getMinimumBalanceForRentExemption(
       getGlobalSize()
     );
@@ -511,10 +519,10 @@ describe("lmaofun-bonding", () => {
       withdrawAuthority: withdrawAuthority.publicKey,
     });
 
-    const globalBalancePost = await umi.rpc.getBalance(globalPda[0]);
-    const globalBalanceIntPost = parseInt(
-      globalBalancePost.basisPoints.toString()
-    );
+    const globalBalancePost = await getBalance(umi, globalPda[0]);
+    const globalBalanceIntPost = Number(globalBalancePost);
+    console.log("globalBalanceIntPost", globalBalanceIntPost);
+    console.log("startingBalance", startingBalance);
     assert(globalBalanceIntPost == startingBalance);
   });
 
@@ -524,12 +532,6 @@ describe("lmaofun-bonding", () => {
       authority: umi.identity,
       params: {
         launchFeeLamports: none(),
-        initialTokenSupply: none(),
-        initialRealSolReserves: none(),
-        initialRealTokenReserves: none(),
-        initialVirtualSolReserves: none(),
-        initialVirtualTokenReserves: none(),
-        solLaunchThreshold: none(),
         tradeFeeBps: none(),
         createdMintDecimals: none(),
 

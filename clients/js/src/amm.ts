@@ -30,27 +30,32 @@ export class AMM {
     }
 
     getBuyPrice(tokens: bigint): bigint {
+        // console.log("getBuyPrice: tokens", Number(tokens));
+        // console.log("this", this);
         const productOfReserves = this.virtualSolReserves * this.virtualTokenReserves;
+        // console.log("getBuyPrice: productOfReserves", Number(productOfReserves));
         const newVirtualTokenReserves = this.virtualTokenReserves - tokens;
+        // console.log("getBuyPrice: newVirtualTokenReserves", Number(newVirtualTokenReserves));
         const newVirtualSolReserves = (productOfReserves / newVirtualTokenReserves) + 1n;
+        // console.log("getBuyPrice: newVirtualSolReserves", Number(newVirtualSolReserves));
         const amountNeeded = newVirtualSolReserves - this.virtualSolReserves;
-
+        // console.log("getBuyPrice: amountNeeded", Number(amountNeeded));
         return amountNeeded;
     }
 
     applyBuy(token_amount: bigint): BuyResult {
-        const final_token_amount = token_amount > this.realTokenReserves ? this.realTokenReserves : token_amount;
-        const sol_amount = this.getBuyPrice(final_token_amount);
+        const finalTokenAmount = token_amount > this.realTokenReserves ? this.realTokenReserves : token_amount;
+        const solAmount = this.getBuyPrice(finalTokenAmount);
 
-        this.virtualTokenReserves = this.virtualTokenReserves - final_token_amount;
-        this.realTokenReserves = this.realTokenReserves - final_token_amount;
+        this.virtualTokenReserves = this.virtualTokenReserves - finalTokenAmount;
+        this.realTokenReserves = this.realTokenReserves - finalTokenAmount;
 
-        this.virtualSolReserves = this.virtualSolReserves + sol_amount;
-        this.realSolReserves = this.realSolReserves + sol_amount;
+        this.virtualSolReserves = this.virtualSolReserves + solAmount;
+        this.realSolReserves = this.realSolReserves + solAmount;
 
         return {
-            token_amount: final_token_amount,
-            sol_amount: sol_amount
+            token_amount: finalTokenAmount,
+            sol_amount: solAmount
         }
     }
 

@@ -35,6 +35,17 @@ kinobi.update(
     eventAuthority: {
       seeds: [k.constantPdaSeedNodeFromString("__event_authority")],
     },
+  }),
+  new k.setStructDefaultValuesVisitor({
+    allocationData: {
+      dev: 10.0,
+      cex: 10.0,
+      launchBrandkit: 10.0,
+      lifetimeBrandkit: 10.0,
+      platform: 10.0,
+      presale: 0,
+      poolReserve: 50.0,
+    },
   })
 );
 

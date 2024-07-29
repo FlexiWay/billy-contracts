@@ -69,7 +69,10 @@ pub enum LmaofunBondingCurveError {
     InvalidStartTime,
     /// 6019 (0x1783) - SOL Launch threshold not attainable even if all tokens are sold
     #[error("SOL Launch threshold not attainable even if all tokens are sold")]
-    InvalidSolLaunchThreshold,
+    SOLLaunchThresholdTooHigh,
+    /// 6020 (0x1784) - Cannot compute max_attainable_sol
+    #[error("Cannot compute max_attainable_sol")]
+    NoMaxAttainableSOL,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

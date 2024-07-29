@@ -259,9 +259,9 @@ export class InvalidStartTimeError extends ProgramError {
 codeToErrorMap.set(0x1782, InvalidStartTimeError);
 nameToErrorMap.set('InvalidStartTime', InvalidStartTimeError);
 
-/** InvalidSolLaunchThreshold: SOL Launch threshold not attainable even if all tokens are sold */
-export class InvalidSolLaunchThresholdError extends ProgramError {
-  override readonly name: string = 'InvalidSolLaunchThreshold';
+/** SOLLaunchThresholdTooHigh: SOL Launch threshold not attainable even if all tokens are sold */
+export class SOLLaunchThresholdTooHighError extends ProgramError {
+  override readonly name: string = 'SOLLaunchThresholdTooHigh';
 
   readonly code: number = 0x1783; // 6019
   
@@ -269,8 +269,21 @@ export class InvalidSolLaunchThresholdError extends ProgramError {
     super('SOL Launch threshold not attainable even if all tokens are sold', program, cause);
   }
 }
-codeToErrorMap.set(0x1783, InvalidSolLaunchThresholdError);
-nameToErrorMap.set('InvalidSolLaunchThreshold', InvalidSolLaunchThresholdError);
+codeToErrorMap.set(0x1783, SOLLaunchThresholdTooHighError);
+nameToErrorMap.set('SOLLaunchThresholdTooHigh', SOLLaunchThresholdTooHighError);
+
+/** NoMaxAttainableSOL: Cannot compute max_attainable_sol */
+export class NoMaxAttainableSOLError extends ProgramError {
+  override readonly name: string = 'NoMaxAttainableSOL';
+
+  readonly code: number = 0x1784; // 6020
+  
+  constructor(program: Program, cause?: Error) {
+    super('Cannot compute max_attainable_sol', program, cause);
+  }
+}
+codeToErrorMap.set(0x1784, NoMaxAttainableSOLError);
+nameToErrorMap.set('NoMaxAttainableSOL', NoMaxAttainableSOLError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

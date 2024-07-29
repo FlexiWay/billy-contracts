@@ -87,18 +87,35 @@ pub struct CreateBondingCurve<'info> {
 
 impl CreateBondingCurve<'_> {
     pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
+        let clock = Clock::get()?;
+
         // todo complete validation for params,allocations and start time
-        if !params.allocation.is_valid() {
-            return Err(ProgramError::InvalidAllocation.into());
-        }
+        require!(
+            params.allocation.is_valid(),
+            ProgramError::InvalidAllocation
+        );
+
         // validate start time
-        if params.start_time < Clock::get()?.unix_timestamp {
-            return Err(ProgramError::InvalidStartTime.into());
+        if let Some(start_time) = params.start_time {
+            require!(
+                start_time <= clock.unix_timestamp,
+                ProgramError::InvalidStartTime
+            )
         }
         // validate sol_launch_threshold
-        let bc = BondingCurve::new_from_params(self.creator.key(), &params);
-        if params.sol_launch_threshold > bc.get_max_attainable_sol().unwrap_or_default() {
-            return Err(ProgramError::InvalidSolLaunchThreshold.into());
+        let mut d = BondingCurve::default();
+        let bc = d.update_from_params(self.creator.key(), &params, &clock);
+        match bc.get_max_attainable_sol() {
+            Some(max_sol) => {
+                msg!("max:{}, thresh:{}", max_sol, params.sol_launch_threshold);
+                require!(
+                    params.sol_launch_threshold <= max_sol,
+                    ProgramError::SOLLaunchThresholdTooHigh
+                )
+            }
+            None => {
+                return Err(ProgramError::NoMaxAttainableSOL.into());
+            }
         }
         Ok(())
     }
@@ -106,11 +123,13 @@ impl CreateBondingCurve<'_> {
         ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,
     ) -> Result<()> {
-        let bonding_curve: BondingCurve =
-            BondingCurve::new_from_params(ctx.accounts.creator.key(), &params);
+        let clock = Clock::get()?;
+        ctx.accounts
+            .bonding_curve
+            .update_from_params(ctx.accounts.creator.key(), &params, &clock);
 
-        msg!("CreateBondingCurve::new_from_params");
-        msg!("{:#?}", bonding_curve);
+        msg!("CreateBondingCurve::update_from_params");
+        // msg!("{:#?}", bonding_curve);
 
         let creator_info = ctx.accounts.creator.to_account_info();
         let mint_info = ctx.accounts.mint.to_account_info();
@@ -122,10 +141,10 @@ impl CreateBondingCurve<'_> {
             ctx.accounts.bonding_curve_token_account.to_account_info();
 
         let initial_supply = params.token_total_supply;
-        msg!(
-            "create::BondingCurve::get_lamports: {:?}",
-            &ctx.accounts.bonding_curve.get_lamports()
-        );
+        // msg!(
+        //     "create::BondingCurve::get_lamports: {:?}",
+        //     &ctx.accounts.bonding_curve.get_lamports()
+        // );
 
         let signer = ctx.accounts.global.get_signer(&ctx.bumps.global);
         let signer_seeds = &[&signer[..]];
@@ -219,6 +238,7 @@ impl CreateBondingCurve<'_> {
             &[],
         )?;
 
+        let bonding_curve = &ctx.accounts.bonding_curve;
         emit_cpi!(CreateEvent {
             name: params.name,
             symbol: params.symbol,

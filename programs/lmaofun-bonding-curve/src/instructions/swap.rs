@@ -67,7 +67,7 @@ pub struct Swap<'info> {
     clock: Sysvar<'info, Clock>,
 }
 impl Swap<'_> {
-    pub fn handler(ctx: Context<Swap>, params: SwapParams) -> Result<()> {
+    pub fn validate(&self, params: &SwapParams) -> Result<()> {
         let SwapParams {
             base_in,
             exact_in_amount,
@@ -76,10 +76,18 @@ impl Swap<'_> {
         let clock = Clock::get()?;
 
         require!(
-            ctx.accounts.bonding_curve.is_started(&clock),
+            self.bonding_curve.is_started(&clock),
             ProgramError::CurveNotStarted
         );
-        require!(exact_in_amount > 0, ProgramError::MinSwap);
+        require!(exact_in_amount > &0, ProgramError::MinSwap);
+        Ok(())
+    }
+    pub fn handler(ctx: Context<Swap>, params: SwapParams) -> Result<()> {
+        let SwapParams {
+            base_in,
+            exact_in_amount,
+            min_out_amount,
+        } = params;
 
         msg!(
             "Swap started. BaseIn: {}, AmountIn: {}, MinOutAmount: {}",
@@ -161,7 +169,7 @@ impl Swap<'_> {
             });
         }
 
-        msg!("{:#?}", bonding_curve);
+        // msg!("{:#?}", bonding_curve);
 
         Ok(())
     }

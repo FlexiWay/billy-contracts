@@ -54,5 +54,7 @@ pub enum ProgramError {
     InvalidStartTime,
 
     #[msg("SOL Launch threshold not attainable even if all tokens are sold")]
-    InvalidSolLaunchThreshold,
+    SOLLaunchThresholdTooHigh,
+    #[msg("Cannot compute max_attainable_sol")]
+    NoMaxAttainableSOL,
 }

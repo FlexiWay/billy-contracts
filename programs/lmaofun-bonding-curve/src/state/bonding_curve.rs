@@ -17,7 +17,7 @@ pub struct SellResult {
 use super::allocation::AllocationData;
 
 #[account]
-#[derive(InitSpace, Debug)]
+#[derive(InitSpace, Debug, Default)]
 pub struct BondingCurve {
     pub creator: Pubkey,
 
@@ -47,7 +47,7 @@ pub struct CreateBondingCurveParams {
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    pub start_time: i64,
+    pub start_time: Option<i64>,
 
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
@@ -68,8 +68,17 @@ impl BondingCurve {
     //     [&[BondingCurve::SEED_PREFIX.as_bytes(), mint, bump_slice]]
     // }
 
-    pub fn new_from_params(creator: Pubkey, params: &CreateBondingCurveParams) -> Self {
-        let start_time = params.start_time;
+    pub fn update_from_params(
+        &mut self,
+        creator: Pubkey,
+        params: &CreateBondingCurveParams,
+        clock: &Clock,
+    ) -> &mut Self {
+        let start_time = if let Some(start_time) = params.start_time {
+            start_time
+        } else {
+            clock.unix_timestamp
+        };
         let token_total_supply = params.token_total_supply;
 
         let virtual_sol_reserves = params.virtual_sol_reserves;
@@ -90,7 +99,8 @@ impl BondingCurve {
         let sol_launch_threshold = params.sol_launch_threshold;
         let creator = creator;
         let complete = false;
-        let bc = BondingCurve {
+
+        self.clone_from(&BondingCurve {
             creator,
             initial_virtual_token_reserves,
             virtual_token_multiplier,
@@ -105,13 +115,8 @@ impl BondingCurve {
             start_time,
             complete,
             allocation,
-        };
-        bc.msg();
-        msg!(
-            "max_attainable_sol: {}",
-            bc.get_max_attainable_sol().unwrap_or_default()
-        );
-        bc
+        });
+        self
     }
 
     pub fn get_max_attainable_sol(&self) -> Option<u64> {
@@ -446,7 +451,7 @@ impl fmt::Display for BondingCurve {
 
 #[cfg(test)]
 mod tests {
-    use anchor_lang::prelude::Pubkey;
+    use anchor_lang::prelude::{Clock, Pubkey};
     use once_cell::sync::Lazy;
 
     use crate::state::{
@@ -464,6 +469,10 @@ mod tests {
             .as_secs() as i64
     });
     static SOL_LAUNCH_THRESHOLD: Lazy<u64> = Lazy::new(|| 70u64.mul(10u64.pow(9)));
+    static CLOCK: Lazy<Clock> = Lazy::new(|| Clock {
+        unix_timestamp: START_TIME.clone(),
+        ..Clock::default()
+    });
     #[test]
     fn test_buy_and_sell_too_much() {
         let creator = Pubkey::default();
@@ -473,7 +482,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -483,8 +492,8 @@ mod tests {
 
             allocation,
         };
-
-        let mut curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
         let curve_initial = curve.clone();
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
@@ -526,7 +535,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -536,8 +545,8 @@ mod tests {
 
             allocation,
         };
-
-        let mut curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -561,7 +570,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -571,8 +580,8 @@ mod tests {
 
             allocation,
         };
-
-        let mut curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -596,7 +605,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -606,8 +615,8 @@ mod tests {
 
             allocation,
         };
-
-        let mut curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
         let curve_initial = curve.clone();
 
         let purchase_amount = 100;
@@ -637,7 +646,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -647,8 +656,8 @@ mod tests {
 
             allocation,
         };
-
-        let curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
         assert_eq!(curve.get_buy_price(0), None);
 
@@ -668,7 +677,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -678,8 +687,8 @@ mod tests {
 
             allocation,
         };
-
-        let curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let curve = bc.update_from_params(creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
@@ -707,7 +716,7 @@ mod tests {
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
-            start_time: *START_TIME,
+            start_time: Some(*START_TIME),
 
             token_total_supply: 2000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -717,8 +726,8 @@ mod tests {
 
             allocation,
         };
-
-        let mut curve = BondingCurve::new_from_params(creator, &params);
+        let mut bc = BondingCurve::default();
+        let mut curve = bc.update_from_params(creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
         // first apply buy
         curve.apply_buy(1000).unwrap();
@@ -759,7 +768,7 @@ mod tests {
                 name: "test".to_string(),
                 symbol: "test".to_string(),
                 uri: "test".to_string(),
-                start_time: *START_TIME,
+                start_time: Some(*START_TIME),
 
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -769,8 +778,8 @@ mod tests {
 
                 allocation,
             };
-
-            let mut curve = BondingCurve::new_from_params(creator, &params);
+            let mut bc = BondingCurve::default();
+            let mut curve = bc.update_from_params(creator, &params, &CLOCK);
             let _curve_initial = curve.clone();
 
             if let Some(result) = curve.apply_buy(sol_amount) {
@@ -797,7 +806,7 @@ mod tests {
                 name: "test".to_string(),
                 symbol: "test".to_string(),
                 uri: "test".to_string(),
-                start_time: *START_TIME,
+                start_time: Some(*START_TIME),
 
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
@@ -807,8 +816,8 @@ mod tests {
 
                 allocation,
             };
-
-            let mut curve = BondingCurve::new_from_params(creator, &params);
+            let mut bc = BondingCurve::default();
+            let curve = bc.update_from_params(creator, &params, &CLOCK);
             let buy_result = curve.apply_buy(buy_sol_amount);
             if buy_result.is_none() {
                 return Ok(())
