@@ -66,7 +66,7 @@ pub struct CreateBondingCurveParams {
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
 
-    pub fn get_signer<'a>(mint: &'a Pubkey, bump: &'a u8) -> [&'a [u8]; 3] {
+    pub fn get_signer<'a>(bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 3] {
         [
             Self::SEED_PREFIX.as_bytes(),
             mint.as_ref(),

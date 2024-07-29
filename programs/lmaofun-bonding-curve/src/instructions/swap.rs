@@ -243,8 +243,8 @@ impl Swap<'_> {
         };
 
         let signer = BondingCurve::get_signer(
-            ctx.accounts.mint.to_account_info().key,
             &ctx.bumps.bonding_curve,
+            ctx.accounts.mint.to_account_info().key,
         );
         let signer_seeds = &[&signer[..]];
         token::transfer(
