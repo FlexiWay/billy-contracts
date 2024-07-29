@@ -714,7 +714,7 @@ mod tests {
             virtual_sol_reserves in 1..u64::MAX,
             token_total_supply in 1..u64::MAX,
             sol_amount in 1..u64::MAX,
-            virtual_token_multiplier in 0.0..50.0,
+            virtual_token_multiplier in 0.0..100.0,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
@@ -752,7 +752,7 @@ mod tests {
 
             token_amount in 1..u64::MAX,
             buy_sol_amount in 1..u64::MAX,
-            virtual_token_multiplier in 0.1..10.0,
+            virtual_token_multiplier in 0.1..100.0,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
