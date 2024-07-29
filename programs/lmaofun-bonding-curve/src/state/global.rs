@@ -50,7 +50,7 @@ pub struct GlobalSettingsInput {
 }
 
 impl Global {
-    pub const SEED_PREFIX: &str = "global";
+    pub const SEED_PREFIX: &'static str = "global";
 
     pub fn get_signer<'a>(&'a self, bump: &'a u8) -> [&'a [u8]; 2] {
         let prefix_bytes = Global::SEED_PREFIX.as_bytes();

@@ -1,6 +1,5 @@
 use std::{
-    fmt::Display,
-    ops::{Deref, Div},
+    ops::{Div},
 };
 
 use anchor_lang::{prelude::*, solana_program::system_instruction};
@@ -13,7 +12,7 @@ use crate::{
     errors::ProgramError,
     events::*,
     state::{
-        bonding_curve::{self, *},
+        bonding_curve::{*},
         global::*,
     },
 };

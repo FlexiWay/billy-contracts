@@ -1,4 +1,4 @@
-use anchor_lang::{prelude::*, solana_program::system_instruction};
+use anchor_lang::{prelude::*};
 use anchor_spl::token::Token;
 
 use crate::{errors::ProgramError, events::WithdrawEvent};

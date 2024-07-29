@@ -1,9 +1,6 @@
-use anchor_lang::accounts::signer;
 use anchor_lang::solana_program::system_instruction;
-use anchor_lang::system_program::transfer;
 use anchor_lang::{
     prelude::*,
-    solana_program::system_program::{self, *},
 };
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -17,7 +14,6 @@ use anchor_spl::{
 };
 
 use crate::state::bonding_curve::CreateBondingCurveParams;
-use crate::state::global;
 use crate::{
     errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,

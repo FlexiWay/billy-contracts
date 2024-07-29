@@ -1,9 +1,6 @@
 use crate::errors::ProgramError;
-use crate::Global;
 use anchor_lang::prelude::*;
-use anchor_spl::mint;
 use std::fmt;
-use std::ops::Mul;
 
 #[derive(Debug, Clone)]
 pub struct BuyResult {
@@ -16,8 +13,6 @@ pub struct SellResult {
     pub token_amount: u64,
     pub sol_amount: u64,
 }
-
-use anchor_lang::prelude::*;
 
 use super::allocation::AllocationData;
 
@@ -421,7 +416,7 @@ mod tests {
     use once_cell::sync::Lazy;
 
     use crate::state::{
-        allocation::{self, AllocationData},
+        allocation::AllocationData,
         bonding_curve::{BondingCurve, CreateBondingCurveParams},
     };
     use std::{
@@ -625,8 +620,8 @@ mod tests {
             allocation,
         };
 
-        let mut curve = BondingCurve::new_from_params(creator, &params);
-        let curve_initial = curve.clone();
+        let curve = BondingCurve::new_from_params(creator, &params);
+        // let _curve_initial = curve.clone();
         assert_eq!(curve.get_buy_price(0), None);
 
         // Normal case
@@ -656,8 +651,8 @@ mod tests {
             allocation,
         };
 
-        let mut curve = BondingCurve::new_from_params(creator, &params);
-        let curve_initial = curve.clone();
+        let curve = BondingCurve::new_from_params(creator, &params);
+        // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
         assert_eq!(curve.get_tokens_for_buy_sol(100), Some(153)); // Adjusted based on current method logic
@@ -696,7 +691,7 @@ mod tests {
         };
 
         let mut curve = BondingCurve::new_from_params(creator, &params);
-        let curve_initial = curve.clone();
+        // let _curve_initial = curve.clone();
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
