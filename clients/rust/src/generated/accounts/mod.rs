@@ -6,7 +6,9 @@
 //!
 
 pub(crate) mod r#bonding_curve;
+pub(crate) mod r#creator;
 pub(crate) mod r#global;
 
 pub use self::r#bonding_curve::*;
+pub use self::r#creator::*;
 pub use self::r#global::*;

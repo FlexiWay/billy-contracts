@@ -403,6 +403,13 @@
           }
         ]
       }
+    },
+    {
+      "name": "Creator",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
     }
   ],
   "types": [

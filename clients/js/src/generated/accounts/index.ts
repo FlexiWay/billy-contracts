@@ -7,4 +7,5 @@
  */
 
 export * from './bondingCurve';
+export * from './creator';
 export * from './global';

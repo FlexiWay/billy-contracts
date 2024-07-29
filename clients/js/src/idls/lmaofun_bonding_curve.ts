@@ -403,6 +403,13 @@ export type LmaofunBondingCurve = {
           }
         ]
       }
+    },
+    {
+      "name": "creator",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
     }
   ],
   "types": [
@@ -1315,6 +1322,13 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u8"
           }
         ]
+      }
+    },
+    {
+      "name": "creator",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     }
   ],
