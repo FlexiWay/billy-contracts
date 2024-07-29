@@ -57,4 +57,7 @@ pub enum ProgramError {
     SOLLaunchThresholdTooHigh,
     #[msg("Cannot compute max_attainable_sol")]
     NoMaxAttainableSOL,
+
+    #[msg("Invalid Creator Authority")]
+    InvalidCreatorAuthority,
 }

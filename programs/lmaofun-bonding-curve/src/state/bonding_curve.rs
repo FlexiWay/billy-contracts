@@ -1,7 +1,7 @@
 use crate::errors::ProgramError;
 use anchor_lang::prelude::*;
+use anchor_lang::Lamports;
 use std::fmt::{self};
-
 #[derive(Debug, Clone)]
 pub struct BuyResult {
     pub token_amount: u64,
@@ -33,8 +33,13 @@ pub struct BondingCurve {
     pub real_token_reserves: u64,
 
     pub token_total_supply: u64,
+
     pub presale_supply: u64,
     pub bonding_supply: u64,
+    pub cex_supply: u64,
+    pub launch_brandkit_supply: u64,
+    pub lifetime_brandkit_supply: u64,
+    pub platform_supply: u64,
 
     pub sol_launch_threshold: u64,
     pub start_time: i64,
@@ -61,12 +66,13 @@ pub struct CreateBondingCurveParams {
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
 
-    // pub fn get_signer<'a>(&'a self, bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 2] {
-    //     let prefix_bytes = [..BondingCurve::SEED_PREFIX.as_bytes(), ..&mint.to_bytes()];
-    //     let bump_slice: &'a [u8] = std::slice::from_ref(bump);
-    //     // [prefix_bytes, bump_slice];
-    //     [&[BondingCurve::SEED_PREFIX.as_bytes(), mint, bump_slice]]
-    // }
+    pub fn get_signer<'a>(mint: &'a Pubkey, bump: &'a u8) -> [&'a [u8]; 3] {
+        [
+            Self::SEED_PREFIX.as_bytes(),
+            mint.as_ref(),
+            std::slice::from_ref(bump),
+        ]
+    }
 
     pub fn update_from_params(
         &mut self,
@@ -87,8 +93,13 @@ impl BondingCurve {
         let allocation = params.allocation;
 
         let presale_supply = (token_total_supply as f64 * allocation.presale / 100.0) as u64;
-
         let bonding_supply = (token_total_supply as f64 * allocation.pool_reserve / 100.0) as u64;
+        let cex_supply = (token_total_supply as f64 * allocation.cex / 100.0) as u64;
+        let launch_brandkit_supply =
+            (token_total_supply as f64 * allocation.launch_brandkit / 100.0) as u64;
+        let lifetime_brandkit_supply =
+            (token_total_supply as f64 * allocation.lifetime_brandkit / 100.0) as u64;
+        let platform_supply = (token_total_supply as f64 * allocation.platform / 100.0) as u64;
         let real_token_reserves = bonding_supply;
         let virtual_token_reserves =
             (bonding_supply as f64 * ((100f64 + virtual_token_multiplier) / 100f64)) as u128;
@@ -109,8 +120,14 @@ impl BondingCurve {
             real_sol_reserves,
             real_token_reserves,
             token_total_supply,
+
             presale_supply,
             bonding_supply,
+            cex_supply,
+            launch_brandkit_supply,
+            lifetime_brandkit_supply,
+            platform_supply,
+
             sol_launch_threshold,
             start_time,
             complete,
@@ -396,37 +413,37 @@ impl BondingCurve {
         msg!("{:#?}", self);
     }
 
-    pub fn invariant(bonding_curve_acc: &Account<BondingCurve>) -> Result<()> {
+    pub fn invariant<'a>(&self, lamports: &u64, tkn_balance: &u64) -> Result<()> {
         let rent_exemption_balance: u64 =
             Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
-        let bonding_curve_total_lamports: u64 = bonding_curve_acc.get_lamports();
-        let bonding_curve_pool_lamports: u64 =
-            bonding_curve_total_lamports - rent_exemption_balance;
+        let bonding_curve_pool_lamports: u64 = lamports - rent_exemption_balance;
 
         // Ensure real sol reserves are equal to bonding curve pool lamports
-        if bonding_curve_pool_lamports != bonding_curve_acc.real_sol_reserves {
+        if bonding_curve_pool_lamports != self.real_sol_reserves {
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
             return Err(ProgramError::BondingCurveInvariant.into());
         }
 
         // Ensure the virtual reserves are always positive
-        if bonding_curve_acc.virtual_sol_reserves <= 0 {
+        if self.virtual_sol_reserves <= 0 {
             msg!("Invariant failed: virtual_sol_reserves <= 0");
             return Err(ProgramError::BondingCurveInvariant.into());
         }
-        if bonding_curve_acc.virtual_token_reserves <= 0 {
+        if self.virtual_token_reserves <= 0 {
             msg!("Invariant failed: virtual_token_reserves <= 0");
             return Err(ProgramError::BondingCurveInvariant.into());
         }
 
         // Ensure the token total supply is consistent with the reserves
-        if bonding_curve_acc.token_total_supply < bonding_curve_acc.real_token_reserves {
-            msg!("Invariant failed: token_total_supply < real_token_reserves");
+        if self.real_token_reserves != *tkn_balance {
+            msg!("Invariant failed: real_token_reserves != tkn_balance");
+            msg!("real_token_reserves: {}", self.real_token_reserves);
+            msg!("tkn_balance: {}", tkn_balance);
             return Err(ProgramError::BondingCurveInvariant.into());
         }
 
         // Ensure the bonding curve is complete only if real token reserves are zero
-        if bonding_curve_acc.complete && bonding_curve_acc.real_token_reserves != 0 {
+        if self.complete && self.real_token_reserves != 0 {
             msg!("Invariant failed: bonding curve marked as complete but real_token_reserves != 0");
             return Err(ProgramError::BondingCurveInvariant.into());
         }

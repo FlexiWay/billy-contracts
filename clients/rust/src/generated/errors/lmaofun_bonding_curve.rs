@@ -73,6 +73,9 @@ pub enum LmaofunBondingCurveError {
     /// 6020 (0x1784) - Cannot compute max_attainable_sol
     #[error("Cannot compute max_attainable_sol")]
     NoMaxAttainableSOL,
+    /// 6021 (0x1785) - Invalid Creator Authority
+    #[error("Invalid Creator Authority")]
+    InvalidCreatorAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

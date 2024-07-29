@@ -40,8 +40,8 @@ pub struct GlobalSettingsInput {
 impl Global {
     pub const SEED_PREFIX: &'static str = "global";
 
-    pub fn get_signer<'a>(&'a self, bump: &'a u8) -> [&'a [u8]; 2] {
-        let prefix_bytes = Global::SEED_PREFIX.as_bytes();
+    pub fn get_signer<'a>(bump: &'a u8) -> [&'a [u8]; 2] {
+        let prefix_bytes = Self::SEED_PREFIX.as_bytes();
         let bump_slice: &'a [u8] = std::slice::from_ref(bump);
         [prefix_bytes, bump_slice]
     }

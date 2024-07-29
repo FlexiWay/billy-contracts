@@ -330,6 +330,22 @@ export type LmaofunBondingCurve = {
             "type": "u64"
           },
           {
+            "name": "cexSupply",
+            "type": "u64"
+          },
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "platformSupply",
+            "type": "u64"
+          },
+          {
             "name": "solLaunchThreshold",
             "type": "u64"
           },
@@ -886,6 +902,11 @@ export type LmaofunBondingCurve = {
       "code": 6020,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidCreatorAuthority",
+      "msg": "Invalid Creator Authority"
     }
   ]
 };
@@ -1222,6 +1243,22 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u64"
           },
           {
+            "name": "cexSupply",
+            "type": "u64"
+          },
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "platformSupply",
+            "type": "u64"
+          },
+          {
             "name": "solLaunchThreshold",
             "type": "u64"
           },
@@ -1778,6 +1815,11 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6020,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidCreatorAuthority",
+      "msg": "Invalid Creator Authority"
     }
   ]
 };

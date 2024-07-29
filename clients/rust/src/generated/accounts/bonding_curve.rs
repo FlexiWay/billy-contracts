@@ -32,6 +32,10 @@ pub struct BondingCurve {
     pub token_total_supply: u64,
     pub presale_supply: u64,
     pub bonding_supply: u64,
+    pub cex_supply: u64,
+    pub launch_brandkit_supply: u64,
+    pub lifetime_brandkit_supply: u64,
+    pub platform_supply: u64,
     pub sol_launch_threshold: u64,
     pub start_time: i64,
     pub complete: bool,
@@ -39,7 +43,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 201;
+    pub const LEN: usize = 233;
 
     /// Prefix values used to generate a PDA for this account.
     ///

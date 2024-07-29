@@ -11,7 +11,7 @@ use anchor_spl::{
     },
 };
 
-use crate::state::bonding_curve::CreateBondingCurveParams;
+use crate::state::bonding_curve::{self, CreateBondingCurveParams};
 use crate::{
     errors::ProgramError, events::CreateEvent, state::bonding_curve::BondingCurve, Global,
     ProgramStatus,
@@ -140,13 +140,7 @@ impl CreateBondingCurve<'_> {
         let bonding_curve_token_account_info =
             ctx.accounts.bonding_curve_token_account.to_account_info();
 
-        let initial_supply = params.token_total_supply;
-        // msg!(
-        //     "create::BondingCurve::get_lamports: {:?}",
-        //     &ctx.accounts.bonding_curve.get_lamports()
-        // );
-
-        let signer = ctx.accounts.global.get_signer(&ctx.bumps.global);
+        let signer = Global::get_signer(&ctx.bumps.global);
         let signer_seeds = &[&signer[..]];
 
         let token_data: DataV2 = DataV2 {
@@ -188,7 +182,7 @@ impl CreateBondingCurve<'_> {
                 },
                 signer_seeds,
             ),
-            initial_supply,
+            ctx.accounts.bonding_curve.bonding_supply,
         )?;
 
         //remove mint_authority

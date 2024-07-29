@@ -7,6 +7,7 @@ use anchor_spl::{
 };
 
 use crate::{
+    accounts,
     errors::ProgramError,
     events::*,
     state::{bonding_curve::*, global::*},
@@ -153,7 +154,11 @@ impl Swap<'_> {
             real_token_reserves: bonding_curve.real_token_reserves,
         });
 
-        BondingCurve::invariant(bonding_curve)?;
+        ctx.accounts.bonding_curve_token_account.reload().unwrap();
+        bonding_curve.invariant(
+            &bonding_curve.get_lamports(),
+            &ctx.accounts.bonding_curve_token_account.amount,
+        )?;
 
         if bonding_curve.real_token_reserves == 0 {
             bonding_curve.complete = true;
@@ -237,17 +242,16 @@ impl Swap<'_> {
             authority: bonding_curve.to_account_info(),
         };
 
-        let signer: [&[&[u8]]; 1] = [&[
-            BondingCurve::SEED_PREFIX.as_bytes(),
-            ctx.accounts.mint.to_account_info().key.as_ref(),
-            &[ctx.bumps.bonding_curve],
-        ]];
-
+        let signer = BondingCurve::get_signer(
+            ctx.accounts.mint.to_account_info().key,
+            &ctx.bumps.bonding_curve,
+        );
+        let signer_seeds = &[&signer[..]];
         token::transfer(
             CpiContext::new_with_signer(
                 ctx.accounts.token_program.to_account_info(),
                 cpi_accounts,
-                &signer,
+                signer_seeds,
             ),
             buy_result.token_amount,
         )?;

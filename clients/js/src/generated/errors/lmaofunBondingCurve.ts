@@ -285,6 +285,19 @@ export class NoMaxAttainableSOLError extends ProgramError {
 codeToErrorMap.set(0x1784, NoMaxAttainableSOLError);
 nameToErrorMap.set('NoMaxAttainableSOL', NoMaxAttainableSOLError);
 
+/** InvalidCreatorAuthority: Invalid Creator Authority */
+export class InvalidCreatorAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidCreatorAuthority';
+
+  readonly code: number = 0x1785; // 6021
+  
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Creator Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x1785, InvalidCreatorAuthorityError);
+nameToErrorMap.set('InvalidCreatorAuthority', InvalidCreatorAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
