@@ -5,6 +5,7 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{self, Mint, Token, TokenAccount, Transfer},
 };
+use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
 use crate::{
     errors::ContractError,
@@ -34,7 +35,7 @@ pub struct Swap<'info> {
     )]
     global: Box<Account<'info, Global>>,
 
-    mint: Account<'info, Mint>,
+    mint: Box<Account<'info, Mint>>,
 
     #[account(
         mut,
@@ -65,6 +66,16 @@ pub struct Swap<'info> {
     associated_token_program: Program<'info, AssociatedToken>,
 
     clock: Sysvar<'info, Clock>,
+}
+impl<'info> IntoBondingCurveLockerCtx<'info> for Swap<'info> {
+    fn into_bonding_curve_locker_ctx(&self) -> BondingCurveLockerCtx<'info> {
+        BondingCurveLockerCtx {
+            mint: self.mint.clone(),
+            bonding_curve: self.bonding_curve.clone(),
+            bonding_curve_token_account: self.bonding_curve_token_account.clone(),
+            token_program: self.token_program.clone(),
+        }
+    }
 }
 impl Swap<'_> {
     pub fn validate(&self, params: &SwapParams) -> Result<()> {
@@ -137,6 +148,8 @@ impl Swap<'_> {
             msg!("BuyResult: {:#?}", buy_result);
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
+        BondingCurve::invariant(ctx.accounts.into_bonding_curve_locker_ctx())?;
+
         let bonding_curve = &mut ctx.accounts.bonding_curve;
         emit_cpi!(TradeEvent {
             mint: *ctx.accounts.mint.to_account_info().key,
@@ -152,11 +165,6 @@ impl Swap<'_> {
             real_token_reserves: bonding_curve.real_token_reserves,
         });
 
-        BondingCurve::invariant(
-            bonding_curve,
-            ctx.accounts.bonding_curve_token_account.as_mut(),
-        )?;
-
         if bonding_curve.real_token_reserves == 0 {
             bonding_curve.complete = true;
 
@@ -171,7 +179,7 @@ impl Swap<'_> {
             });
         }
 
-        // msg!("{:#?}", bonding_curve);
+        msg!("{:#?}", bonding_curve);
 
         Ok(())
     }

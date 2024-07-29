@@ -45,6 +45,7 @@ import {
   findBrandDistributorPda,
   findCreatorDistributorPda,
   findPlatformDistributorPda,
+  findPresaleDistributorPda,
 } from "../clients/js/src";
 import {
   fromWeb3JsKeypair,
@@ -423,6 +424,14 @@ describe("lmaofun-bonding", () => {
       owner: platformDistributor[0],
     });
 
+    const presaleDistributor = await findPresaleDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const presaleDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: presaleDistributor[0],
+    });
+
     const txBuilder = createBondingCurve(umi, {
       global: globalPda[0],
 
@@ -434,6 +443,9 @@ describe("lmaofun-bonding", () => {
 
       creatorDistributor: creatorDistributor[0],
       creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+
+      presaleDistributor: presaleDistributor[0],
+      presaleDistributorTokenAccount: presaleDistributorTknAcc[0],
 
       brandAuthority: creator.publicKey,
       brandDistributor: brandDistributor[0],

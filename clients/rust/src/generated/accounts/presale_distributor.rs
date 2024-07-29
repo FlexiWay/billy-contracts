@@ -15,36 +15,38 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct BrandDistributor {
+pub struct PresaleDistributor {
     pub discriminator: [u8; 8],
-    pub launch_brandkit_supply: u64,
-    pub lifetime_brandkit_supply: u64,
 }
 
-impl BrandDistributor {
-    pub const LEN: usize = 24;
+impl PresaleDistributor {
+    pub const LEN: usize = 8;
 
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:
     ///
-    ///   0. `BrandDistributor::PREFIX`
+    ///   0. `PresaleDistributor::PREFIX`
     ///   1. mint (`Pubkey`)
-    pub const PREFIX: &'static [u8] = "brand-distributor-data".as_bytes();
+    pub const PREFIX: &'static [u8] = "presale-distributor-data".as_bytes();
 
     pub fn create_pda(
         mint: Pubkey,
         bump: u8,
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
-            &["brand-distributor-data".as_bytes(), mint.as_ref(), &[bump]],
+            &[
+                "presale-distributor-data".as_bytes(),
+                mint.as_ref(),
+                &[bump],
+            ],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda(mint: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &["brand-distributor-data".as_bytes(), mint.as_ref()],
+            &["presale-distributor-data".as_bytes(), mint.as_ref()],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
@@ -56,7 +58,7 @@ impl BrandDistributor {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for BrandDistributor {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for PresaleDistributor {
     type Error = std::io::Error;
 
     fn try_from(

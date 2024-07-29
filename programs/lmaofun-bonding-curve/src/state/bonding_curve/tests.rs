@@ -2,9 +2,13 @@
 mod tests {
     use anchor_lang::prelude::{Clock, Pubkey};
     use once_cell::sync::Lazy;
+    use structs::{BondingCurve, CreateBondingCurveParams};
 
     use crate::{
-        state::{allocation::AllocationData, bonding_curve::*},
+        state::{
+            allocation::{AllocationData, AllocationDataParams},
+            bonding_curve::*,
+        },
         util::BASIS_POINTS_DIVISOR,
     };
     use std::{
@@ -25,6 +29,7 @@ mod tests {
     #[test]
     fn test_buy_and_sell_too_much() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -42,7 +47,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         let curve_initial = curve.clone();
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
@@ -78,6 +83,7 @@ mod tests {
     #[test]
     fn test_apply_sell() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -95,7 +101,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -113,6 +119,7 @@ mod tests {
     #[test]
     fn test_get_sell_price() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -130,7 +137,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         // first apply buy
         curve.apply_buy(1000).unwrap();
 
@@ -148,6 +155,7 @@ mod tests {
     #[test]
     fn test_apply_buy() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -165,7 +173,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         let curve_initial = curve.clone();
 
         let purchase_amount = 100;
@@ -189,6 +197,7 @@ mod tests {
     #[test]
     fn test_get_buy_price() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -206,7 +215,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
         assert_eq!(curve.get_buy_price(0), None);
 
@@ -220,6 +229,7 @@ mod tests {
     #[test]
     fn test_get_tokens_for_buy_sol() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -237,7 +247,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
@@ -259,6 +269,7 @@ mod tests {
     #[test]
     fn test_get_tokens_for_sell_sol() {
         let creator = Pubkey::default();
+        let mint = Pubkey::default();
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
@@ -276,7 +287,7 @@ mod tests {
             allocation,
         };
         let mut bc = BondingCurve::default();
-        let curve = bc.update_from_params(creator, creator, creator, &params, &CLOCK);
+        let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK);
         // let _curve_initial = curve.clone();
         // first apply buy
         curve.apply_buy(1000).unwrap();
@@ -311,6 +322,7 @@ mod tests {
             // initial_virtual_token_reserves in 1..u64::MAX,
         ) {
             let creator = Pubkey::default();
+            let mint = Pubkey::default();
             let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
@@ -328,7 +340,7 @@ mod tests {
                 allocation,
             };
             let mut bc = BondingCurve::default();
-            let curve = bc.update_from_params(creator,creator, creator, &params, &CLOCK);
+            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK);
             let _curve_initial = curve.clone();
 
             if let Some(result) = curve.apply_buy(sol_amount) {
@@ -349,6 +361,7 @@ mod tests {
             // initial_virtual_token_reserves in 1..u64::MAX,
         ) {
             let creator = Pubkey::default();
+            let mint = Pubkey::default();
             let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
@@ -366,7 +379,7 @@ mod tests {
                 allocation,
             };
             let mut bc = BondingCurve::default();
-            let curve = bc.update_from_params(creator,creator, creator, &params, &CLOCK);
+            let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK);
             let buy_result = curve.apply_buy(buy_sol_amount);
             if buy_result.is_none() {
                 return Ok(())

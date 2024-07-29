@@ -114,6 +114,16 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "presaleDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "presaleDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
@@ -330,6 +340,10 @@ export type LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
             "name": "creator",
             "type": "publicKey"
           },
@@ -367,6 +381,10 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "creatorVestedSupply",
             "type": "u64"
           },
           {
@@ -415,6 +433,43 @@ export type LmaofunBondingCurve = {
       }
     },
     {
+      "name": "creatorDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "presaleDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "platformDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "brandDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "global",
       "type": {
         "kind": "struct",
@@ -450,27 +505,6 @@ export type LmaofunBondingCurve = {
             "type": "u8"
           }
         ]
-      }
-    },
-    {
-      "name": "creatorDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "platformDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "brandDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
       }
     }
   ],
@@ -1146,6 +1180,16 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "presaleDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "presaleDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
@@ -1362,6 +1406,10 @@ export const IDL: LmaofunBondingCurve = {
         "kind": "struct",
         "fields": [
           {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
             "name": "creator",
             "type": "publicKey"
           },
@@ -1399,6 +1447,10 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "creatorVestedSupply",
             "type": "u64"
           },
           {
@@ -1447,6 +1499,43 @@ export const IDL: LmaofunBondingCurve = {
       }
     },
     {
+      "name": "creatorDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "presaleDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "platformDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "brandDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "global",
       "type": {
         "kind": "struct",
@@ -1482,27 +1571,6 @@ export const IDL: LmaofunBondingCurve = {
             "type": "u8"
           }
         ]
-      }
-    },
-    {
-      "name": "creatorDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "platformDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "brandDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
       }
     }
   ],

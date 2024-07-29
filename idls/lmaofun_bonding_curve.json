@@ -114,6 +114,16 @@
           "isSigner": false
         },
         {
+          "name": "presaleDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "presaleDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
@@ -330,6 +340,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
             "name": "creator",
             "type": "publicKey"
           },
@@ -367,6 +381,10 @@
           },
           {
             "name": "tokenTotalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "creatorVestedSupply",
             "type": "u64"
           },
           {
@@ -415,6 +433,43 @@
       }
     },
     {
+      "name": "CreatorDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "PresaleDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "PlatformDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "BrandDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "Global",
       "type": {
         "kind": "struct",
@@ -450,27 +505,6 @@
             "type": "u8"
           }
         ]
-      }
-    },
-    {
-      "name": "CreatorDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "PlatformDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "BrandDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": []
       }
     }
   ],

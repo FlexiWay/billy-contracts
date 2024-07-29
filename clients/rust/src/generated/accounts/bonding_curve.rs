@@ -22,6 +22,11 @@ pub struct BondingCurve {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
+    pub mint: Pubkey,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
     pub creator: Pubkey,
     #[cfg_attr(
         feature = "serde",
@@ -40,6 +45,7 @@ pub struct BondingCurve {
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
+    pub creator_vested_supply: u64,
     pub presale_supply: u64,
     pub bonding_supply: u64,
     pub cex_supply: u64,
@@ -53,7 +59,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 297;
+    pub const LEN: usize = 337;
 
     /// Prefix values used to generate a PDA for this account.
     ///

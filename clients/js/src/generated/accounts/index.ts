@@ -11,3 +11,4 @@ export * from './brandDistributor';
 export * from './creatorDistributor';
 export * from './global';
 export * from './platformDistributor';
+export * from './presaleDistributor';

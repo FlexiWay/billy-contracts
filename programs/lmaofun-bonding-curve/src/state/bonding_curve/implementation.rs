@@ -1,10 +1,17 @@
+use crate::state::allocation::AllocationData;
 use crate::state::bonding_curve::*;
 use crate::util::{bps_mul, bps_mul_raw};
+use crate::Global;
 use crate::{errors::ContractError, state::bonding_curve};
-use anchor_lang::prelude::*;
-use anchor_spl::token::TokenAccount;
-use anchor_spl::token_2022::spl_token_2022::extension::interest_bearing_mint::BasisPoints;
+use anchor_lang::accounts::signer;
+use anchor_lang::Accounts;
+use anchor_lang::{prelude::*, Bumps};
+use anchor_spl::token::{FreezeAccount, TokenAccount};
+use anchor_spl::{mint, token};
+use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 use std::fmt::{self};
+use structs::BondingCurve;
+
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
 
@@ -18,6 +25,7 @@ impl BondingCurve {
 
     pub fn update_from_params(
         &mut self,
+        mint: Pubkey,
         creator: Pubkey,
         brand_authority: Pubkey,
         platform_authority: Pubkey,
@@ -36,6 +44,7 @@ impl BondingCurve {
 
         let allocation: AllocationData = params.allocation.into();
 
+        let creator_vested_supply = bps_mul(allocation.creator, token_total_supply).unwrap();
         let presale_supply = bps_mul(allocation.presale, token_total_supply).unwrap();
         let bonding_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
         let cex_supply = bps_mul(allocation.cex, token_total_supply).unwrap();
@@ -57,6 +66,7 @@ impl BondingCurve {
         let complete = false;
 
         self.clone_from(&BondingCurve {
+            mint,
             creator,
             brand_authority,
             platform_authority,
@@ -69,6 +79,7 @@ impl BondingCurve {
             real_token_reserves,
             token_total_supply,
 
+            creator_vested_supply,
             presale_supply,
             bonding_supply,
             cex_supply,
@@ -361,10 +372,11 @@ impl BondingCurve {
         msg!("{:#?}", self);
     }
 
-    pub fn invariant<'a>(
-        bonding_curve: &mut Account<'a, Self>,
-        tkn_account: &mut Account<'a, TokenAccount>,
-    ) -> Result<()> {
+    pub fn invariant<'info>(mut ctx: BondingCurveLockerCtx<'info>) -> Result<()>
+where {
+        // let mut ctx: BondingCurveLockerCtx<'a> = (*ctx).clone().into();
+        let bonding_curve = &mut ctx.bonding_curve;
+        let tkn_account = &mut ctx.bonding_curve_token_account;
         if tkn_account.owner != bonding_curve.key() {
             msg!("Invariant failed: invalid token acc supplied");
             return Err(ContractError::BondingCurveInvariant.into());

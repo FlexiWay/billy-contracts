@@ -8,16 +8,18 @@ use anchor_spl::{
         create_metadata_accounts_v3, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3,
         Metadata as Metaplex,
     },
+    mint,
     token::{
         self, mint_to, spl_token::instruction::AuthorityType, Mint, MintTo, Token, TokenAccount,
     },
 };
+use locker_ctx::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
 
 use crate::state::{
     allocation::AllocationData,
-    bonding_curve::{self, *},
+    bonding_curve::*,
+    distributors::{BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor},
     global::*,
-    roles::{BrandDistributor, CreatorDistributor, PlatformDistributor},
 };
 
 use crate::{errors::ContractError, events::CreateEvent};
@@ -52,6 +54,22 @@ pub struct CreateBondingCurve<'info> {
         associated_token::authority = creator_distributor,
     )]
     creator_distributor_token_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        init,
+        payer = creator,
+        seeds = [PresaleDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + PresaleDistributor::INIT_SPACE,
+        bump,
+    )]
+    presale_distributor: Box<Account<'info, PresaleDistributor>>,
+    #[account(
+        init_if_needed,
+        payer = creator,
+        associated_token::mint = mint,
+        associated_token::authority = presale_distributor,
+    )]
+    presale_distributor_token_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account()]
@@ -99,7 +117,6 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + BondingCurve::INIT_SPACE,
     )]
     bonding_curve: Box<Account<'info, BondingCurve>>,
-
     #[account(
         init_if_needed,
         payer = creator,
@@ -143,6 +160,16 @@ pub struct CreateBondingCurve<'info> {
     clock: Sysvar<'info, Clock>,
 }
 
+impl<'info> IntoBondingCurveLockerCtx<'info> for CreateBondingCurve<'info> {
+    fn into_bonding_curve_locker_ctx(&self) -> BondingCurveLockerCtx<'info> {
+        BondingCurveLockerCtx {
+            mint: self.mint.clone(),
+            bonding_curve: self.bonding_curve.clone(),
+            bonding_curve_token_account: self.bonding_curve_token_account.clone(),
+            token_program: self.token_program.clone(),
+        }
+    }
+}
 impl CreateBondingCurve<'_> {
     pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
         let clock = Clock::get()?;
@@ -165,6 +192,7 @@ impl CreateBondingCurve<'_> {
         // validate sol_launch_threshold
         let mut d = BondingCurve::default();
         let bc = d.update_from_params(
+            self.mint.key(),
             self.creator.key(),
             self.brand_authority.key(),
             self.platform_authority.key(),
@@ -190,118 +218,27 @@ impl CreateBondingCurve<'_> {
         params: CreateBondingCurveParams,
     ) -> Result<()> {
         let clock = Clock::get()?;
-        let bonding_curve = ctx.accounts.bonding_curve.as_mut().update_from_params(
+
+        ctx.accounts.bonding_curve.update_from_params(
+            ctx.accounts.mint.key(),
             ctx.accounts.creator.key(),
             ctx.accounts.brand_authority.key(),
             ctx.accounts.platform_authority.key(),
             &params,
             &clock,
         );
-
         msg!("CreateBondingCurve::update_from_params");
-        // msg!("{:#?}", bonding_curve);
 
-        let creator_info = ctx.accounts.creator.to_account_info();
-        let mint_info = ctx.accounts.mint.to_account_info();
-        let mint_authority_info = ctx.accounts.global.to_account_info();
+        let global_signer = Global::get_signer(&ctx.bumps.global);
+        let global_signer_seeds = &[&global_signer[..]];
 
-        let metadata_info = ctx.accounts.metadata.to_account_info();
+        ctx.accounts.intialize_meta(global_signer_seeds, &params)?;
+        ctx.accounts.mint_allocations(global_signer_seeds)?;
+        ctx.accounts.revoke_authorities(global_signer_seeds)?;
+        ctx.accounts.pay_launch_fee()?;
 
-        let bonding_curve_token_account_info =
-            ctx.accounts.bonding_curve_token_account.to_account_info();
-
-        let signer = Global::get_signer(&ctx.bumps.global);
-        let signer_seeds = &[&signer[..]];
-
-        let token_data: DataV2 = DataV2 {
-            name: params.name.clone(),
-            symbol: params.symbol.clone(),
-            uri: params.uri.clone(),
-            seller_fee_basis_points: 0,
-            creators: None,
-            collection: None,
-            uses: None,
-        };
-
-        let metadata_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_metadata_program.to_account_info(),
-            CreateMetadataAccountsV3 {
-                payer: creator_info.clone(),
-                mint: mint_info.clone(),
-                metadata: metadata_info.clone(),
-
-                update_authority: mint_authority_info.clone(),
-                mint_authority: mint_authority_info.clone(),
-
-                system_program: ctx.accounts.system_program.to_account_info(),
-                rent: ctx.accounts.rent.to_account_info(),
-            },
-            signer_seeds,
-        );
-
-        create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
-
-        //mint tokens to bonding_curve_token_account
-        mint_to(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                MintTo {
-                    authority: mint_authority_info.clone(),
-                    to: bonding_curve_token_account_info.clone(),
-                    mint: mint_info.clone(),
-                },
-                signer_seeds,
-            ),
-            bonding_curve.bonding_supply,
-        )?;
-
-        //remove mint_authority
-        token::set_authority(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                token::SetAuthority {
-                    current_authority: mint_authority_info.clone(),
-                    account_or_mint: mint_info.clone(),
-                },
-                signer_seeds,
-            ),
-            AuthorityType::MintTokens,
-            None,
-        )?;
-
-        // revoke freeze authority
-        token::set_authority(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                token::SetAuthority {
-                    current_authority: mint_authority_info.clone(),
-                    account_or_mint: mint_info.clone(),
-                },
-                signer_seeds,
-            ),
-            AuthorityType::FreezeAccount,
-            None,
-        )?;
-
-        // transfer SOL to fee recipient
-        // sender is signer, must go through system program
-        let fee_to = &ctx.accounts.global;
-        let fee_from = &ctx.accounts.creator;
-        let fee_amount = ctx.accounts.global.launch_fee_lamports;
-
-        let transfer_instruction =
-            system_instruction::transfer(fee_from.key, &fee_to.key(), fee_amount);
-
-        anchor_lang::solana_program::program::invoke_signed(
-            &transfer_instruction,
-            &[
-                fee_from.to_account_info(),
-                fee_to.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-
+        BondingCurve::invariant(ctx.accounts.into_bonding_curve_locker_ctx())?;
+        let bonding_curve = ctx.accounts.bonding_curve.as_mut();
         emit_cpi!(CreateEvent {
             name: params.name,
             symbol: params.symbol,
@@ -320,7 +257,192 @@ impl CreateBondingCurve<'_> {
 
             start_time: bonding_curve.start_time,
         });
+        msg!("CreateBondingCurve::handler: success");
+        Ok(())
+    }
+    pub fn intialize_meta(
+        &mut self,
+        global_signer_seeds: &[&[&[u8]]; 1],
+        params: &CreateBondingCurveParams,
+    ) -> Result<()> {
+        let mint_info = self.mint.to_account_info();
+        let mint_authority_info = self.global.to_account_info();
+        let metadata_info = self.metadata.to_account_info();
+        let token_data: DataV2 = DataV2 {
+            name: params.name.clone(),
+            symbol: params.symbol.clone(),
+            uri: params.uri.clone(),
+            seller_fee_basis_points: 0,
+            creators: None,
+            collection: None,
+            uses: None,
+        };
+        let metadata_ctx = CpiContext::new_with_signer(
+            self.token_metadata_program.to_account_info(),
+            CreateMetadataAccountsV3 {
+                payer: self.creator.to_account_info(),
+                mint: mint_info.clone(),
+                metadata: metadata_info.clone(),
+                update_authority: mint_authority_info.clone(),
+                mint_authority: mint_authority_info.clone(),
+                system_program: self.system_program.to_account_info(),
+                rent: self.rent.to_account_info(),
+            },
+            global_signer_seeds,
+        );
+        create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
+        msg!("CreateBondingCurve::intialize_meta: done");
+        Ok(())
+    }
 
+    pub fn mint_allocations(&mut self, global_signer_seeds: &[&[&[u8]]; 1]) -> Result<()> {
+        let bonding_curve = self.bonding_curve.as_ref();
+        let mint_info = self.mint.to_account_info();
+        let mint_authority_info = self.global.to_account_info();
+        if bonding_curve.creator_vested_supply > 0 {
+            // mint creator share to creator_distributor_token_account
+            mint_to(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    MintTo {
+                        authority: mint_authority_info.clone(),
+                        to: self.creator_distributor_token_account.to_account_info(),
+                        mint: mint_info.clone(),
+                    },
+                    global_signer_seeds,
+                ),
+                bonding_curve.creator_vested_supply,
+            )?;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.creator_vested_supply minted");
+        }
+
+        if bonding_curve.presale_supply > 0 {
+            // mint presale share to presale_distributor_token_account
+            mint_to(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    MintTo {
+                        authority: mint_authority_info.clone(),
+                        to: self.presale_distributor_token_account.to_account_info(),
+                        mint: mint_info.clone(),
+                    },
+                    global_signer_seeds,
+                ),
+                bonding_curve.presale_supply,
+            )?;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.presale_supply minted");
+        }
+        if bonding_curve.launch_brandkit_supply > 0 || bonding_curve.lifetime_brandkit_supply > 0 {
+            // mint brandkit share to brand_distributor_token_account
+            let amount =
+                bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply;
+            mint_to(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    MintTo {
+                        authority: mint_authority_info.clone(),
+                        to: self.brand_distributor_token_account.to_account_info(),
+                        mint: mint_info.clone(),
+                    },
+                    global_signer_seeds,
+                ),
+                amount,
+            )?;
+            self.brand_distributor.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
+            self.brand_distributor.lifetime_brandkit_supply =
+                bonding_curve.lifetime_brandkit_supply;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
+        }
+        if bonding_curve.platform_supply > 0 {
+            // mint platform share to platform_distributor_token_account
+            mint_to(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    MintTo {
+                        authority: mint_authority_info.clone(),
+                        to: self.platform_distributor_token_account.to_account_info(),
+                        mint: mint_info.clone(),
+                    },
+                    global_signer_seeds,
+                ),
+                bonding_curve.platform_supply,
+            )?;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
+        }
+        // mint tokens to bonding_curve_token_account
+        mint_to(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                MintTo {
+                    authority: mint_authority_info.clone(),
+                    to: self.bonding_curve_token_account.to_account_info(),
+                    mint: mint_info.clone(),
+                },
+                global_signer_seeds,
+            ),
+            bonding_curve.bonding_supply,
+        )?;
+        msg!("CreateBondingCurve::mint_allocations:bonding_curve.bonding_supply minted");
+        msg!("CreateBondingCurve::mint_allocations: done");
+        Ok(())
+    }
+
+    pub fn revoke_authorities(&mut self, global_signer_seeds: &[&[&[u8]]; 1]) -> Result<()> {
+        let mint_info = self.mint.to_account_info();
+        let mint_authority_info = self.global.to_account_info();
+        //remove mint_authority
+        token::set_authority(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                token::SetAuthority {
+                    current_authority: mint_authority_info.clone(),
+                    account_or_mint: mint_info.clone(),
+                },
+                global_signer_seeds,
+            ),
+            AuthorityType::MintTokens,
+            None,
+        )?;
+
+        // revoke freeze authority
+        token::set_authority(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                token::SetAuthority {
+                    current_authority: mint_authority_info.clone(),
+                    account_or_mint: mint_info.clone(),
+                },
+                global_signer_seeds,
+            ),
+            AuthorityType::FreezeAccount,
+            None,
+        )?;
+
+        msg!("CreateBondingCurve::revoke_authorities: done");
+
+        Ok(())
+    }
+
+    pub fn pay_launch_fee(&mut self) -> Result<()> {
+        // transfer SOL to fee recipient
+        // sender is signer, must go through system program
+        let fee_to = &self.global;
+        let fee_from = &self.creator;
+        let fee_amount = self.global.launch_fee_lamports;
+
+        let transfer_instruction =
+            system_instruction::transfer(fee_from.key, &fee_to.key(), fee_amount);
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                fee_from.to_account_info(),
+                fee_to.to_account_info(),
+                self.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+        msg!("CreateBondingCurve::pay_launch_fee: done");
         Ok(())
     }
 }

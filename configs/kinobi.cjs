@@ -48,6 +48,12 @@ kinobi.update(
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
+    presaleDistributor: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("presale-distributor-data"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
     eventAuthority: {
       seeds: [k.constantPdaSeedNodeFromString("__event_authority")],
     },
