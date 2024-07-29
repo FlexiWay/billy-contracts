@@ -296,7 +296,6 @@ impl Swap<'_> {
             ContractError::SlippageExceeded,
         );
 
-        let bonding_curve = &ctx.accounts.bonding_curve;
         // Transfer tokens to bonding curve
         let cpi_accounts = Transfer {
             from: ctx.accounts.user_token_account.to_account_info(),

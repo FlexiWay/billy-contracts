@@ -57,7 +57,7 @@ impl ClaimCreatorVesting<'_> {
         );
         Ok(())
     }
-    pub fn handler(ctx: Context<ClaimCreatorVesting>) -> Result<()> {
+    pub fn handler(_ctx: Context<ClaimCreatorVesting>) -> Result<()> {
         Ok(())
     }
 }

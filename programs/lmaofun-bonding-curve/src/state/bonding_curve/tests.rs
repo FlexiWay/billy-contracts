@@ -6,7 +6,7 @@ mod tests {
 
     use crate::{
         state::{
-            allocation::{AllocationData, AllocationDataParams},
+            allocation::{AllocationDataParams},
             bonding_curve::*,
         },
         util::BASIS_POINTS_DIVISOR,

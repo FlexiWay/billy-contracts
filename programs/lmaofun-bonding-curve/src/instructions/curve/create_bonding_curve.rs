@@ -1,4 +1,3 @@
-use std::borrow::BorrowMut;
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
@@ -8,14 +7,12 @@ use anchor_spl::{
         create_metadata_accounts_v3, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3,
         Metadata as Metaplex,
     },
-    mint,
     token::{
-        self, mint_to, spl_token::instruction::AuthorityType, Mint, MintTo, Token, TokenAccount,
+        mint_to, Mint, MintTo, Token, TokenAccount,
     },
 };
 
 use crate::{
-    lmaofun_bonding_curve,
     state::{
         allocation::AllocationData,
         bonding_curve::*,

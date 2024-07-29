@@ -3,7 +3,6 @@ use anchor_lang::{prelude::AccountInfo, Accounts};
 use anchor_spl::token::spl_token::instruction::AuthorityType;
 use anchor_spl::token::{self, FreezeAccount, Mint, ThawAccount, Token, TokenAccount};
 
-use crate::errors::ContractError;
 use crate::state::bonding_curve::BondingCurve;
 use crate::Global;
 
