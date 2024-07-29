@@ -874,6 +874,11 @@ export type LmaofunBondingCurve = {
       "code": 6018,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidSolLaunchThreshold",
+      "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     }
   ]
 };
@@ -1754,6 +1759,11 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6018,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidSolLaunchThreshold",
+      "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     }
   ]
 };

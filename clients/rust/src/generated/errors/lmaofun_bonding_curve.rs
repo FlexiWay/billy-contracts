@@ -67,6 +67,9 @@ pub enum LmaofunBondingCurveError {
     /// 6018 (0x1782) - Start time is in the past
     #[error("Start time is in the past")]
     InvalidStartTime,
+    /// 6019 (0x1783) - SOL Launch threshold not attainable even if all tokens are sold
+    #[error("SOL Launch threshold not attainable even if all tokens are sold")]
+    InvalidSolLaunchThreshold,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

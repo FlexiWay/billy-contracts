@@ -52,4 +52,7 @@ pub enum ProgramError {
 
     #[msg("Start time is in the past")]
     InvalidStartTime,
+
+    #[msg("SOL Launch threshold not attainable even if all tokens are sold")]
+    InvalidSolLaunchThreshold,
 }

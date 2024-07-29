@@ -86,10 +86,7 @@ pub struct CreateBondingCurve<'info> {
 }
 
 impl CreateBondingCurve<'_> {
-    pub fn validate(
-        _ctx: Context<CreateBondingCurve>,
-        params: CreateBondingCurveParams,
-    ) -> Result<()> {
+    pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
         // todo complete validation for params,allocations and start time
         if !params.allocation.is_valid() {
             return Err(ProgramError::InvalidAllocation.into());
@@ -97,6 +94,11 @@ impl CreateBondingCurve<'_> {
         // validate start time
         if params.start_time < Clock::get()?.unix_timestamp {
             return Err(ProgramError::InvalidStartTime.into());
+        }
+        // validate sol_launch_threshold
+        let bc = BondingCurve::new_from_params(self.creator.key(), &params);
+        if params.sol_launch_threshold > bc.get_max_attainable_sol().unwrap_or_default() {
+            return Err(ProgramError::InvalidSolLaunchThreshold.into());
         }
         Ok(())
     }

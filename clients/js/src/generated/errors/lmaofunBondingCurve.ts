@@ -259,6 +259,19 @@ export class InvalidStartTimeError extends ProgramError {
 codeToErrorMap.set(0x1782, InvalidStartTimeError);
 nameToErrorMap.set('InvalidStartTime', InvalidStartTimeError);
 
+/** InvalidSolLaunchThreshold: SOL Launch threshold not attainable even if all tokens are sold */
+export class InvalidSolLaunchThresholdError extends ProgramError {
+  override readonly name: string = 'InvalidSolLaunchThreshold';
+
+  readonly code: number = 0x1783; // 6019
+  
+  constructor(program: Program, cause?: Error) {
+    super('SOL Launch threshold not attainable even if all tokens are sold', program, cause);
+  }
+}
+codeToErrorMap.set(0x1783, InvalidSolLaunchThresholdError);
+nameToErrorMap.set('InvalidSolLaunchThreshold', InvalidSolLaunchThresholdError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -53,7 +53,7 @@ pub struct CreateBondingCurveParams {
     pub sol_launch_threshold: u64,
 
     pub virtual_token_multiplier: f64,
-    pub virtual_sol_reserves: u64,
+    pub virtual_sol_reserves: u64, // should this be fixed instead?
 
     pub allocation: AllocationData,
 }
@@ -107,9 +107,48 @@ impl BondingCurve {
             allocation,
         };
         bc.msg();
+        msg!(
+            "max_attainable_sol: {}",
+            bc.get_max_attainable_sol().unwrap_or_default()
+        );
         bc
     }
 
+    pub fn get_max_attainable_sol(&self) -> Option<u64> {
+        // Calculate the number of tokens available for purchase
+        let tokens_available = self.real_token_reserves;
+
+        // If no tokens are available, return the current real SOL reserves
+        if tokens_available == 0 {
+            return Some(self.real_sol_reserves);
+        }
+
+        // Calculate the product of reserves (constant in the bonding curve equation)
+        let product_of_reserves =
+            (self.virtual_sol_reserves as u128).checked_mul(self.virtual_token_reserves as u128)?;
+
+        // Calculate the new virtual token reserves after all tokens are bought
+        let new_virtual_token_reserves = self
+            .virtual_token_reserves
+            .checked_sub(tokens_available as u128)?;
+
+        // Calculate the new virtual SOL reserves using the constant product formula
+        let new_virtual_sol_reserves = product_of_reserves
+            .checked_div(new_virtual_token_reserves)?
+            .checked_add(1)?;
+
+        // Calculate the difference in virtual SOL reserves
+        let sol_increase =
+            new_virtual_sol_reserves.checked_sub(self.virtual_sol_reserves as u128)?;
+
+        // Add the increase to the current real SOL reserves
+        let max_attainable_sol = (self.real_sol_reserves as u128).checked_add(sol_increase)?;
+
+        // Convert to u64 and return
+        max_attainable_sol.try_into().ok()
+
+        // TODO CALCULATE PRESALE SOL VALUE
+    }
     pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
         msg!("get_buy_price: tokens: {}", tokens);
         if tokens == 0 || tokens > self.virtual_token_reserves as u64 {
@@ -474,12 +513,6 @@ mod tests {
         // Attempt to sell more tokens than available in reserves
         let sell_result = curve.apply_sell(2000);
         assert!(sell_result.is_none());
-        // assert_eq!(sell_result.token_amount, 2000); // Should sell requested amount
-        // assert_eq!(sell_result.sol_amount, 2000); // Adjusted expected result
-        // assert_eq!(curve.real_sol_reserves, 0);
-        // assert_eq!(curve.virtual_sol_reserves, 600);
-        // assert_eq!(curve.real_token_reserves, 2090); // Adjusted based on sold tokens
-        // assert_eq!(curve.virtual_token_reserves, 2100);
         println!("{} \n", curve);
         println!("{:?} \n", sell_result);
     }

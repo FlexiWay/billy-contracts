@@ -23,6 +23,7 @@ pub mod lmaofun_bonding_curve {
         SetParams::handler(ctx, params)
     }
 
+    #[access_control(ctx.accounts.validate(&params))]
     pub fn create_bonding_curve(
         ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,

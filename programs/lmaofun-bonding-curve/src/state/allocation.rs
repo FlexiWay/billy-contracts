@@ -28,13 +28,14 @@ impl Default for AllocationData {
 }
 impl AllocationData {
     pub fn is_valid(&self) -> bool {
-        self.dev
+        let sum_is_right = self.dev
             + self.cex
             + self.launch_brandkit
             + self.lifetime_brandkit
             + self.platform
             + self.presale
             + self.pool_reserve
-            == 100f64
+            == 100f64;
+        sum_is_right && self.pool_reserve > 0.0
     }
 }
