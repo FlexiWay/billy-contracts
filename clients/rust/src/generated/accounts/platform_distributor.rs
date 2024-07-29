@@ -17,11 +17,11 @@ use solana_program::pubkey::Pubkey;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PlatformDistributor {
     pub discriminator: [u8; 8],
+    pub initial_vested_supply: u64,
+    pub last_distribution: Option<i64>,
 }
 
 impl PlatformDistributor {
-    pub const LEN: usize = 8;
-
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:

@@ -60,4 +60,10 @@ pub enum ContractError {
 
     #[msg("Invalid Creator Authority")]
     InvalidCreatorAuthority,
+
+    #[msg("Cliff not yet reached")]
+    CliffNotReached,
+
+    #[msg("Vesting period not yet over")]
+    VestingPeriodNotOver,
 }

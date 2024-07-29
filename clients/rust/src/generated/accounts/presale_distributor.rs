@@ -17,10 +17,11 @@ use solana_program::pubkey::Pubkey;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PresaleDistributor {
     pub discriminator: [u8; 8],
+    pub initial_vested_supply: u64,
 }
 
 impl PresaleDistributor {
-    pub const LEN: usize = 8;
+    pub const LEN: usize = 16;
 
     /// Prefix values used to generate a PDA for this account.
     ///

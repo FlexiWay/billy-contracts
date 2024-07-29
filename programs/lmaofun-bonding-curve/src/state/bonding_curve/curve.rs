@@ -1,9 +1,9 @@
+use crate::errors::ContractError;
 use crate::state::allocation::AllocationData;
-use crate::state::bonding_curve::locker::{BondingCurveLockerCtx};
+use crate::state::bonding_curve::locker::BondingCurveLockerCtx;
 use crate::state::bonding_curve::*;
 use crate::util::{bps_mul, bps_mul_raw};
-use crate::{errors::ContractError};
-use anchor_lang::{prelude::*};
+use anchor_lang::prelude::*;
 use std::fmt::{self};
 use structs::BondingCurve;
 
@@ -61,6 +61,8 @@ impl BondingCurve {
         let creator = creator;
         let complete = false;
 
+        let vesting_terms = params.vesting_terms.clone().unwrap_or_default();
+
         self.clone_from(&BondingCurve {
             mint,
             creator,
@@ -89,6 +91,7 @@ impl BondingCurve {
             allocation,
 
             bump,
+            vesting_terms,
         });
         self
     }

@@ -11,3 +11,4 @@ export * from './allocationDataParams';
 export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';
+export * from './vestingTerms';

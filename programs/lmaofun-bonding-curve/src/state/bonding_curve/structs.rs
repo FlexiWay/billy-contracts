@@ -3,6 +3,21 @@ use anchor_lang::prelude::*;
 
 use crate::state::allocation::AllocationDataParams;
 
+#[derive(Debug, Clone, AnchorSerialize, InitSpace, AnchorDeserialize)]
+pub struct VestingTerms {
+    pub cliff: i64,
+    pub duration: i64,
+}
+
+impl Default for VestingTerms {
+    fn default() -> Self {
+        VestingTerms {
+            cliff: 7 * 24 * 60 * 60,     // 7 days
+            duration: 31 * 24 * 60 * 60, // 31 days
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct BuyResult {
     pub token_amount: u64,
@@ -49,6 +64,8 @@ pub struct BondingCurve {
     pub start_time: i64,
     pub complete: bool,
 
+    pub vesting_terms: VestingTerms,
+
     pub allocation: AllocationData,
 
     pub bump: u8,
@@ -67,4 +84,6 @@ pub struct CreateBondingCurveParams {
     pub virtual_sol_reserves: u64, // should this be fixed instead?
 
     pub allocation: AllocationDataParams,
+
+    pub vesting_terms: Option<VestingTerms>,
 }

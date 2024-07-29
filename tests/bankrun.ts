@@ -46,6 +46,8 @@ import {
   findCreatorDistributorPda,
   findPlatformDistributorPda,
   findPresaleDistributorPda,
+  claimCreatorVesting,
+  fetchCreatorDistributor,
 } from "../clients/js/src";
 import {
   fromWeb3JsKeypair,
@@ -78,9 +80,10 @@ import { setParams } from "../clients/js/src/generated/instructions/setParams";
 import { assertBondingCurve, assertGlobal } from "../tests/utils";
 import { getGlobalSize } from "../clients/js/src/generated/accounts/global";
 import { AMM } from "../clients/js/src/amm";
-import { Pda, PublicKey } from "@metaplex-foundation/umi";
+import { Pda, PublicKey, unwrapOption } from "@metaplex-foundation/umi";
 import {
   BanksClient,
+  Clock,
   ProgramTestContext,
   start,
   startAnchor,
@@ -450,7 +453,6 @@ describe("lmaofun-bonding", () => {
       brandAuthority: creator.publicKey,
       brandDistributor: brandDistributor[0],
       brandDistributorTokenAccount: brandDistributorTknAcc[0],
-
       platformAuthority: creator.publicKey,
       platformDistributor: platformDistributor[0],
       platformDistributorTokenAccount: platformDistributorTknAcc[0],
@@ -742,5 +744,178 @@ describe("lmaofun-bonding", () => {
     assertGlobal(global, {
       ...INIT_DEFAULTS,
     });
+  });
+
+  it("cant claim creator vesting before cliff", async () => {
+    const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const simpleMintBondingCurveTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: simpleMintBondingCurvePda[0],
+    });
+    const creatorAta = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creator.publicKey,
+    });
+    const creatorDistributor = await findCreatorDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creatorDistributor[0],
+    });
+    const txBuilder = claimCreatorVesting(umi, {
+      global: globalPda[0],
+      mint: simpleMintKp.publicKey,
+      creator: createSignerFromKeypair(umi, creator),
+      bondingCurve: simpleMintBondingCurvePda[0],
+      userTokenAccount: creatorAta[0],
+      creatorDistributor: creatorDistributor[0],
+      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      tokenProgram: SPL_TOKEN_PROGRAM_ID,
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+      ...evtAuthorityAccs,
+    });
+    try {
+      await processTransaction(umi, txBuilder);
+      assert(false);
+    } catch (e) {
+      // console.log(e);
+      assert(true);
+    }
+  });
+
+  it("can claim creator vesting after cliff", async () => {
+    const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const simpleMintBondingCurveTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: simpleMintBondingCurvePda[0],
+    });
+    const creatorAta = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creator.publicKey,
+    });
+    const creatorDistributor = await findCreatorDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creatorDistributor[0],
+    });
+    const bondingCurveData = await fetchBondingCurve(
+      umi,
+      simpleMintBondingCurvePda[0]
+    );
+    const startTime = bondingCurveData.startTime;
+    const cliff = bondingCurveData.vestingTerms.cliff;
+    const secondToJumpTo = startTime + cliff + BigInt(24 * 60 * 60);
+
+    const currentClock = await bankrunClient.getClock();
+    bankrunContext.setClock(
+      new Clock(
+        currentClock.slot,
+        currentClock.epochStartTimestamp,
+        currentClock.epoch,
+        currentClock.leaderScheduleEpoch,
+        secondToJumpTo
+      )
+    );
+
+    const txBuilder = claimCreatorVesting(umi, {
+      global: globalPda[0],
+      mint: simpleMintKp.publicKey,
+      creator: createSignerFromKeypair(umi, creator),
+      bondingCurve: simpleMintBondingCurvePda[0],
+      userTokenAccount: creatorAta[0],
+      creatorDistributor: creatorDistributor[0],
+      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      tokenProgram: SPL_TOKEN_PROGRAM_ID,
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+      ...evtAuthorityAccs,
+    });
+
+    await processTransaction(umi, txBuilder);
+
+    const creatorDistributorData = await fetchCreatorDistributor(
+      umi,
+      creatorDistributor[0]
+    );
+    assert(
+      unwrapOption(creatorDistributorData.lastDistribution) == secondToJumpTo
+    );
+  });
+  it("can claim creator again vesting after cliff", async () => {
+    const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const simpleMintBondingCurveTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: simpleMintBondingCurvePda[0],
+    });
+    const creatorAta = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creator.publicKey,
+    });
+    const creatorDistributor = await findCreatorDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: creatorDistributor[0],
+    });
+    const bondingCurveData = await fetchBondingCurve(
+      umi,
+      simpleMintBondingCurvePda[0]
+    );
+    const creatorDistributorData = await fetchCreatorDistributor(
+      umi,
+      creatorDistributor[0]
+    );
+    const lastDistribution = unwrapOption(
+      creatorDistributorData.lastDistribution
+    );
+
+    const secondToJumpTo = lastDistribution + BigInt(24 * 60 * 60);
+
+    const currentClock = await bankrunClient.getClock();
+    bankrunContext.setClock(
+      new Clock(
+        currentClock.slot,
+        currentClock.epochStartTimestamp,
+        currentClock.epoch,
+        currentClock.leaderScheduleEpoch,
+        secondToJumpTo
+      )
+    );
+
+    const txBuilder = claimCreatorVesting(umi, {
+      global: globalPda[0],
+      mint: simpleMintKp.publicKey,
+      creator: createSignerFromKeypair(umi, creator),
+      bondingCurve: simpleMintBondingCurvePda[0],
+      userTokenAccount: creatorAta[0],
+      creatorDistributor: creatorDistributor[0],
+      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
+      tokenProgram: SPL_TOKEN_PROGRAM_ID,
+      associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+      ...evtAuthorityAccs,
+    });
+
+    await processTransaction(umi, txBuilder);
+
+    const creatorDistributorDataPost = await fetchCreatorDistributor(
+      umi,
+      creatorDistributor[0]
+    );
+    assert(
+      unwrapOption(creatorDistributorDataPost.lastDistribution) ==
+        secondToJumpTo
+    );
   });
 });

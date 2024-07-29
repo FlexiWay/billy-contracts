@@ -12,13 +12,13 @@ import { Serializer, array, mapSerializer, publicKey as publicKeySerializer, str
   
   export type BrandDistributor = Account<BrandDistributorAccountData>;
 
-  export type BrandDistributorAccountData = { discriminator: Array<number>; launchBrandkitSupply: bigint; lifetimeBrandkitSupply: bigint;  };
+  export type BrandDistributorAccountData = { discriminator: Array<number>; launchBrandkitSupply: bigint; lifetimeBrandkitSupply: bigint; initialVestedSupply: bigint;  };
 
-export type BrandDistributorAccountDataArgs = { launchBrandkitSupply: number | bigint; lifetimeBrandkitSupply: number | bigint;  };
+export type BrandDistributorAccountDataArgs = { launchBrandkitSupply: number | bigint; lifetimeBrandkitSupply: number | bigint; initialVestedSupply: number | bigint;  };
 
 
   export function getBrandDistributorAccountDataSerializer(): Serializer<BrandDistributorAccountDataArgs, BrandDistributorAccountData> {
-  return mapSerializer<BrandDistributorAccountDataArgs, any, BrandDistributorAccountData>(struct<BrandDistributorAccountData>([['discriminator', array(u8(), { size: 8 })], ['launchBrandkitSupply', u64()], ['lifetimeBrandkitSupply', u64()]], { description: 'BrandDistributorAccountData' }), (value) => ({ ...value, discriminator: [211, 120, 151, 249, 203, 223, 58, 122] }) ) as Serializer<BrandDistributorAccountDataArgs, BrandDistributorAccountData>;
+  return mapSerializer<BrandDistributorAccountDataArgs, any, BrandDistributorAccountData>(struct<BrandDistributorAccountData>([['discriminator', array(u8(), { size: 8 })], ['launchBrandkitSupply', u64()], ['lifetimeBrandkitSupply', u64()], ['initialVestedSupply', u64()]], { description: 'BrandDistributorAccountData' }), (value) => ({ ...value, discriminator: [211, 120, 151, 249, 203, 223, 58, 122] }) ) as Serializer<BrandDistributorAccountDataArgs, BrandDistributorAccountData>;
 }
 
 
@@ -73,13 +73,13 @@ export async function safeFetchAllBrandDistributor(
 export function getBrandDistributorGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'launchBrandkitSupply': number | bigint, 'lifetimeBrandkitSupply': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'launchBrandkitSupply': [8, u64()], 'lifetimeBrandkitSupply': [16, u64()] })
+    .registerFields<{ 'discriminator': Array<number>, 'launchBrandkitSupply': number | bigint, 'lifetimeBrandkitSupply': number | bigint, 'initialVestedSupply': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'launchBrandkitSupply': [8, u64()], 'lifetimeBrandkitSupply': [16, u64()], 'initialVestedSupply': [24, u64()] })
     .deserializeUsing<BrandDistributor>((account) => deserializeBrandDistributor(account))      .whereField('discriminator', [211, 120, 151, 249, 203, 223, 58, 122])
     ;
 }
 
 export function getBrandDistributorSize(): number {
-  return 24;
+  return 32;
 }
 
 export function findBrandDistributorPda(

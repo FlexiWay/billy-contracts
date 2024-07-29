@@ -19,10 +19,11 @@ pub struct BrandDistributor {
     pub discriminator: [u8; 8],
     pub launch_brandkit_supply: u64,
     pub lifetime_brandkit_supply: u64,
+    pub initial_vested_supply: u64,
 }
 
 impl BrandDistributor {
-    pub const LEN: usize = 24;
+    pub const LEN: usize = 32;
 
     /// Prefix values used to generate a PDA for this account.
     ///

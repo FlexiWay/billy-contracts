@@ -5,10 +5,7 @@ mod tests {
     use structs::{BondingCurve, CreateBondingCurveParams};
 
     use crate::{
-        state::{
-            allocation::{AllocationDataParams},
-            bonding_curve::*,
-        },
+        state::{allocation::AllocationDataParams, bonding_curve::*},
         util::BASIS_POINTS_DIVISOR,
     };
     use std::{
@@ -45,6 +42,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -99,6 +97,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -135,6 +134,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -171,6 +171,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -213,6 +214,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -245,6 +247,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -285,6 +288,7 @@ mod tests {
             virtual_sol_reserves: 600,
 
             allocation,
+            vesting_terms: None,
         };
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
@@ -338,6 +342,7 @@ mod tests {
                 virtual_sol_reserves,
 
                 allocation,
+                vesting_terms:None,
             };
             let mut bc = BondingCurve::default();
             let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
@@ -377,6 +382,7 @@ mod tests {
                 virtual_sol_reserves,
 
                 allocation,
+                vesting_terms:None,
             };
             let mut bc = BondingCurve::default();
             let curve = bc.update_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);

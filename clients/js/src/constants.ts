@@ -26,7 +26,7 @@ export const SIMPLE_DEFAULT_BONDING_CURVE_PRESET:CreateBondingCurveInstructionAr
     name: "simpleBondingCurve",
     symbol: "SBC",
     uri: "https://www.simpleBondingCurve.com",
-
+    vestingTerms: none(),
     // startTime: Date.now(),
     startTime: none(),
     tokenTotalSupply: DEFAULT_TOKEN_SUPPLY,

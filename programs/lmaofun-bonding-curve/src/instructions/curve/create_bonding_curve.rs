@@ -317,6 +317,7 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.creator_vested_supply,
             )?;
+            self.creator_distributor.initial_vested_supply = bonding_curve.creator_vested_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.creator_vested_supply minted");
         }
 
@@ -334,6 +335,7 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.presale_supply,
             )?;
+            self.presale_distributor.initial_vested_supply = bonding_curve.presale_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.presale_supply minted");
         }
         if bonding_curve.launch_brandkit_supply > 0 || bonding_curve.lifetime_brandkit_supply > 0 {
@@ -355,6 +357,7 @@ impl CreateBondingCurve<'_> {
             self.brand_distributor.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
             self.brand_distributor.lifetime_brandkit_supply =
                 bonding_curve.lifetime_brandkit_supply;
+            self.brand_distributor.initial_vested_supply = amount;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
         }
         if bonding_curve.platform_supply > 0 {
@@ -371,6 +374,7 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.platform_supply,
             )?;
+            self.platform_distributor.initial_vested_supply = bonding_curve.platform_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
         }
         // mint tokens to bonding_curve_token_account

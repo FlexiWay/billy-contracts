@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::AllocationData;
+use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -55,12 +56,13 @@ pub struct BondingCurve {
     pub sol_launch_threshold: u64,
     pub start_time: i64,
     pub complete: bool,
+    pub vesting_terms: VestingTerms,
     pub allocation: AllocationData,
     pub bump: u8,
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 338;
+    pub const LEN: usize = 354;
 
     /// Prefix values used to generate a PDA for this account.
     ///

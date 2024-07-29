@@ -4,6 +4,7 @@ pub mod events;
 pub mod instructions;
 pub mod state;
 pub mod util;
+use instructions::claim_creator_vesting::*;
 use instructions::{
     create_bonding_curve::*, initialize::*, set_params::*, swap::*, withdraw_fees::*,
 };
@@ -36,12 +37,10 @@ pub mod lmaofun_bonding_curve {
         Swap::handler(ctx, params)
     }
 
-    // pub fn lock_ata(ctx: Context<BondingCurveLockerCtx>) -> Result<()> {
-    //     BondingCurveLockerCtx::lock_ata(ctx)
-    // }
-    // pub fn unlock_ata(ctx: Context<BondingCurveLockerCtx>) -> Result<()> {
-    //     BondingCurveLockerCtx::unlock_ata(ctx)
-    // }
+    #[access_control(ctx.accounts.validate())]
+    pub fn claim_creator_vesting(ctx: Context<ClaimCreatorVesting>) -> Result<()> {
+        ClaimCreatorVesting::handler(ctx)
+    }
 
     pub fn withdraw_fees(ctx: Context<WithdrawFees>) -> Result<()> {
         WithdrawFees::handler(ctx)

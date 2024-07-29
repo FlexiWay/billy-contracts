@@ -76,6 +76,12 @@ pub enum LmaofunBondingCurveError {
     /// 6021 (0x1785) - Invalid Creator Authority
     #[error("Invalid Creator Authority")]
     InvalidCreatorAuthority,
+    /// 6022 (0x1786) - Cliff not yet reached
+    #[error("Cliff not yet reached")]
+    CliffNotReached,
+    /// 6023 (0x1787) - Vesting period not yet over
+    #[error("Vesting period not yet over")]
+    VestingPeriodNotOver,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

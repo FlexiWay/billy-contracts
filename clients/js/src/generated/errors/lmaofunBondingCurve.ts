@@ -298,6 +298,32 @@ export class InvalidCreatorAuthorityError extends ProgramError {
 codeToErrorMap.set(0x1785, InvalidCreatorAuthorityError);
 nameToErrorMap.set('InvalidCreatorAuthority', InvalidCreatorAuthorityError);
 
+/** CliffNotReached: Cliff not yet reached */
+export class CliffNotReachedError extends ProgramError {
+  override readonly name: string = 'CliffNotReached';
+
+  readonly code: number = 0x1786; // 6022
+  
+  constructor(program: Program, cause?: Error) {
+    super('Cliff not yet reached', program, cause);
+  }
+}
+codeToErrorMap.set(0x1786, CliffNotReachedError);
+nameToErrorMap.set('CliffNotReached', CliffNotReachedError);
+
+/** VestingPeriodNotOver: Vesting period not yet over */
+export class VestingPeriodNotOverError extends ProgramError {
+  override readonly name: string = 'VestingPeriodNotOver';
+
+  readonly code: number = 0x1787; // 6023
+  
+  constructor(program: Program, cause?: Error) {
+    super('Vesting period not yet over', program, cause);
+  }
+}
+codeToErrorMap.set(0x1787, VestingPeriodNotOverError);
+nameToErrorMap.set('VestingPeriodNotOver', VestingPeriodNotOverError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

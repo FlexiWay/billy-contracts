@@ -297,6 +297,82 @@ export type LmaofunBondingCurve = {
       ]
     },
     {
+      "name": "claimCreatorVesting",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "creatorDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "creatorDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "withdrawFees",
       "accounts": [
         {
@@ -424,6 +500,12 @@ export type LmaofunBondingCurve = {
             "type": "bool"
           },
           {
+            "name": "vestingTerms",
+            "type": {
+              "defined": "VestingTerms"
+            }
+          },
+          {
             "name": "allocation",
             "type": {
               "defined": "AllocationData"
@@ -440,21 +522,48 @@ export type LmaofunBondingCurve = {
       "name": "creatorDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
       }
     },
     {
       "name": "presaleDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          }
+        ]
       }
     },
     {
       "name": "platformDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
       }
     },
     {
@@ -468,6 +577,10 @@ export type LmaofunBondingCurve = {
           },
           {
             "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "initialVestedSupply",
             "type": "u64"
           }
         ]
@@ -620,6 +733,22 @@ export type LmaofunBondingCurve = {
       }
     },
     {
+      "name": "VestingTerms",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cliff",
+            "type": "i64"
+          },
+          {
+            "name": "duration",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateBondingCurveParams",
       "type": {
         "kind": "struct",
@@ -662,6 +791,14 @@ export type LmaofunBondingCurve = {
             "name": "allocation",
             "type": {
               "defined": "AllocationDataParams"
+            }
+          },
+          {
+            "name": "vestingTerms",
+            "type": {
+              "option": {
+                "defined": "VestingTerms"
+              }
             }
           }
         ]
@@ -1064,6 +1201,16 @@ export type LmaofunBondingCurve = {
       "code": 6021,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
+    },
+    {
+      "code": 6022,
+      "name": "CliffNotReached",
+      "msg": "Cliff not yet reached"
+    },
+    {
+      "code": 6023,
+      "name": "VestingPeriodNotOver",
+      "msg": "Vesting period not yet over"
     }
   ]
 };
@@ -1367,6 +1514,82 @@ export const IDL: LmaofunBondingCurve = {
       ]
     },
     {
+      "name": "claimCreatorVesting",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "creatorDistributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "creatorDistributorTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "withdrawFees",
       "accounts": [
         {
@@ -1494,6 +1717,12 @@ export const IDL: LmaofunBondingCurve = {
             "type": "bool"
           },
           {
+            "name": "vestingTerms",
+            "type": {
+              "defined": "VestingTerms"
+            }
+          },
+          {
             "name": "allocation",
             "type": {
               "defined": "AllocationData"
@@ -1510,21 +1739,48 @@ export const IDL: LmaofunBondingCurve = {
       "name": "creatorDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
       }
     },
     {
       "name": "presaleDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          }
+        ]
       }
     },
     {
       "name": "platformDistributor",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
       }
     },
     {
@@ -1538,6 +1794,10 @@ export const IDL: LmaofunBondingCurve = {
           },
           {
             "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "initialVestedSupply",
             "type": "u64"
           }
         ]
@@ -1690,6 +1950,22 @@ export const IDL: LmaofunBondingCurve = {
       }
     },
     {
+      "name": "VestingTerms",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cliff",
+            "type": "i64"
+          },
+          {
+            "name": "duration",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateBondingCurveParams",
       "type": {
         "kind": "struct",
@@ -1732,6 +2008,14 @@ export const IDL: LmaofunBondingCurve = {
             "name": "allocation",
             "type": {
               "defined": "AllocationDataParams"
+            }
+          },
+          {
+            "name": "vestingTerms",
+            "type": {
+              "option": {
+                "defined": "VestingTerms"
+              }
             }
           }
         ]
@@ -2134,6 +2418,16 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6021,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
+    },
+    {
+      "code": 6022,
+      "name": "CliffNotReached",
+      "msg": "Cliff not yet reached"
+    },
+    {
+      "code": 6023,
+      "name": "VestingPeriodNotOver",
+      "msg": "Vesting period not yet over"
     }
   ]
 };
