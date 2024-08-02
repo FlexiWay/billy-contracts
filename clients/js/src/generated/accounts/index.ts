@@ -7,6 +7,7 @@
  */
 
 export * from './bondingCurve';
+export * from './bondingCurveFeeVault';
 export * from './brandDistributor';
 export * from './creatorDistributor';
 export * from './global';

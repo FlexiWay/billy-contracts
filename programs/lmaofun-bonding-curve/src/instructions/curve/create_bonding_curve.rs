@@ -28,8 +28,8 @@ pub struct CreateBondingCurve<'info> {
         init,
         payer = creator,
         mint::decimals = global.created_mint_decimals,
-        mint::authority = global,
-        mint::freeze_authority = global
+        mint::authority = bonding_curve,
+        mint::freeze_authority = bonding_curve
     )]
     mint: Box<Account<'info, Mint>>,
 
@@ -123,7 +123,15 @@ pub struct CreateBondingCurve<'info> {
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        mut,
+        init,
+        payer = creator,
+        seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        bump,
+        space = 8 + BondingCurveFeeVault::INIT_SPACE
+    )]
+    bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
+
+    #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ContractError::NotInitialized,
         constraint = global.status == ProgramStatus::Running @ ContractError::ProgramNotRunning,
@@ -158,10 +166,13 @@ pub struct CreateBondingCurve<'info> {
 }
 
 impl<'info> IntoBondingCurveLockerCtx<'info> for CreateBondingCurve<'info> {
-    fn into_bonding_curve_locker_ctx(&self) -> BondingCurveLockerCtx<'info> {
+    fn into_bonding_curve_locker_ctx(
+        &self,
+        bonding_curve_bump: u8,
+    ) -> BondingCurveLockerCtx<'info> {
         BondingCurveLockerCtx {
+            bonding_curve_bump,
             mint: self.mint.clone(),
-            global: self.global.clone(),
             bonding_curve: self.bonding_curve.clone(),
             bonding_curve_token_account: self.bonding_curve_token_account.clone(),
             token_program: self.token_program.clone(),
@@ -227,21 +238,25 @@ impl CreateBondingCurve<'_> {
             &clock,
             ctx.bumps.bonding_curve,
         );
-        msg!("CreateBondingCurve::update_from_params");
+        msg!("CreateBondingCurve::update_from_params: created bonding_curve");
 
-        let global_signer = Global::get_signer(&ctx.bumps.global);
-        let global_signer_seeds = &[&global_signer[..]];
+        let mint_k = ctx.accounts.mint.key();
+        let mint_authority_signer = BondingCurve::get_signer(&ctx.bumps.bonding_curve, &mint_k);
+        let mint_auth_signer_seeds = &[&mint_authority_signer[..]];
 
-        ctx.accounts.intialize_meta(global_signer_seeds, &params)?;
-        ctx.accounts.mint_allocations(global_signer_seeds)?;
+        ctx.accounts
+            .intialize_meta(mint_auth_signer_seeds, &params)?;
+        ctx.accounts.mint_allocations(mint_auth_signer_seeds)?;
         ctx.accounts.pay_launch_fee()?;
 
-        let locker = &mut ctx.accounts.into_bonding_curve_locker_ctx();
-        locker.revoke_mint_authority(ctx.bumps.global)?;
+        let locker = &mut ctx
+            .accounts
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
+        locker.revoke_mint_authority()?;
+        locker.lock_ata()?;
 
-        locker.lock_ata(ctx.bumps.global)?;
         BondingCurve::invariant(locker)?;
-
+        // Context::from(ctx)
         let bonding_curve = ctx.accounts.bonding_curve.as_mut();
         emit_cpi!(CreateEvent {
             name: params.name,
@@ -266,11 +281,11 @@ impl CreateBondingCurve<'_> {
     }
     pub fn intialize_meta(
         &mut self,
-        global_signer_seeds: &[&[&[u8]]; 1],
+        mint_auth_signer_seeds: &[&[&[u8]]; 1],
         params: &CreateBondingCurveParams,
     ) -> Result<()> {
         let mint_info = self.mint.to_account_info();
-        let mint_authority_info = self.global.to_account_info();
+        let mint_authority_info = self.bonding_curve.to_account_info();
         let metadata_info = self.metadata.to_account_info();
         let token_data: DataV2 = DataV2 {
             name: params.name.clone(),
@@ -292,17 +307,17 @@ impl CreateBondingCurve<'_> {
                 system_program: self.system_program.to_account_info(),
                 rent: self.rent.to_account_info(),
             },
-            global_signer_seeds,
+            mint_auth_signer_seeds,
         );
         create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
         msg!("CreateBondingCurve::intialize_meta: done");
         Ok(())
     }
 
-    pub fn mint_allocations(&mut self, global_signer_seeds: &[&[&[u8]]; 1]) -> Result<()> {
+    pub fn mint_allocations(&mut self, mint_auth_signer_seeds: &[&[&[u8]]; 1]) -> Result<()> {
         let bonding_curve = self.bonding_curve.as_ref();
         let mint_info = self.mint.to_account_info();
-        let mint_authority_info = self.global.to_account_info();
+        let mint_authority_info = self.bonding_curve.to_account_info();
         if bonding_curve.creator_vested_supply > 0 {
             // mint creator share to creator_distributor_token_account
             mint_to(
@@ -313,7 +328,7 @@ impl CreateBondingCurve<'_> {
                         to: self.creator_distributor_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
-                    global_signer_seeds,
+                    mint_auth_signer_seeds,
                 ),
                 bonding_curve.creator_vested_supply,
             )?;
@@ -331,7 +346,7 @@ impl CreateBondingCurve<'_> {
                         to: self.presale_distributor_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
-                    global_signer_seeds,
+                    mint_auth_signer_seeds,
                 ),
                 bonding_curve.presale_supply,
             )?;
@@ -350,7 +365,7 @@ impl CreateBondingCurve<'_> {
                         to: self.brand_distributor_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
-                    global_signer_seeds,
+                    mint_auth_signer_seeds,
                 ),
                 amount,
             )?;
@@ -370,7 +385,7 @@ impl CreateBondingCurve<'_> {
                         to: self.platform_distributor_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
-                    global_signer_seeds,
+                    mint_auth_signer_seeds,
                 ),
                 bonding_curve.platform_supply,
             )?;
@@ -386,7 +401,7 @@ impl CreateBondingCurve<'_> {
                     to: self.bonding_curve_token_account.to_account_info(),
                     mint: mint_info.clone(),
                 },
-                global_signer_seeds,
+                mint_auth_signer_seeds,
             ),
             bonding_curve.bonding_supply,
         )?;
@@ -398,7 +413,7 @@ impl CreateBondingCurve<'_> {
     pub fn pay_launch_fee(&mut self) -> Result<()> {
         // transfer SOL to fee recipient
         // sender is signer, must go through system program
-        let fee_to = &self.global;
+        let fee_to = &self.bonding_curve_fee_vault;
         let fee_from = &self.creator;
         let fee_amount = self.global.launch_fee_lamports;
 

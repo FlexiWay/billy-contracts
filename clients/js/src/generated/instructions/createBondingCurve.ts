@@ -27,6 +27,7 @@ export type CreateBondingCurveInstructionAccounts = {
     platformDistributorTokenAccount: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
     bondingCurveTokenAccount: PublicKey | Pda;
+    bondingCurveFeeVault: PublicKey | Pda;
     global: PublicKey | Pda;
     metadata: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
@@ -80,16 +81,17 @@ export function createBondingCurve(
           platformDistributorTokenAccount: { index: 11, isWritable: true as boolean, value: input.platformDistributorTokenAccount ?? null },
           bondingCurve: { index: 12, isWritable: true as boolean, value: input.bondingCurve ?? null },
           bondingCurveTokenAccount: { index: 13, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          global: { index: 14, isWritable: true as boolean, value: input.global ?? null },
-          metadata: { index: 15, isWritable: true as boolean, value: input.metadata ?? null },
-          systemProgram: { index: 16, isWritable: false as boolean, value: input.systemProgram ?? null },
-          tokenProgram: { index: 17, isWritable: false as boolean, value: input.tokenProgram ?? null },
-          associatedTokenProgram: { index: 18, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
-          tokenMetadataProgram: { index: 19, isWritable: false as boolean, value: input.tokenMetadataProgram ?? null },
-          rent: { index: 20, isWritable: false as boolean, value: input.rent ?? null },
-          clock: { index: 21, isWritable: false as boolean, value: input.clock ?? null },
-          eventAuthority: { index: 22, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 23, isWritable: false as boolean, value: input.program ?? null },
+          bondingCurveFeeVault: { index: 14, isWritable: true as boolean, value: input.bondingCurveFeeVault ?? null },
+          global: { index: 15, isWritable: false as boolean, value: input.global ?? null },
+          metadata: { index: 16, isWritable: true as boolean, value: input.metadata ?? null },
+          systemProgram: { index: 17, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 18, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          associatedTokenProgram: { index: 19, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
+          tokenMetadataProgram: { index: 20, isWritable: false as boolean, value: input.tokenMetadataProgram ?? null },
+          rent: { index: 21, isWritable: false as boolean, value: input.rent ?? null },
+          clock: { index: 22, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 23, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 24, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.

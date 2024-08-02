@@ -28,7 +28,14 @@ pub struct CreateEvent {
 #[event]
 pub struct WithdrawEvent {
     pub withdraw_authority: Pubkey,
-    pub amount: u64,
+    pub mint: Pubkey,
+    pub fee_vault: Pubkey,
+
+    pub withdrawn: u64,
+    pub total_withdrawn: u64,
+
+    pub previous_withdraw_time: i64,
+    pub new_withdraw_time: i64,
 }
 
 #[event]

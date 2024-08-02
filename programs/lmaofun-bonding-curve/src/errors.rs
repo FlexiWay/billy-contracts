@@ -66,4 +66,7 @@ pub enum ContractError {
 
     #[msg("Vesting period not yet over")]
     VestingPeriodNotOver,
+
+    #[msg("Not enough fees to withdraw")]
+    NoFeesToWithdraw,
 }

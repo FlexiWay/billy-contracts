@@ -16,9 +16,15 @@ pub struct WithdrawFees {
 
     pub global: solana_program::pubkey::Pubkey,
 
+    pub mint: solana_program::pubkey::Pubkey,
+
+    pub bonding_curve_fee_vault: solana_program::pubkey::Pubkey,
+
     pub system_program: solana_program::pubkey::Pubkey,
 
     pub token_program: solana_program::pubkey::Pubkey,
+
+    pub clock: solana_program::pubkey::Pubkey,
 
     pub event_authority: solana_program::pubkey::Pubkey,
 
@@ -34,13 +40,20 @@ impl WithdrawFees {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.global,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint, false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.bonding_curve_fee_vault,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -50,6 +63,9 @@ impl WithdrawFees {
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.token_program,
             false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.clock, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.event_authority,
@@ -89,17 +105,23 @@ impl WithdrawFeesInstructionData {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` authority
-///   1. `[writable]` global
-///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   3. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   4. `[]` event_authority
-///   5. `[]` program
+///   1. `[]` global
+///   2. `[]` mint
+///   3. `[writable]` bonding_curve_fee_vault
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   6. `[]` clock
+///   7. `[]` event_authority
+///   8. `[]` program
 #[derive(Default)]
 pub struct WithdrawFeesBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
+    mint: Option<solana_program::pubkey::Pubkey>,
+    bonding_curve_fee_vault: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     token_program: Option<solana_program::pubkey::Pubkey>,
+    clock: Option<solana_program::pubkey::Pubkey>,
     event_authority: Option<solana_program::pubkey::Pubkey>,
     program: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -119,6 +141,19 @@ impl WithdrawFeesBuilder {
         self.global = Some(global);
         self
     }
+    #[inline(always)]
+    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.mint = Some(mint);
+        self
+    }
+    #[inline(always)]
+    pub fn bonding_curve_fee_vault(
+        &mut self,
+        bonding_curve_fee_vault: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.bonding_curve_fee_vault = Some(bonding_curve_fee_vault);
+        self
+    }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
     pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
@@ -129,6 +164,11 @@ impl WithdrawFeesBuilder {
     #[inline(always)]
     pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
+        self
+    }
+    #[inline(always)]
+    pub fn clock(&mut self, clock: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.clock = Some(clock);
         self
     }
     #[inline(always)]
@@ -167,12 +207,17 @@ impl WithdrawFeesBuilder {
         let accounts = WithdrawFees {
             authority: self.authority.expect("authority is not set"),
             global: self.global.expect("global is not set"),
+            mint: self.mint.expect("mint is not set"),
+            bonding_curve_fee_vault: self
+                .bonding_curve_fee_vault
+                .expect("bonding_curve_fee_vault is not set"),
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             token_program: self.token_program.unwrap_or(solana_program::pubkey!(
                 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
             )),
+            clock: self.clock.expect("clock is not set"),
             event_authority: self.event_authority.expect("event_authority is not set"),
             program: self.program.expect("program is not set"),
         };
@@ -187,9 +232,15 @@ pub struct WithdrawFeesCpiAccounts<'a, 'b> {
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -205,9 +256,15 @@ pub struct WithdrawFeesCpi<'a, 'b> {
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -223,8 +280,11 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             __program: program,
             authority: accounts.authority,
             global: accounts.global,
+            mint: accounts.mint,
+            bonding_curve_fee_vault: accounts.bonding_curve_fee_vault,
             system_program: accounts.system_program,
             token_program: accounts.token_program,
+            clock: accounts.clock,
             event_authority: accounts.event_authority,
             program: accounts.program,
         }
@@ -262,13 +322,21 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.global.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.bonding_curve_fee_vault.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -277,6 +345,10 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.token_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.clock.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -301,12 +373,15 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(9 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
         account_infos.push(self.global.clone());
+        account_infos.push(self.mint.clone());
+        account_infos.push(self.bonding_curve_fee_vault.clone());
         account_infos.push(self.system_program.clone());
         account_infos.push(self.token_program.clone());
+        account_infos.push(self.clock.clone());
         account_infos.push(self.event_authority.clone());
         account_infos.push(self.program.clone());
         remaining_accounts
@@ -326,11 +401,14 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` authority
-///   1. `[writable]` global
-///   2. `[]` system_program
-///   3. `[]` token_program
-///   4. `[]` event_authority
-///   5. `[]` program
+///   1. `[]` global
+///   2. `[]` mint
+///   3. `[writable]` bonding_curve_fee_vault
+///   4. `[]` system_program
+///   5. `[]` token_program
+///   6. `[]` clock
+///   7. `[]` event_authority
+///   8. `[]` program
 pub struct WithdrawFeesCpiBuilder<'a, 'b> {
     instruction: Box<WithdrawFeesCpiBuilderInstruction<'a, 'b>>,
 }
@@ -341,8 +419,11 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
             __program: program,
             authority: None,
             global: None,
+            mint: None,
+            bonding_curve_fee_vault: None,
             system_program: None,
             token_program: None,
+            clock: None,
             event_authority: None,
             program: None,
             __remaining_accounts: Vec::new(),
@@ -366,6 +447,19 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
+    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.mint = Some(mint);
+        self
+    }
+    #[inline(always)]
+    pub fn bonding_curve_fee_vault(
+        &mut self,
+        bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.bonding_curve_fee_vault = Some(bonding_curve_fee_vault);
+        self
+    }
+    #[inline(always)]
     pub fn system_program(
         &mut self,
         system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -379,6 +473,11 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         token_program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
+        self
+    }
+    #[inline(always)]
+    pub fn clock(&mut self, clock: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.clock = Some(clock);
         self
     }
     #[inline(always)]
@@ -445,6 +544,13 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
 
             global: self.instruction.global.expect("global is not set"),
 
+            mint: self.instruction.mint.expect("mint is not set"),
+
+            bonding_curve_fee_vault: self
+                .instruction
+                .bonding_curve_fee_vault
+                .expect("bonding_curve_fee_vault is not set"),
+
             system_program: self
                 .instruction
                 .system_program
@@ -454,6 +560,8 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
                 .instruction
                 .token_program
                 .expect("token_program is not set"),
+
+            clock: self.instruction.clock.expect("clock is not set"),
 
             event_authority: self
                 .instruction
@@ -473,8 +581,11 @@ struct WithdrawFeesCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    bonding_curve_fee_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    clock: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

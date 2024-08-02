@@ -14,8 +14,11 @@ import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners
 export type WithdrawFeesInstructionAccounts = {
     authority?: Signer;
     global: PublicKey | Pda;
+    mint: PublicKey | Pda;
+    bondingCurveFeeVault: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
+    clock: PublicKey | Pda;
     eventAuthority: PublicKey | Pda;
     program: PublicKey | Pda;
 };
@@ -44,11 +47,14 @@ export function withdrawFees(
   // Accounts.
   const resolvedAccounts = {
           authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
-          global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
-          systemProgram: { index: 2, isWritable: false as boolean, value: input.systemProgram ?? null },
-          tokenProgram: { index: 3, isWritable: false as boolean, value: input.tokenProgram ?? null },
-          eventAuthority: { index: 4, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 5, isWritable: false as boolean, value: input.program ?? null },
+          global: { index: 1, isWritable: false as boolean, value: input.global ?? null },
+          mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
+          bondingCurveFeeVault: { index: 3, isWritable: true as boolean, value: input.bondingCurveFeeVault ?? null },
+          systemProgram: { index: 4, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 5, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          clock: { index: 6, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 7, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 8, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
   

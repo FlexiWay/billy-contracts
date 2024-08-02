@@ -39,6 +39,7 @@ import {
   createBondingCurve,
   safeFetchBondingCurve,
   fetchBondingCurve,
+  findBondingCurveFeeVaultPda,
   findBondingCurvePda,
   withdrawFees,
   swap,
@@ -378,7 +379,12 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-
+    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
+      umi,
+      {
+        mint: simpleMintKp.publicKey,
+      }
+    );
     const metadataPda = await findMetadataPda(umi, {
       mint: simpleMintKp.publicKey,
     });
@@ -443,6 +449,7 @@ describe("lmaofun-bonding", () => {
 
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
+      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
 
       creatorDistributor: creatorDistributor[0],
       creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
@@ -497,6 +504,12 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
+    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
+      umi,
+      {
+        mint: simpleMintKp.publicKey,
+      }
+    );
     const traderAta = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
       owner: traderSigner.publicKey,
@@ -531,7 +544,7 @@ describe("lmaofun-bonding", () => {
 
       mint: simpleMintKp.publicKey,
       bondingCurve: simpleMintBondingCurvePda[0],
-
+      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
 
@@ -582,6 +595,12 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
+    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
+      umi,
+      {
+        mint: simpleMintKp.publicKey,
+      }
+    );
     const traderAta = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
       owner: traderSigner.publicKey,
@@ -631,7 +650,7 @@ describe("lmaofun-bonding", () => {
 
       mint: simpleMintKp.publicKey,
       bondingCurve: simpleMintBondingCurvePda[0],
-
+      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
 
@@ -690,11 +709,19 @@ describe("lmaofun-bonding", () => {
     const globalBalanceInt = await getBalance(umi, globalPda[0]);
     const startingBalance = GLOBAL_STARTING_BALANCE_INT;
     const accruedFees = Number(globalBalanceInt) - startingBalance;
-
+    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
+      umi,
+      {
+        mint: simpleMintKp.publicKey,
+      }
+    );
     assert(accruedFees > 0);
     const txBuilder = withdrawFees(umi, {
       global: globalPda[0],
       authority: createSignerFromKeypair(umi, withdrawAuthority),
+      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
+      mint: simpleMintKp.publicKey,
+      clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       ...evtAuthorityAccs,
     });
 

@@ -164,8 +164,13 @@
           "isSigner": false
         },
         {
-          "name": "global",
+          "name": "bondingCurveFeeVault",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -233,7 +238,7 @@
         },
         {
           "name": "global",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -248,6 +253,11 @@
         },
         {
           "name": "bondingCurveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -382,6 +392,16 @@
         },
         {
           "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -392,6 +412,11 @@
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
@@ -410,6 +435,24 @@
     }
   ],
   "accounts": [
+    {
+      "name": "BondingCurveFeeVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lastWithdrawTime",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "totalWithdrawn",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "BondingCurve",
       "type": {
@@ -984,8 +1027,33 @@
           "index": false
         },
         {
-          "name": "amount",
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalWithdrawn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "previousWithdrawTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "newWithdrawTime",
+          "type": "i64",
           "index": false
         }
       ]
@@ -1211,6 +1279,11 @@
       "code": 6023,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
+    },
+    {
+      "code": 6024,
+      "name": "NoFeesToWithdraw",
+      "msg": "Not enough fees to withdraw"
     }
   ],
   "metadata": {

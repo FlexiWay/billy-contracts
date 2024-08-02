@@ -324,6 +324,19 @@ export class VestingPeriodNotOverError extends ProgramError {
 codeToErrorMap.set(0x1787, VestingPeriodNotOverError);
 nameToErrorMap.set('VestingPeriodNotOver', VestingPeriodNotOverError);
 
+/** NoFeesToWithdraw: Not enough fees to withdraw */
+export class NoFeesToWithdrawError extends ProgramError {
+  override readonly name: string = 'NoFeesToWithdraw';
+
+  readonly code: number = 0x1788; // 6024
+  
+  constructor(program: Program, cause?: Error) {
+    super('Not enough fees to withdraw', program, cause);
+  }
+}
+codeToErrorMap.set(0x1788, NoFeesToWithdrawError);
+nameToErrorMap.set('NoFeesToWithdraw', NoFeesToWithdrawError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

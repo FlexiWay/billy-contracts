@@ -17,6 +17,7 @@ export type SwapInstructionAccounts = {
     mint: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
     bondingCurveTokenAccount: PublicKey | Pda;
+    bondingCurveFeeVault: PublicKey | Pda;
     userTokenAccount: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
@@ -54,17 +55,18 @@ export function swap(
   // Accounts.
   const resolvedAccounts = {
           user: { index: 0, isWritable: true as boolean, value: input.user ?? null },
-          global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
+          global: { index: 1, isWritable: false as boolean, value: input.global ?? null },
           mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
           bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
           bondingCurveTokenAccount: { index: 4, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          userTokenAccount: { index: 5, isWritable: true as boolean, value: input.userTokenAccount ?? null },
-          systemProgram: { index: 6, isWritable: false as boolean, value: input.systemProgram ?? null },
-          tokenProgram: { index: 7, isWritable: false as boolean, value: input.tokenProgram ?? null },
-          associatedTokenProgram: { index: 8, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
-          clock: { index: 9, isWritable: false as boolean, value: input.clock ?? null },
-          eventAuthority: { index: 10, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 11, isWritable: false as boolean, value: input.program ?? null },
+          bondingCurveFeeVault: { index: 5, isWritable: true as boolean, value: input.bondingCurveFeeVault ?? null },
+          userTokenAccount: { index: 6, isWritable: true as boolean, value: input.userTokenAccount ?? null },
+          systemProgram: { index: 7, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 8, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          associatedTokenProgram: { index: 9, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
+          clock: { index: 10, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 11, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 12, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.

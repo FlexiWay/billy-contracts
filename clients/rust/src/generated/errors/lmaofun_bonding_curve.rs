@@ -82,6 +82,9 @@ pub enum LmaofunBondingCurveError {
     /// 6023 (0x1787) - Vesting period not yet over
     #[error("Vesting period not yet over")]
     VestingPeriodNotOver,
+    /// 6024 (0x1788) - Not enough fees to withdraw
+    #[error("Not enough fees to withdraw")]
+    NoFeesToWithdraw,
 }
 
 impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {

@@ -164,8 +164,13 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "global",
+          "name": "bondingCurveFeeVault",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -233,7 +238,7 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -248,6 +253,11 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "bondingCurveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -382,6 +392,16 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -392,6 +412,11 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
@@ -410,6 +435,24 @@ export type LmaofunBondingCurve = {
     }
   ],
   "accounts": [
+    {
+      "name": "bondingCurveFeeVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lastWithdrawTime",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "totalWithdrawn",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "bondingCurve",
       "type": {
@@ -984,8 +1027,33 @@ export type LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "amount",
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalWithdrawn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "previousWithdrawTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "newWithdrawTime",
+          "type": "i64",
           "index": false
         }
       ]
@@ -1211,6 +1279,11 @@ export type LmaofunBondingCurve = {
       "code": 6023,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
+    },
+    {
+      "code": 6024,
+      "name": "NoFeesToWithdraw",
+      "msg": "Not enough fees to withdraw"
     }
   ]
 };
@@ -1381,8 +1454,13 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "global",
+          "name": "bondingCurveFeeVault",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1450,7 +1528,7 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1465,6 +1543,11 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "bondingCurveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1599,6 +1682,16 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1609,6 +1702,11 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
@@ -1627,6 +1725,24 @@ export const IDL: LmaofunBondingCurve = {
     }
   ],
   "accounts": [
+    {
+      "name": "bondingCurveFeeVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lastWithdrawTime",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "totalWithdrawn",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "bondingCurve",
       "type": {
@@ -2201,8 +2317,33 @@ export const IDL: LmaofunBondingCurve = {
           "index": false
         },
         {
-          "name": "amount",
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalWithdrawn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "previousWithdrawTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "newWithdrawTime",
+          "type": "i64",
           "index": false
         }
       ]
@@ -2428,6 +2569,11 @@ export const IDL: LmaofunBondingCurve = {
       "code": 6023,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
+    },
+    {
+      "code": 6024,
+      "name": "NoFeesToWithdraw",
+      "msg": "Not enough fees to withdraw"
     }
   ]
 };
