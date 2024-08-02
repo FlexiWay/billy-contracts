@@ -15,38 +15,35 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CreatorDistributor {
+pub struct PresaleVault {
     pub discriminator: [u8; 8],
     pub initial_vested_supply: u64,
-    pub last_distribution: Option<i64>,
 }
 
-impl CreatorDistributor {
+impl PresaleVault {
+    pub const LEN: usize = 16;
+
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:
     ///
-    ///   0. `CreatorDistributor::PREFIX`
+    ///   0. `PresaleVault::PREFIX`
     ///   1. mint (`Pubkey`)
-    pub const PREFIX: &'static [u8] = "creator-distributor-data".as_bytes();
+    pub const PREFIX: &'static [u8] = "presale-vault".as_bytes();
 
     pub fn create_pda(
         mint: Pubkey,
         bump: u8,
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
-            &[
-                "creator-distributor-data".as_bytes(),
-                mint.as_ref(),
-                &[bump],
-            ],
+            &["presale-vault".as_bytes(), mint.as_ref(), &[bump]],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda(mint: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &["creator-distributor-data".as_bytes(), mint.as_ref()],
+            &["presale-vault".as_bytes(), mint.as_ref()],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
@@ -58,7 +55,7 @@ impl CreatorDistributor {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for CreatorDistributor {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for PresaleVault {
     type Error = std::io::Error;
 
     fn try_from(

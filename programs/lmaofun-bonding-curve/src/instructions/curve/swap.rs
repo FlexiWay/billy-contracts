@@ -11,8 +11,8 @@ use crate::{
     events::*,
     state::{
         bonding_curve::{self, *},
-        distributors::PlatformDistributor,
         global::*,
+        vaults::PlatformVault,
     },
 };
 
@@ -57,10 +57,10 @@ pub struct Swap<'info> {
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    platform_distributor: Box<Account<'info, PlatformDistributor>>,
+    platform_vault: Box<Account<'info, PlatformVault>>,
     #[account(
         init_if_needed,
         payer = user,
@@ -280,7 +280,7 @@ impl Swap<'_> {
         // Transfer SOL to fee recipient
         let fee_transfer_instruction = system_instruction::transfer(
             ctx.accounts.user.key,
-            &ctx.accounts.platform_distributor.key(),
+            &ctx.accounts.platform_vault.key(),
             fee_lamports,
         );
 
@@ -288,12 +288,12 @@ impl Swap<'_> {
             &fee_transfer_instruction,
             &[
                 ctx.accounts.user.to_account_info(),
-                ctx.accounts.platform_distributor.to_account_info(),
+                ctx.accounts.platform_vault.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
             &[],
         )?;
-        msg!("Fee transfer to platform_distributor complete");
+        msg!("Fee transfer to platform_vault complete");
 
         Ok(())
     }
@@ -348,10 +348,10 @@ impl Swap<'_> {
             .sub_lamports(fee_lamports)
             .unwrap();
         ctx.accounts
-            .platform_distributor
+            .platform_vault
             .add_lamports(fee_lamports)
             .unwrap();
-        msg!("Fee to platform_distributor transfer complete");
+        msg!("Fee to platform_vault transfer complete");
         Ok(())
     }
 }

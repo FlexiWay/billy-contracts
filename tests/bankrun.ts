@@ -42,12 +42,12 @@ import {
   findBondingCurvePda,
   withdrawFees,
   swap,
-  findBrandDistributorPda,
-  findCreatorDistributorPda,
-  findPlatformDistributorPda,
-  findPresaleDistributorPda,
+  findBrandVaultPda,
+  findCreatorVaultPda,
+  findPlatformVaultPda,
+  findPresaleVaultPda,
   claimCreatorVesting,
-  fetchCreatorDistributor,
+  fetchCreatorVault,
 } from "../clients/js/src";
 import {
   fromWeb3JsKeypair,
@@ -403,36 +403,36 @@ describe("lmaofun-bonding", () => {
     console.log("metadataPda[0]", metadataPda[0]);
 
     // THIS SHIT WILL BE MOVED
-    const creatorDistributor = await findCreatorDistributorPda(umi, {
+    const creatorVault = await findCreatorVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const creatorVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: creatorDistributor[0],
-    });
-
-    const brandDistributor = await findBrandDistributorPda(umi, {
-      mint: simpleMintKp.publicKey,
-    });
-    const brandDistributorTknAcc = await findAssociatedTokenPda(umi, {
-      mint: simpleMintKp.publicKey,
-      owner: brandDistributor[0],
+      owner: creatorVault[0],
     });
 
-    const platformDistributor = await findPlatformDistributorPda(umi, {
+    const brandVault = await findBrandVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const platformDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const brandVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: platformDistributor[0],
+      owner: brandVault[0],
     });
 
-    const presaleDistributor = await findPresaleDistributorPda(umi, {
+    const platformVault = await findPlatformVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const presaleDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const platformVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: presaleDistributor[0],
+      owner: platformVault[0],
+    });
+
+    const presaleVault = await findPresaleVaultPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const presaleVaultTknAcc = await findAssociatedTokenPda(umi, {
+      mint: simpleMintKp.publicKey,
+      owner: presaleVault[0],
     });
 
     const txBuilder = createBondingCurve(umi, {
@@ -444,17 +444,17 @@ describe("lmaofun-bonding", () => {
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
 
-      creatorDistributor: creatorDistributor[0],
-      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      creatorVault: creatorVault[0],
+      creatorVaultTokenAccount: creatorVaultTknAcc[0],
 
-      presaleDistributor: presaleDistributor[0],
-      presaleDistributorTokenAccount: presaleDistributorTknAcc[0],
+      presaleVault: presaleVault[0],
+      presaleVaultTokenAccount: presaleVaultTknAcc[0],
 
       brandAuthority: creator.publicKey,
-      brandDistributor: brandDistributor[0],
-      brandDistributorTokenAccount: brandDistributorTknAcc[0],
-      platformDistributor: platformDistributor[0],
-      platformDistributorTokenAccount: platformDistributorTknAcc[0],
+      brandVault: brandVault[0],
+      brandVaultTokenAccount: brandVaultTknAcc[0],
+      platformVault: platformVault[0],
+      platformVaultTokenAccount: platformVaultTknAcc[0],
 
       ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
 
@@ -496,7 +496,7 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-    const platformDistributor = await findPlatformDistributorPda(umi, {
+    const platformVault = await findPlatformVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
     const traderAta = await findAssociatedTokenPda(umi, {
@@ -535,7 +535,7 @@ describe("lmaofun-bonding", () => {
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
-      platformDistributor: platformDistributor[0],
+      platformVault: platformVault[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
@@ -583,7 +583,7 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-    const platformDistributor = await findPlatformDistributorPda(umi, {
+    const platformVault = await findPlatformVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
     const traderAta = await findAssociatedTokenPda(umi, {
@@ -637,7 +637,7 @@ describe("lmaofun-bonding", () => {
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
-      platformDistributor: platformDistributor[0],
+      platformVault: platformVault[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
@@ -690,10 +690,10 @@ describe("lmaofun-bonding", () => {
   });
 
   it("withdraw_fees using withdraw_authority", async () => {
-    const platformDistributor = await findPlatformDistributorPda(umi, {
+    const platformVault = await findPlatformVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const feeBalanceInt_total = await getBalance(umi, platformDistributor[0]);
+    const feeBalanceInt_total = await getBalance(umi, platformVault[0]);
     console.log("feeBalanceInt_total", feeBalanceInt_total);
     const startingBalance = PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT;
     const accruedFees = Number(feeBalanceInt_total) - startingBalance;
@@ -702,7 +702,7 @@ describe("lmaofun-bonding", () => {
       global: globalPda[0],
       authority: createSignerFromKeypair(umi, withdrawAuthority),
       mint: simpleMintKp.publicKey,
-      platformDistributor: platformDistributor[0],
+      platformVault: platformVault[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       ...evtAuthorityAccs,
     });
@@ -724,7 +724,7 @@ describe("lmaofun-bonding", () => {
       withdrawAuthority: withdrawAuthority.publicKey,
     });
 
-    const feeBalancePost = await getBalance(umi, platformDistributor[0]);
+    const feeBalancePost = await getBalance(umi, platformVault[0]);
     const feeBalancePost_int = Number(feeBalancePost);
     console.log("feeBalancePost_int", feeBalancePost_int);
     console.log("startingBalance", startingBalance);
@@ -767,12 +767,12 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: creator.publicKey,
     });
-    const creatorDistributor = await findCreatorDistributorPda(umi, {
+    const creatorVault = await findCreatorVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const creatorVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: creatorDistributor[0],
+      owner: creatorVault[0],
     });
     const txBuilder = claimCreatorVesting(umi, {
       global: globalPda[0],
@@ -780,8 +780,8 @@ describe("lmaofun-bonding", () => {
       creator: createSignerFromKeypair(umi, creator),
       bondingCurve: simpleMintBondingCurvePda[0],
       userTokenAccount: creatorAta[0],
-      creatorDistributor: creatorDistributor[0],
-      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      creatorVault: creatorVault[0],
+      creatorVaultTokenAccount: creatorVaultTknAcc[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       tokenProgram: SPL_TOKEN_PROGRAM_ID,
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -808,12 +808,12 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: creator.publicKey,
     });
-    const creatorDistributor = await findCreatorDistributorPda(umi, {
+    const creatorVault = await findCreatorVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const creatorVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: creatorDistributor[0],
+      owner: creatorVault[0],
     });
     const bondingCurveData = await fetchBondingCurve(
       umi,
@@ -840,8 +840,8 @@ describe("lmaofun-bonding", () => {
       creator: createSignerFromKeypair(umi, creator),
       bondingCurve: simpleMintBondingCurvePda[0],
       userTokenAccount: creatorAta[0],
-      creatorDistributor: creatorDistributor[0],
-      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      creatorVault: creatorVault[0],
+      creatorVaultTokenAccount: creatorVaultTknAcc[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       tokenProgram: SPL_TOKEN_PROGRAM_ID,
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -850,13 +850,8 @@ describe("lmaofun-bonding", () => {
 
     await processTransaction(umi, txBuilder);
 
-    const creatorDistributorData = await fetchCreatorDistributor(
-      umi,
-      creatorDistributor[0]
-    );
-    assert(
-      unwrapOption(creatorDistributorData.lastDistribution) == secondToJumpTo
-    );
+    const creatorVaultData = await fetchCreatorVault(umi, creatorVault[0]);
+    assert(unwrapOption(creatorVaultData.lastDistribution) == secondToJumpTo);
   });
   it("can claim creator again vesting after cliff", async () => {
     const simpleMintBondingCurvePda = await findBondingCurvePda(umi, {
@@ -870,24 +865,19 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: creator.publicKey,
     });
-    const creatorDistributor = await findCreatorDistributorPda(umi, {
+    const creatorVault = await findCreatorVaultPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const creatorDistributorTknAcc = await findAssociatedTokenPda(umi, {
+    const creatorVaultTknAcc = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
-      owner: creatorDistributor[0],
+      owner: creatorVault[0],
     });
     const bondingCurveData = await fetchBondingCurve(
       umi,
       simpleMintBondingCurvePda[0]
     );
-    const creatorDistributorData = await fetchCreatorDistributor(
-      umi,
-      creatorDistributor[0]
-    );
-    const lastDistribution = unwrapOption(
-      creatorDistributorData.lastDistribution
-    );
+    const creatorVaultData = await fetchCreatorVault(umi, creatorVault[0]);
+    const lastDistribution = unwrapOption(creatorVaultData.lastDistribution);
 
     const secondToJumpTo = Number(lastDistribution) + Number(24 * 60 * 60);
 
@@ -908,8 +898,8 @@ describe("lmaofun-bonding", () => {
       creator: createSignerFromKeypair(umi, creator),
       bondingCurve: simpleMintBondingCurvePda[0],
       userTokenAccount: creatorAta[0],
-      creatorDistributor: creatorDistributor[0],
-      creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
+      creatorVault: creatorVault[0],
+      creatorVaultTokenAccount: creatorVaultTknAcc[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       tokenProgram: SPL_TOKEN_PROGRAM_ID,
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -918,12 +908,9 @@ describe("lmaofun-bonding", () => {
 
     await processTransaction(umi, txBuilder);
 
-    const creatorDistributorDataPost = await fetchCreatorDistributor(
-      umi,
-      creatorDistributor[0]
-    );
+    const creatorVaultDataPost = await fetchCreatorVault(umi, creatorVault[0]);
     assert(
-      unwrapOption(creatorDistributorDataPost.lastDistribution) ==
+      unwrapOption(creatorVaultDataPost.lastDistribution) ==
         BigInt(secondToJumpTo)
     );
   });

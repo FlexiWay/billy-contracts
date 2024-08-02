@@ -30,27 +30,27 @@ kinobi.update(
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
-    brandDistributor: {
+    brandVault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("brand-distributor-data"),
+        k.constantPdaSeedNodeFromString("brand-vault"),
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
-    platformDistributor: {
+    platformVault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("platform-distributor-data"),
+        k.constantPdaSeedNodeFromString("platform-vault"),
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
-    creatorDistributor: {
+    creatorVault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("creator-distributor-data"),
+        k.constantPdaSeedNodeFromString("creator-vault"),
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
-    presaleDistributor: {
+    presaleVault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("presale-distributor-data"),
+        k.constantPdaSeedNodeFromString("presale-vault"),
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },

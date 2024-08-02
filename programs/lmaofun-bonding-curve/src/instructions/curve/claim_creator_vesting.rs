@@ -1,6 +1,6 @@
 use crate::{
     errors::ContractError,
-    state::{bonding_curve::BondingCurve, distributors::CreatorDistributor, global::*},
+    state::{bonding_curve::BondingCurve, global::*, vaults::CreatorVault},
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -18,16 +18,16 @@ pub struct ClaimCreatorVesting<'info> {
 
     #[account(
         mut,
-        seeds = [CreatorDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        seeds = [CreatorVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    creator_distributor: Box<Account<'info, CreatorDistributor>>,
+    creator_vault: Box<Account<'info, CreatorVault>>,
     #[account(
         mut,
         associated_token::mint = mint,
-        associated_token::authority = creator_distributor,
+        associated_token::authority = creator_vault,
     )]
-    creator_distributor_token_account: Box<Account<'info, TokenAccount>>,
+    creator_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -84,7 +84,7 @@ impl ClaimCreatorVesting<'_> {
     pub fn handler(ctx: Context<ClaimCreatorVesting>) -> Result<()> {
         let clock = Clock::get()?;
 
-        let tokens_per_second = (ctx.accounts.creator_distributor.initial_vested_supply as i64)
+        let tokens_per_second = (ctx.accounts.creator_vault.initial_vested_supply as i64)
             .checked_div(ctx.accounts.bonding_curve.vesting_terms.duration)
             .unwrap() as u64;
 
@@ -93,7 +93,7 @@ impl ClaimCreatorVesting<'_> {
             tokens_per_second
         );
         let start_second: i64;
-        if let Some(last_distribution) = ctx.accounts.creator_distributor.last_distribution {
+        if let Some(last_distribution) = ctx.accounts.creator_vault.last_distribution {
             msg!(
                 "ClaimCreatorVesting::handler: last_distribution: {}",
                 last_distribution
@@ -124,26 +124,24 @@ impl ClaimCreatorVesting<'_> {
             tokens_to_distribute
         );
         let user_token_account = ctx.accounts.user_token_account.to_account_info();
-        let creator_distributor_token_account = ctx
-            .accounts
-            .creator_distributor_token_account
-            .to_account_info();
+        let creator_vault_token_account =
+            ctx.accounts.creator_vault_token_account.to_account_info();
         let mint_k = ctx.accounts.bonding_curve.mint.key();
-        let signer = CreatorDistributor::get_signer(&ctx.bumps.creator_distributor, &mint_k);
+        let signer = CreatorVault::get_signer(&ctx.bumps.creator_vault, &mint_k);
         let signer_seeds = &[&signer[..]];
         token::transfer(
             CpiContext::new_with_signer(
                 ctx.accounts.token_program.to_account_info(),
                 token::Transfer {
-                    from: creator_distributor_token_account,
+                    from: creator_vault_token_account,
                     to: user_token_account,
-                    authority: ctx.accounts.creator_distributor.to_account_info(),
+                    authority: ctx.accounts.creator_vault.to_account_info(),
                 },
                 signer_seeds,
             ),
             tokens_to_distribute,
         )?;
-        ctx.accounts.creator_distributor.last_distribution = Some(clock.unix_timestamp);
+        ctx.accounts.creator_vault.last_distribution = Some(clock.unix_timestamp);
         msg!("ClaimCreatorVesting::handler: done");
         Ok(())
     }

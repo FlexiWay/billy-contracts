@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace, Debug, Default)]
-pub struct CreatorDistributor {
+pub struct CreatorVault {
     pub initial_vested_supply: u64,
     pub last_distribution: Option<i64>,
 }
-impl CreatorDistributor {
-    pub const SEED_PREFIX: &'static str = "creator-distributor-data";
+impl CreatorVault {
+    pub const SEED_PREFIX: &'static str = "creator-vault";
 
     pub fn get_signer<'a>(bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 3] {
         [
@@ -19,11 +19,11 @@ impl CreatorDistributor {
 
 #[account]
 #[derive(InitSpace, Debug, Default)]
-pub struct PresaleDistributor {
+pub struct PresaleVault {
     pub initial_vested_supply: u64,
 }
-impl PresaleDistributor {
-    pub const SEED_PREFIX: &'static str = "presale-distributor-data";
+impl PresaleVault {
+    pub const SEED_PREFIX: &'static str = "presale-vault";
 
     pub fn get_signer<'a>(bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 3] {
         [
@@ -36,14 +36,14 @@ impl PresaleDistributor {
 
 #[account]
 #[derive(InitSpace, Debug, Default)]
-pub struct PlatformDistributor {
+pub struct PlatformVault {
     pub initial_vested_supply: u64,
     pub last_distribution: Option<i64>,
     pub last_fee_withdrawal: Option<i64>,
     pub fees_withdrawn: u64,
 }
-impl PlatformDistributor {
-    pub const SEED_PREFIX: &'static str = "platform-distributor-data";
+impl PlatformVault {
+    pub const SEED_PREFIX: &'static str = "platform-vault";
 
     pub fn get_signer<'a>(bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 3] {
         [
@@ -56,13 +56,13 @@ impl PlatformDistributor {
 
 #[account]
 #[derive(InitSpace, Debug, Default)]
-pub struct BrandDistributor {
+pub struct BrandVault {
     pub launch_brandkit_supply: u64,
     pub lifetime_brandkit_supply: u64,
     pub initial_vested_supply: u64,
 }
-impl BrandDistributor {
-    pub const SEED_PREFIX: &'static str = "brand-distributor-data";
+impl BrandVault {
+    pub const SEED_PREFIX: &'static str = "brand-vault";
 
     pub fn get_signer<'a>(bump: &'a u8, mint: &'a Pubkey) -> [&'a [u8]; 3] {
         [

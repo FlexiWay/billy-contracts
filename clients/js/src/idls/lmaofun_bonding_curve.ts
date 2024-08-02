@@ -104,22 +104,22 @@ export type LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorDistributor",
+          "name": "creatorVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "creatorDistributorTokenAccount",
+          "name": "creatorVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "presaleDistributor",
+          "name": "presaleVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "presaleDistributorTokenAccount",
+          "name": "presaleVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -129,22 +129,22 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "brandDistributor",
+          "name": "brandVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "brandDistributorTokenAccount",
+          "name": "brandVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "platformDistributorTokenAccount",
+          "name": "platformVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -247,7 +247,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -305,12 +305,12 @@ export type LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorDistributor",
+          "name": "creatorVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "creatorDistributorTokenAccount",
+          "name": "creatorVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -391,7 +391,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -534,84 +534,6 @@ export type LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creatorDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "presaleDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "platformDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "brandDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "launchBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lifetimeBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "global",
       "type": {
         "kind": "struct",
@@ -645,6 +567,84 @@ export type LmaofunBondingCurve = {
           {
             "name": "createdMintDecimals",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "creatorVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "presaleVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "platformVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "brandVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
           }
         ]
       }
@@ -1376,22 +1376,22 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorDistributor",
+          "name": "creatorVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "creatorDistributorTokenAccount",
+          "name": "creatorVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "presaleDistributor",
+          "name": "presaleVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "presaleDistributorTokenAccount",
+          "name": "presaleVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1401,22 +1401,22 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "brandDistributor",
+          "name": "brandVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "brandDistributorTokenAccount",
+          "name": "brandVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "platformDistributorTokenAccount",
+          "name": "platformVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1519,7 +1519,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1577,12 +1577,12 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorDistributor",
+          "name": "creatorVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "creatorDistributorTokenAccount",
+          "name": "creatorVaultTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1663,7 +1663,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformDistributor",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1806,84 +1806,6 @@ export const IDL: LmaofunBondingCurve = {
       }
     },
     {
-      "name": "creatorDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "presaleDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "platformDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "brandDistributor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "launchBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lifetimeBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "initialVestedSupply",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "global",
       "type": {
         "kind": "struct",
@@ -1917,6 +1839,84 @@ export const IDL: LmaofunBondingCurve = {
           {
             "name": "createdMintDecimals",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "creatorVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "presaleVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "platformVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lastDistribution",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "brandVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "initialVestedSupply",
+            "type": "u64"
           }
         ]
       }

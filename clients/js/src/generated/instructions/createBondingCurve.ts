@@ -15,15 +15,15 @@ import { AllocationDataParams, AllocationDataParamsArgs, VestingTerms, VestingTe
 export type CreateBondingCurveInstructionAccounts = {
     mint: Signer;
     creator: Signer;
-    creatorDistributor: PublicKey | Pda;
-    creatorDistributorTokenAccount: PublicKey | Pda;
-    presaleDistributor: PublicKey | Pda;
-    presaleDistributorTokenAccount: PublicKey | Pda;
+    creatorVault: PublicKey | Pda;
+    creatorVaultTokenAccount: PublicKey | Pda;
+    presaleVault: PublicKey | Pda;
+    presaleVaultTokenAccount: PublicKey | Pda;
     brandAuthority: PublicKey | Pda;
-    brandDistributor: PublicKey | Pda;
-    brandDistributorTokenAccount: PublicKey | Pda;
-    platformDistributor: PublicKey | Pda;
-    platformDistributorTokenAccount: PublicKey | Pda;
+    brandVault: PublicKey | Pda;
+    brandVaultTokenAccount: PublicKey | Pda;
+    platformVault: PublicKey | Pda;
+    platformVaultTokenAccount: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
     bondingCurveTokenAccount: PublicKey | Pda;
     global: PublicKey | Pda;
@@ -67,15 +67,15 @@ export function createBondingCurve(
   const resolvedAccounts = {
           mint: { index: 0, isWritable: true as boolean, value: input.mint ?? null },
           creator: { index: 1, isWritable: true as boolean, value: input.creator ?? null },
-          creatorDistributor: { index: 2, isWritable: true as boolean, value: input.creatorDistributor ?? null },
-          creatorDistributorTokenAccount: { index: 3, isWritable: true as boolean, value: input.creatorDistributorTokenAccount ?? null },
-          presaleDistributor: { index: 4, isWritable: true as boolean, value: input.presaleDistributor ?? null },
-          presaleDistributorTokenAccount: { index: 5, isWritable: true as boolean, value: input.presaleDistributorTokenAccount ?? null },
+          creatorVault: { index: 2, isWritable: true as boolean, value: input.creatorVault ?? null },
+          creatorVaultTokenAccount: { index: 3, isWritable: true as boolean, value: input.creatorVaultTokenAccount ?? null },
+          presaleVault: { index: 4, isWritable: true as boolean, value: input.presaleVault ?? null },
+          presaleVaultTokenAccount: { index: 5, isWritable: true as boolean, value: input.presaleVaultTokenAccount ?? null },
           brandAuthority: { index: 6, isWritable: false as boolean, value: input.brandAuthority ?? null },
-          brandDistributor: { index: 7, isWritable: true as boolean, value: input.brandDistributor ?? null },
-          brandDistributorTokenAccount: { index: 8, isWritable: true as boolean, value: input.brandDistributorTokenAccount ?? null },
-          platformDistributor: { index: 9, isWritable: true as boolean, value: input.platformDistributor ?? null },
-          platformDistributorTokenAccount: { index: 10, isWritable: true as boolean, value: input.platformDistributorTokenAccount ?? null },
+          brandVault: { index: 7, isWritable: true as boolean, value: input.brandVault ?? null },
+          brandVaultTokenAccount: { index: 8, isWritable: true as boolean, value: input.brandVaultTokenAccount ?? null },
+          platformVault: { index: 9, isWritable: true as boolean, value: input.platformVault ?? null },
+          platformVaultTokenAccount: { index: 10, isWritable: true as boolean, value: input.platformVaultTokenAccount ?? null },
           bondingCurve: { index: 11, isWritable: true as boolean, value: input.bondingCurve ?? null },
           bondingCurveTokenAccount: { index: 12, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
           global: { index: 13, isWritable: false as boolean, value: input.global ?? null },

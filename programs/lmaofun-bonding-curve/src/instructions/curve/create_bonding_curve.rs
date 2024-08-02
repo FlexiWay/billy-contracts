@@ -12,8 +12,8 @@ use anchor_spl::{
 use crate::state::{
     allocation::AllocationData,
     bonding_curve::*,
-    distributors::{BrandDistributor, CreatorDistributor, PlatformDistributor, PresaleDistributor},
     global::*,
+    vaults::{BrandVault, CreatorVault, PlatformVault, PresaleVault},
 };
 
 use crate::{errors::ContractError, events::CreateEvent};
@@ -38,34 +38,34 @@ pub struct CreateBondingCurve<'info> {
     #[account(
         init,
         payer = creator,
-        seeds = [CreatorDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        space = 8 + CreatorDistributor::INIT_SPACE,
+        seeds = [CreatorVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + CreatorVault::INIT_SPACE,
         bump,
     )]
-    creator_distributor: Box<Account<'info, CreatorDistributor>>,
+    creator_vault: Box<Account<'info, CreatorVault>>,
     #[account(
         init_if_needed,
         payer = creator,
         associated_token::mint = mint,
-        associated_token::authority = creator_distributor,
+        associated_token::authority = creator_vault,
     )]
-    creator_distributor_token_account: Box<Account<'info, TokenAccount>>,
+    creator_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
         payer = creator,
-        seeds = [PresaleDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        space = 8 + PresaleDistributor::INIT_SPACE,
+        seeds = [PresaleVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + PresaleVault::INIT_SPACE,
         bump,
     )]
-    presale_distributor: Box<Account<'info, PresaleDistributor>>,
+    presale_vault: Box<Account<'info, PresaleVault>>,
     #[account(
         init_if_needed,
         payer = creator,
         associated_token::mint = mint,
-        associated_token::authority = presale_distributor,
+        associated_token::authority = presale_vault,
     )]
-    presale_distributor_token_account: Box<Account<'info, TokenAccount>>,
+    presale_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account()]
@@ -73,34 +73,34 @@ pub struct CreateBondingCurve<'info> {
     #[account(
         init,
         payer = creator,
-        seeds = [BrandDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        space = 8 + BrandDistributor::INIT_SPACE,
+        seeds = [BrandVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + BrandVault::INIT_SPACE,
         bump,
     )]
-    brand_distributor: Box<Account<'info, BrandDistributor>>,
+    brand_vault: Box<Account<'info, BrandVault>>,
     #[account(
         init_if_needed,
         payer = creator,
         associated_token::mint = mint,
-        associated_token::authority = brand_distributor,
+        associated_token::authority = brand_vault,
     )]
-    brand_distributor_token_account: Box<Account<'info, TokenAccount>>,
+    brand_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
         payer = creator,
-        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        space = 8 + PlatformDistributor::INIT_SPACE,
+        seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        space = 8 + PlatformVault::INIT_SPACE,
         bump,
     )]
-    platform_distributor: Box<Account<'info, PlatformDistributor>>,
+    platform_vault: Box<Account<'info, PlatformVault>>,
     #[account(
         init_if_needed,
         payer = creator,
         associated_token::mint = mint,
-        associated_token::authority = platform_distributor,
+        associated_token::authority = platform_vault,
     )]
-    platform_distributor_token_account: Box<Account<'info, TokenAccount>>,
+    platform_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -315,42 +315,42 @@ impl CreateBondingCurve<'_> {
         let mint_info = self.mint.to_account_info();
         let mint_authority_info = self.bonding_curve.to_account_info();
         if bonding_curve.creator_vested_supply > 0 {
-            // mint creator share to creator_distributor_token_account
+            // mint creator share to creator_vault_token_account
             mint_to(
                 CpiContext::new_with_signer(
                     self.token_program.to_account_info(),
                     MintTo {
                         authority: mint_authority_info.clone(),
-                        to: self.creator_distributor_token_account.to_account_info(),
+                        to: self.creator_vault_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
                     mint_auth_signer_seeds,
                 ),
                 bonding_curve.creator_vested_supply,
             )?;
-            self.creator_distributor.initial_vested_supply = bonding_curve.creator_vested_supply;
+            self.creator_vault.initial_vested_supply = bonding_curve.creator_vested_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.creator_vested_supply minted");
         }
 
         if bonding_curve.presale_supply > 0 {
-            // mint presale share to presale_distributor_token_account
+            // mint presale share to presale_vault_token_account
             mint_to(
                 CpiContext::new_with_signer(
                     self.token_program.to_account_info(),
                     MintTo {
                         authority: mint_authority_info.clone(),
-                        to: self.presale_distributor_token_account.to_account_info(),
+                        to: self.presale_vault_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
                     mint_auth_signer_seeds,
                 ),
                 bonding_curve.presale_supply,
             )?;
-            self.presale_distributor.initial_vested_supply = bonding_curve.presale_supply;
+            self.presale_vault.initial_vested_supply = bonding_curve.presale_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.presale_supply minted");
         }
         if bonding_curve.launch_brandkit_supply > 0 || bonding_curve.lifetime_brandkit_supply > 0 {
-            // mint brandkit share to brand_distributor_token_account
+            // mint brandkit share to brand_vault_token_account
             let amount =
                 bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply;
             mint_to(
@@ -358,34 +358,34 @@ impl CreateBondingCurve<'_> {
                     self.token_program.to_account_info(),
                     MintTo {
                         authority: mint_authority_info.clone(),
-                        to: self.brand_distributor_token_account.to_account_info(),
+                        to: self.brand_vault_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
                     mint_auth_signer_seeds,
                 ),
                 amount,
             )?;
-            self.brand_distributor.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
-            self.brand_distributor.lifetime_brandkit_supply =
+            self.brand_vault.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
+            self.brand_vault.lifetime_brandkit_supply =
                 bonding_curve.lifetime_brandkit_supply;
-            self.brand_distributor.initial_vested_supply = amount;
+            self.brand_vault.initial_vested_supply = amount;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
         }
         if bonding_curve.platform_supply > 0 {
-            // mint platform share to platform_distributor_token_account
+            // mint platform share to platform_vault_token_account
             mint_to(
                 CpiContext::new_with_signer(
                     self.token_program.to_account_info(),
                     MintTo {
                         authority: mint_authority_info.clone(),
-                        to: self.platform_distributor_token_account.to_account_info(),
+                        to: self.platform_vault_token_account.to_account_info(),
                         mint: mint_info.clone(),
                     },
                     mint_auth_signer_seeds,
                 ),
                 bonding_curve.platform_supply,
             )?;
-            self.platform_distributor.initial_vested_supply = bonding_curve.platform_supply;
+            self.platform_vault.initial_vested_supply = bonding_curve.platform_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
         }
         // mint tokens to bonding_curve_token_account
@@ -409,7 +409,7 @@ impl CreateBondingCurve<'_> {
     pub fn pay_launch_fee(&mut self) -> Result<()> {
         // transfer SOL to fee recipient
         // sender is signer, must go through system program
-        let fee_to = &self.platform_distributor;
+        let fee_to = &self.platform_vault;
         let fee_from = &self.creator;
         let fee_amount = self.global.launch_fee_lamports;
 

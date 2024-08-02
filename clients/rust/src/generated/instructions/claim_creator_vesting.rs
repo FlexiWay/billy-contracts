@@ -14,9 +14,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct ClaimCreatorVesting {
     pub creator: solana_program::pubkey::Pubkey,
 
-    pub creator_distributor: solana_program::pubkey::Pubkey,
+    pub creator_vault: solana_program::pubkey::Pubkey,
 
-    pub creator_distributor_token_account: solana_program::pubkey::Pubkey,
+    pub creator_vault_token_account: solana_program::pubkey::Pubkey,
 
     pub bonding_curve: solana_program::pubkey::Pubkey,
 
@@ -56,11 +56,11 @@ impl ClaimCreatorVesting {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.creator_distributor,
+            self.creator_vault,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.creator_distributor_token_account,
+            self.creator_vault_token_account,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -136,8 +136,8 @@ impl ClaimCreatorVestingInstructionData {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` creator
-///   1. `[writable]` creator_distributor
-///   2. `[writable]` creator_distributor_token_account
+///   1. `[writable]` creator_vault
+///   2. `[writable]` creator_vault_token_account
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` user_token_account
 ///   5. `[]` global
@@ -152,8 +152,8 @@ impl ClaimCreatorVestingInstructionData {
 #[derive(Default)]
 pub struct ClaimCreatorVestingBuilder {
     creator: Option<solana_program::pubkey::Pubkey>,
-    creator_distributor: Option<solana_program::pubkey::Pubkey>,
-    creator_distributor_token_account: Option<solana_program::pubkey::Pubkey>,
+    creator_vault: Option<solana_program::pubkey::Pubkey>,
+    creator_vault_token_account: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     user_token_account: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
@@ -178,19 +178,16 @@ impl ClaimCreatorVestingBuilder {
         self
     }
     #[inline(always)]
-    pub fn creator_distributor(
-        &mut self,
-        creator_distributor: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.creator_distributor = Some(creator_distributor);
+    pub fn creator_vault(&mut self, creator_vault: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.creator_vault = Some(creator_vault);
         self
     }
     #[inline(always)]
-    pub fn creator_distributor_token_account(
+    pub fn creator_vault_token_account(
         &mut self,
-        creator_distributor_token_account: solana_program::pubkey::Pubkey,
+        creator_vault_token_account: solana_program::pubkey::Pubkey,
     ) -> &mut Self {
-        self.creator_distributor_token_account = Some(creator_distributor_token_account);
+        self.creator_vault_token_account = Some(creator_vault_token_account);
         self
     }
     #[inline(always)]
@@ -282,12 +279,10 @@ impl ClaimCreatorVestingBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = ClaimCreatorVesting {
             creator: self.creator.expect("creator is not set"),
-            creator_distributor: self
-                .creator_distributor
-                .expect("creator_distributor is not set"),
-            creator_distributor_token_account: self
-                .creator_distributor_token_account
-                .expect("creator_distributor_token_account is not set"),
+            creator_vault: self.creator_vault.expect("creator_vault is not set"),
+            creator_vault_token_account: self
+                .creator_vault_token_account
+                .expect("creator_vault_token_account is not set"),
             bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
             user_token_account: self
                 .user_token_account
@@ -319,9 +314,9 @@ impl ClaimCreatorVestingBuilder {
 pub struct ClaimCreatorVestingCpiAccounts<'a, 'b> {
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator_vault: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -353,9 +348,9 @@ pub struct ClaimCreatorVestingCpi<'a, 'b> {
 
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator_vault: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -388,8 +383,8 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
         Self {
             __program: program,
             creator: accounts.creator,
-            creator_distributor: accounts.creator_distributor,
-            creator_distributor_token_account: accounts.creator_distributor_token_account,
+            creator_vault: accounts.creator_vault,
+            creator_vault_token_account: accounts.creator_vault_token_account,
             bonding_curve: accounts.bonding_curve,
             user_token_account: accounts.user_token_account,
             global: accounts.global,
@@ -442,11 +437,11 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.creator_distributor.key,
+            *self.creator_vault.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.creator_distributor_token_account.key,
+            *self.creator_vault_token_account.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -512,8 +507,8 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(14 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.creator.clone());
-        account_infos.push(self.creator_distributor.clone());
-        account_infos.push(self.creator_distributor_token_account.clone());
+        account_infos.push(self.creator_vault.clone());
+        account_infos.push(self.creator_vault_token_account.clone());
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.user_token_account.clone());
         account_infos.push(self.global.clone());
@@ -542,8 +537,8 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` creator
-///   1. `[writable]` creator_distributor
-///   2. `[writable]` creator_distributor_token_account
+///   1. `[writable]` creator_vault
+///   2. `[writable]` creator_vault_token_account
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` user_token_account
 ///   5. `[]` global
@@ -564,8 +559,8 @@ impl<'a, 'b> ClaimCreatorVestingCpiBuilder<'a, 'b> {
         let instruction = Box::new(ClaimCreatorVestingCpiBuilderInstruction {
             __program: program,
             creator: None,
-            creator_distributor: None,
-            creator_distributor_token_account: None,
+            creator_vault: None,
+            creator_vault_token_account: None,
             bonding_curve: None,
             user_token_account: None,
             global: None,
@@ -590,20 +585,19 @@ impl<'a, 'b> ClaimCreatorVestingCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn creator_distributor(
+    pub fn creator_vault(
         &mut self,
-        creator_distributor: &'b solana_program::account_info::AccountInfo<'a>,
+        creator_vault: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.creator_distributor = Some(creator_distributor);
+        self.instruction.creator_vault = Some(creator_vault);
         self
     }
     #[inline(always)]
-    pub fn creator_distributor_token_account(
+    pub fn creator_vault_token_account(
         &mut self,
-        creator_distributor_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        creator_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.creator_distributor_token_account =
-            Some(creator_distributor_token_account);
+        self.instruction.creator_vault_token_account = Some(creator_vault_token_account);
         self
     }
     #[inline(always)]
@@ -731,15 +725,15 @@ impl<'a, 'b> ClaimCreatorVestingCpiBuilder<'a, 'b> {
 
             creator: self.instruction.creator.expect("creator is not set"),
 
-            creator_distributor: self
+            creator_vault: self
                 .instruction
-                .creator_distributor
-                .expect("creator_distributor is not set"),
+                .creator_vault
+                .expect("creator_vault is not set"),
 
-            creator_distributor_token_account: self
+            creator_vault_token_account: self
                 .instruction
-                .creator_distributor_token_account
-                .expect("creator_distributor_token_account is not set"),
+                .creator_vault_token_account
+                .expect("creator_vault_token_account is not set"),
 
             bonding_curve: self
                 .instruction
@@ -791,8 +785,8 @@ impl<'a, 'b> ClaimCreatorVestingCpiBuilder<'a, 'b> {
 struct ClaimCreatorVestingCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     creator: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    creator_distributor: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    creator_distributor_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator_vault_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     user_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,

@@ -15,7 +15,7 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PlatformDistributor {
+pub struct PlatformVault {
     pub discriminator: [u8; 8],
     pub initial_vested_supply: u64,
     pub last_distribution: Option<i64>,
@@ -23,32 +23,28 @@ pub struct PlatformDistributor {
     pub fees_withdrawn: u64,
 }
 
-impl PlatformDistributor {
+impl PlatformVault {
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:
     ///
-    ///   0. `PlatformDistributor::PREFIX`
+    ///   0. `PlatformVault::PREFIX`
     ///   1. mint (`Pubkey`)
-    pub const PREFIX: &'static [u8] = "platform-distributor-data".as_bytes();
+    pub const PREFIX: &'static [u8] = "platform-vault".as_bytes();
 
     pub fn create_pda(
         mint: Pubkey,
         bump: u8,
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
-            &[
-                "platform-distributor-data".as_bytes(),
-                mint.as_ref(),
-                &[bump],
-            ],
+            &["platform-vault".as_bytes(), mint.as_ref(), &[bump]],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda(mint: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &["platform-distributor-data".as_bytes(), mint.as_ref()],
+            &["platform-vault".as_bytes(), mint.as_ref()],
             &crate::LMAOFUN_BONDING_CURVE_ID,
         )
     }
@@ -60,7 +56,7 @@ impl PlatformDistributor {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for PlatformDistributor {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for PlatformVault {
     type Error = std::io::Error;
 
     fn try_from(

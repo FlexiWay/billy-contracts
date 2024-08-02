@@ -13,8 +13,8 @@ import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners
 // Accounts.
 export type ClaimCreatorVestingInstructionAccounts = {
     creator: Signer;
-    creatorDistributor: PublicKey | Pda;
-    creatorDistributorTokenAccount: PublicKey | Pda;
+    creatorVault: PublicKey | Pda;
+    creatorVaultTokenAccount: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
     userTokenAccount: PublicKey | Pda;
     global: PublicKey | Pda;
@@ -52,8 +52,8 @@ export function claimCreatorVesting(
   // Accounts.
   const resolvedAccounts = {
           creator: { index: 0, isWritable: true as boolean, value: input.creator ?? null },
-          creatorDistributor: { index: 1, isWritable: true as boolean, value: input.creatorDistributor ?? null },
-          creatorDistributorTokenAccount: { index: 2, isWritable: true as boolean, value: input.creatorDistributorTokenAccount ?? null },
+          creatorVault: { index: 1, isWritable: true as boolean, value: input.creatorVault ?? null },
+          creatorVaultTokenAccount: { index: 2, isWritable: true as boolean, value: input.creatorVaultTokenAccount ?? null },
           bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
           userTokenAccount: { index: 4, isWritable: true as boolean, value: input.userTokenAccount ?? null },
           global: { index: 5, isWritable: false as boolean, value: input.global ?? null },

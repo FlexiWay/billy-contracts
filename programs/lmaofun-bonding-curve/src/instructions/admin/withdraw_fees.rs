@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 
-use crate::state::distributors::PlatformDistributor;
+use crate::state::vaults::PlatformVault;
 use crate::{errors::ContractError, events::WithdrawEvent};
 
 use crate::state::global::*;
@@ -26,10 +26,10 @@ pub struct WithdrawFees<'info> {
 
     #[account(
         mut,
-        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    platform_distributor: Box<Account<'info, PlatformDistributor>>,
+    platform_vault: Box<Account<'info, PlatformVault>>,
 
     system_program: Program<'info, System>,
 
@@ -42,11 +42,10 @@ impl WithdrawFees<'_> {
         // transer sol to withdraw authority from fee_vault account
 
         let clock = Clock::get()?;
-        let from = &mut ctx.accounts.platform_distributor;
+        let from = &mut ctx.accounts.platform_vault;
         let to = &ctx.accounts.authority;
 
-        let min_balance =
-            Rent::get()?.minimum_balance(8 + PlatformDistributor::INIT_SPACE as usize);
+        let min_balance = Rent::get()?.minimum_balance(8 + PlatformVault::INIT_SPACE as usize);
 
         let amount = from.get_lamports() - min_balance;
 
