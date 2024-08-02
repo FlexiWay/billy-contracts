@@ -22,7 +22,7 @@ pub struct Swap {
 
     pub bonding_curve_token_account: solana_program::pubkey::Pubkey,
 
-    pub bonding_curve_fee_vault: solana_program::pubkey::Pubkey,
+    pub platform_distributor: solana_program::pubkey::Pubkey,
 
     pub user_token_account: solana_program::pubkey::Pubkey,
 
@@ -72,7 +72,7 @@ impl Swap {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.bonding_curve_fee_vault,
+            self.platform_distributor,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -148,7 +148,7 @@ pub struct SwapInstructionArgs {
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` bonding_curve_token_account
-///   5. `[writable]` bonding_curve_fee_vault
+///   5. `[writable]` platform_distributor
 ///   6. `[writable]` user_token_account
 ///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   8. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
@@ -163,7 +163,7 @@ pub struct SwapBuilder {
     mint: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve_token_account: Option<solana_program::pubkey::Pubkey>,
-    bonding_curve_fee_vault: Option<solana_program::pubkey::Pubkey>,
+    platform_distributor: Option<solana_program::pubkey::Pubkey>,
     user_token_account: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     token_program: Option<solana_program::pubkey::Pubkey>,
@@ -210,11 +210,11 @@ impl SwapBuilder {
         self
     }
     #[inline(always)]
-    pub fn bonding_curve_fee_vault(
+    pub fn platform_distributor(
         &mut self,
-        bonding_curve_fee_vault: solana_program::pubkey::Pubkey,
+        platform_distributor: solana_program::pubkey::Pubkey,
     ) -> &mut Self {
-        self.bonding_curve_fee_vault = Some(bonding_curve_fee_vault);
+        self.platform_distributor = Some(platform_distributor);
         self
     }
     #[inline(always)]
@@ -306,9 +306,9 @@ impl SwapBuilder {
             bonding_curve_token_account: self
                 .bonding_curve_token_account
                 .expect("bonding_curve_token_account is not set"),
-            bonding_curve_fee_vault: self
-                .bonding_curve_fee_vault
-                .expect("bonding_curve_fee_vault is not set"),
+            platform_distributor: self
+                .platform_distributor
+                .expect("platform_distributor is not set"),
             user_token_account: self
                 .user_token_account
                 .expect("user_token_account is not set"),
@@ -353,7 +353,7 @@ pub struct SwapCpiAccounts<'a, 'b> {
 
     pub bonding_curve_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub user_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -385,7 +385,7 @@ pub struct SwapCpi<'a, 'b> {
 
     pub bonding_curve_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub user_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -417,7 +417,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             mint: accounts.mint,
             bonding_curve: accounts.bonding_curve,
             bonding_curve_token_account: accounts.bonding_curve_token_account,
-            bonding_curve_fee_vault: accounts.bonding_curve_fee_vault,
+            platform_distributor: accounts.platform_distributor,
             user_token_account: accounts.user_token_account,
             system_program: accounts.system_program,
             token_program: accounts.token_program,
@@ -483,7 +483,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.bonding_curve_fee_vault.key,
+            *self.platform_distributor.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -537,7 +537,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
         account_infos.push(self.mint.clone());
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve_token_account.clone());
-        account_infos.push(self.bonding_curve_fee_vault.clone());
+        account_infos.push(self.platform_distributor.clone());
         account_infos.push(self.user_token_account.clone());
         account_infos.push(self.system_program.clone());
         account_infos.push(self.token_program.clone());
@@ -566,7 +566,7 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
 ///   4. `[writable]` bonding_curve_token_account
-///   5. `[writable]` bonding_curve_fee_vault
+///   5. `[writable]` platform_distributor
 ///   6. `[writable]` user_token_account
 ///   7. `[]` system_program
 ///   8. `[]` token_program
@@ -587,7 +587,7 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
             mint: None,
             bonding_curve: None,
             bonding_curve_token_account: None,
-            bonding_curve_fee_vault: None,
+            platform_distributor: None,
             user_token_account: None,
             system_program: None,
             token_program: None,
@@ -637,11 +637,11 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn bonding_curve_fee_vault(
+    pub fn platform_distributor(
         &mut self,
-        bonding_curve_fee_vault: &'b solana_program::account_info::AccountInfo<'a>,
+        platform_distributor: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.bonding_curve_fee_vault = Some(bonding_curve_fee_vault);
+        self.instruction.platform_distributor = Some(platform_distributor);
         self
     }
     #[inline(always)]
@@ -789,10 +789,10 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
                 .bonding_curve_token_account
                 .expect("bonding_curve_token_account is not set"),
 
-            bonding_curve_fee_vault: self
+            platform_distributor: self
                 .instruction
-                .bonding_curve_fee_vault
-                .expect("bonding_curve_fee_vault is not set"),
+                .platform_distributor
+                .expect("platform_distributor is not set"),
 
             user_token_account: self
                 .instruction
@@ -838,7 +838,7 @@ struct SwapCpiBuilderInstruction<'a, 'b> {
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    bonding_curve_fee_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    platform_distributor: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     user_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,

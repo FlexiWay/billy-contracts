@@ -139,11 +139,6 @@
           "isSigner": false
         },
         {
-          "name": "platformAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
@@ -160,11 +155,6 @@
         },
         {
           "name": "bondingCurveTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -257,7 +247,7 @@
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -401,7 +391,7 @@
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -435,24 +425,6 @@
     }
   ],
   "accounts": [
-    {
-      "name": "BondingCurveFeeVault",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lastWithdrawTime",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "totalWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "BondingCurve",
       "type": {
@@ -605,6 +577,16 @@
             "type": {
               "option": "i64"
             }
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }

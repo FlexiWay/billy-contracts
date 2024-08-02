@@ -11,6 +11,7 @@ use crate::{
     events::*,
     state::{
         bonding_curve::{self, *},
+        distributors::PlatformDistributor,
         global::*,
     },
 };
@@ -54,14 +55,12 @@ pub struct Swap<'info> {
         associated_token::authority = bonding_curve,
     )]
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
-
     #[account(
         mut,
-        seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
-
+    platform_distributor: Box<Account<'info, PlatformDistributor>>,
     #[account(
         init_if_needed,
         payer = user,
@@ -281,7 +280,7 @@ impl Swap<'_> {
         // Transfer SOL to fee recipient
         let fee_transfer_instruction = system_instruction::transfer(
             ctx.accounts.user.key,
-            &ctx.accounts.bonding_curve_fee_vault.key(),
+            &ctx.accounts.platform_distributor.key(),
             fee_lamports,
         );
 
@@ -289,12 +288,12 @@ impl Swap<'_> {
             &fee_transfer_instruction,
             &[
                 ctx.accounts.user.to_account_info(),
-                ctx.accounts.bonding_curve_fee_vault.to_account_info(),
+                ctx.accounts.platform_distributor.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
             &[],
         )?;
-        msg!("Fee transfer to bonding_curve_fee_vault complete");
+        msg!("Fee transfer to platform_distributor complete");
 
         Ok(())
     }
@@ -349,10 +348,10 @@ impl Swap<'_> {
             .sub_lamports(fee_lamports)
             .unwrap();
         ctx.accounts
-            .bonding_curve_fee_vault
+            .platform_distributor
             .add_lamports(fee_lamports)
             .unwrap();
-        msg!("Fee to bonding_curve_fee_vault transfer complete");
+        msg!("Fee to platform_distributor transfer complete");
         Ok(())
     }
 }

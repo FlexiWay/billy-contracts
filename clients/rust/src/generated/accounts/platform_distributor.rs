@@ -19,6 +19,8 @@ pub struct PlatformDistributor {
     pub discriminator: [u8; 8],
     pub initial_vested_supply: u64,
     pub last_distribution: Option<i64>,
+    pub last_fee_withdrawal: Option<i64>,
+    pub fees_withdrawn: u64,
 }
 
 impl PlatformDistributor {

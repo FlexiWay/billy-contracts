@@ -39,7 +39,6 @@ import {
   createBondingCurve,
   safeFetchBondingCurve,
   fetchBondingCurve,
-  findBondingCurveFeeVaultPda,
   findBondingCurvePda,
   withdrawFees,
   swap,
@@ -251,7 +250,7 @@ let evtAuthorityAccs: {
 };
 
 const GLOBAL_STARTING_BALANCE_INT = 1524240; // cant getMinimumBalanceForRentExemption on bankrun
-
+const PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT = 1183200;
 const loadKeypairs = async (umi) => {
   amman.addr.addLabel("master", umi.identity.publicKey);
 
@@ -379,12 +378,7 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
-      umi,
-      {
-        mint: simpleMintKp.publicKey,
-      }
-    );
+
     const metadataPda = await findMetadataPda(umi, {
       mint: simpleMintKp.publicKey,
     });
@@ -449,7 +443,6 @@ describe("lmaofun-bonding", () => {
 
       bondingCurve: simpleMintBondingCurvePda[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
-      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
 
       creatorDistributor: creatorDistributor[0],
       creatorDistributorTokenAccount: creatorDistributorTknAcc[0],
@@ -460,7 +453,6 @@ describe("lmaofun-bonding", () => {
       brandAuthority: creator.publicKey,
       brandDistributor: brandDistributor[0],
       brandDistributorTokenAccount: brandDistributorTknAcc[0],
-      platformAuthority: creator.publicKey,
       platformDistributor: platformDistributor[0],
       platformDistributorTokenAccount: platformDistributorTknAcc[0],
 
@@ -504,12 +496,9 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
-      umi,
-      {
-        mint: simpleMintKp.publicKey,
-      }
-    );
+    const platformDistributor = await findPlatformDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
     const traderAta = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
       owner: traderSigner.publicKey,
@@ -544,10 +533,9 @@ describe("lmaofun-bonding", () => {
 
       mint: simpleMintKp.publicKey,
       bondingCurve: simpleMintBondingCurvePda[0],
-      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
-
+      platformDistributor: platformDistributor[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
@@ -595,12 +583,9 @@ describe("lmaofun-bonding", () => {
       mint: simpleMintKp.publicKey,
       owner: simpleMintBondingCurvePda[0],
     });
-    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
-      umi,
-      {
-        mint: simpleMintKp.publicKey,
-      }
-    );
+    const platformDistributor = await findPlatformDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
     const traderAta = await findAssociatedTokenPda(umi, {
       mint: simpleMintKp.publicKey,
       owner: traderSigner.publicKey,
@@ -650,10 +635,9 @@ describe("lmaofun-bonding", () => {
 
       mint: simpleMintKp.publicKey,
       bondingCurve: simpleMintBondingCurvePda[0],
-      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
       bondingCurveTokenAccount: simpleMintBondingCurveTknAcc[0],
       userTokenAccount: traderAta[0],
-
+      platformDistributor: platformDistributor[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       associatedTokenProgram: SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
       ...evtAuthorityAccs,
@@ -706,21 +690,19 @@ describe("lmaofun-bonding", () => {
   });
 
   it("withdraw_fees using withdraw_authority", async () => {
-    const globalBalanceInt = await getBalance(umi, globalPda[0]);
-    const startingBalance = GLOBAL_STARTING_BALANCE_INT;
-    const accruedFees = Number(globalBalanceInt) - startingBalance;
-    const simpleMintBondingCurveFeeVault = await findBondingCurveFeeVaultPda(
-      umi,
-      {
-        mint: simpleMintKp.publicKey,
-      }
-    );
+    const platformDistributor = await findPlatformDistributorPda(umi, {
+      mint: simpleMintKp.publicKey,
+    });
+    const feeBalanceInt_total = await getBalance(umi, platformDistributor[0]);
+    console.log("feeBalanceInt_total", feeBalanceInt_total);
+    const startingBalance = PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT;
+    const accruedFees = Number(feeBalanceInt_total) - startingBalance;
     assert(accruedFees > 0);
     const txBuilder = withdrawFees(umi, {
       global: globalPda[0],
       authority: createSignerFromKeypair(umi, withdrawAuthority),
-      bondingCurveFeeVault: simpleMintBondingCurveFeeVault[0],
       mint: simpleMintKp.publicKey,
+      platformDistributor: platformDistributor[0],
       clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
       ...evtAuthorityAccs,
     });
@@ -742,11 +724,11 @@ describe("lmaofun-bonding", () => {
       withdrawAuthority: withdrawAuthority.publicKey,
     });
 
-    const globalBalancePost = await getBalance(umi, globalPda[0]);
-    const globalBalanceIntPost = Number(globalBalancePost);
-    console.log("globalBalanceIntPost", globalBalanceIntPost);
+    const feeBalancePost = await getBalance(umi, platformDistributor[0]);
+    const feeBalancePost_int = Number(feeBalancePost);
+    console.log("feeBalancePost_int", feeBalancePost_int);
     console.log("startingBalance", startingBalance);
-    assert(globalBalanceIntPost == startingBalance);
+    assert(feeBalancePost_int == startingBalance);
   });
 
   it("set_params: status:Running", async () => {
@@ -907,7 +889,7 @@ describe("lmaofun-bonding", () => {
       creatorDistributorData.lastDistribution
     );
 
-    const secondToJumpTo = lastDistribution + BigInt(24 * 60 * 60);
+    const secondToJumpTo = Number(lastDistribution) + Number(24 * 60 * 60);
 
     const currentClock = await bankrunClient.getClock();
     bankrunContext.setClock(
@@ -916,7 +898,7 @@ describe("lmaofun-bonding", () => {
         currentClock.epochStartTimestamp,
         currentClock.epoch,
         currentClock.leaderScheduleEpoch,
-        secondToJumpTo
+        BigInt(secondToJumpTo)
       )
     );
 
@@ -942,7 +924,7 @@ describe("lmaofun-bonding", () => {
     );
     assert(
       unwrapOption(creatorDistributorDataPost.lastDistribution) ==
-        secondToJumpTo
+        BigInt(secondToJumpTo)
     );
   });
 });

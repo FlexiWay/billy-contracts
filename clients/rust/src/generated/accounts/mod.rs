@@ -6,7 +6,6 @@
 //!
 
 pub(crate) mod r#bonding_curve;
-pub(crate) mod r#bonding_curve_fee_vault;
 pub(crate) mod r#brand_distributor;
 pub(crate) mod r#creator_distributor;
 pub(crate) mod r#global;
@@ -14,7 +13,6 @@ pub(crate) mod r#platform_distributor;
 pub(crate) mod r#presale_distributor;
 
 pub use self::r#bonding_curve::*;
-pub use self::r#bonding_curve_fee_vault::*;
 pub use self::r#brand_distributor::*;
 pub use self::r#creator_distributor::*;
 pub use self::r#global::*;

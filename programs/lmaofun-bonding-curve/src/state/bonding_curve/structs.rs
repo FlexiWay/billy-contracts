@@ -29,12 +29,6 @@ pub struct SellResult {
     pub token_amount: u64,
     pub sol_amount: u64,
 }
-#[account]
-#[derive(InitSpace, Debug, Default)]
-pub struct BondingCurveFeeVault {
-    pub last_withdraw_time: Option<i64>,
-    pub total_withdrawn: u64,
-}
 
 #[account]
 #[derive(InitSpace, Debug, Default)]

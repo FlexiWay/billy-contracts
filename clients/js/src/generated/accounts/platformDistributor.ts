@@ -12,13 +12,13 @@ import { Serializer, array, i64, mapSerializer, option, publicKey as publicKeySe
   
   export type PlatformDistributor = Account<PlatformDistributorAccountData>;
 
-  export type PlatformDistributorAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: Option<bigint>;  };
+  export type PlatformDistributorAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: Option<bigint>; lastFeeWithdrawal: Option<bigint>; feesWithdrawn: bigint;  };
 
-export type PlatformDistributorAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: OptionOrNullable<number | bigint>;  };
+export type PlatformDistributorAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: OptionOrNullable<number | bigint>; lastFeeWithdrawal: OptionOrNullable<number | bigint>; feesWithdrawn: number | bigint;  };
 
 
   export function getPlatformDistributorAccountDataSerializer(): Serializer<PlatformDistributorAccountDataArgs, PlatformDistributorAccountData> {
-  return mapSerializer<PlatformDistributorAccountDataArgs, any, PlatformDistributorAccountData>(struct<PlatformDistributorAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', option(i64())]], { description: 'PlatformDistributorAccountData' }), (value) => ({ ...value, discriminator: [4, 160, 37, 100, 176, 114, 174, 209] }) ) as Serializer<PlatformDistributorAccountDataArgs, PlatformDistributorAccountData>;
+  return mapSerializer<PlatformDistributorAccountDataArgs, any, PlatformDistributorAccountData>(struct<PlatformDistributorAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', option(i64())], ['lastFeeWithdrawal', option(i64())], ['feesWithdrawn', u64()]], { description: 'PlatformDistributorAccountData' }), (value) => ({ ...value, discriminator: [4, 160, 37, 100, 176, 114, 174, 209] }) ) as Serializer<PlatformDistributorAccountDataArgs, PlatformDistributorAccountData>;
 }
 
 
@@ -73,7 +73,7 @@ export async function safeFetchAllPlatformDistributor(
 export function getPlatformDistributorGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint> }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())] })
+    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint>, 'lastFeeWithdrawal': OptionOrNullable<number | bigint>, 'feesWithdrawn': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())], 'lastFeeWithdrawal': [null, option(i64())], 'feesWithdrawn': [null, u64()] })
     .deserializeUsing<PlatformDistributor>((account) => deserializePlatformDistributor(account))      .whereField('discriminator', [4, 160, 37, 100, 176, 114, 174, 209])
     ;
 }

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 
-use crate::state::bonding_curve::BondingCurveFeeVault;
+use crate::state::distributors::PlatformDistributor;
 use crate::{errors::ContractError, events::WithdrawEvent};
 
 use crate::state::global::*;
@@ -26,10 +26,10 @@ pub struct WithdrawFees<'info> {
 
     #[account(
         mut,
-        seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+        seeds = [PlatformDistributor::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
+    platform_distributor: Box<Account<'info, PlatformDistributor>>,
 
     system_program: Program<'info, System>,
 
@@ -42,22 +42,24 @@ impl WithdrawFees<'_> {
         // transer sol to withdraw authority from fee_vault account
 
         let clock = Clock::get()?;
-        let from = &mut ctx.accounts.bonding_curve_fee_vault;
+        let from = &mut ctx.accounts.platform_distributor;
         let to = &ctx.accounts.authority;
 
         let min_balance =
-            Rent::get()?.minimum_balance(8 + BondingCurveFeeVault::INIT_SPACE as usize);
+            Rent::get()?.minimum_balance(8 + PlatformDistributor::INIT_SPACE as usize);
 
         let amount = from.get_lamports() - min_balance;
+
+        msg!("min_balance:{}, amount:{}", min_balance, amount);
         require_gt!(amount, 0, ContractError::NoFeesToWithdraw);
 
         // sender is PDA, can use lamport utilities
         from.sub_lamports(amount)?;
         to.add_lamports(amount)?;
 
-        let prev_withdraw_time = from.last_withdraw_time.unwrap_or(0);
-        from.last_withdraw_time = Some(clock.unix_timestamp);
-        from.total_withdrawn += amount;
+        let prev_withdraw_time = from.last_fee_withdrawal.unwrap_or(0);
+        from.last_fee_withdrawal = Some(clock.unix_timestamp);
+        from.fees_withdrawn += amount;
 
         emit_cpi!(WithdrawEvent {
             withdraw_authority: ctx.accounts.authority.key(),
@@ -65,10 +67,10 @@ impl WithdrawFees<'_> {
             fee_vault: from.key(),
 
             withdrawn: amount,
-            total_withdrawn: from.total_withdrawn,
+            total_withdrawn: from.fees_withdrawn,
 
             previous_withdraw_time: prev_withdraw_time,
-            new_withdraw_time: from.last_withdraw_time.unwrap(),
+            new_withdraw_time: from.last_fee_withdrawal.unwrap(),
         });
 
         Ok(())

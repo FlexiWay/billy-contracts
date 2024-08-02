@@ -86,9 +86,6 @@ pub struct CreateBondingCurve<'info> {
     )]
     brand_distributor_token_account: Box<Account<'info, TokenAccount>>,
 
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account()]
-    platform_authority: UncheckedAccount<'info>,
     #[account(
         init,
         payer = creator,
@@ -122,15 +119,14 @@ pub struct CreateBondingCurve<'info> {
     )]
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
 
-    #[account(
-        init,
-        payer = creator,
-        seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        bump,
-        space = 8 + BondingCurveFeeVault::INIT_SPACE
-    )]
-    bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
-
+    // #[account(
+    //     init,
+    //     payer = creator,
+    //     seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
+    //     bump,
+    //     space = 8 + BondingCurveFeeVault::INIT_SPACE
+    // )]
+    // bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
     #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ContractError::NotInitialized,
@@ -204,7 +200,7 @@ impl CreateBondingCurve<'_> {
             self.mint.key(),
             self.creator.key(),
             self.brand_authority.key(),
-            self.platform_authority.key(),
+            self.global.withdraw_authority.key(),
             &params,
             &clock,
             0,
@@ -233,7 +229,7 @@ impl CreateBondingCurve<'_> {
             ctx.accounts.mint.key(),
             ctx.accounts.creator.key(),
             ctx.accounts.brand_authority.key(),
-            ctx.accounts.platform_authority.key(),
+            ctx.accounts.global.withdraw_authority.key(),
             &params,
             &clock,
             ctx.bumps.bonding_curve,
@@ -413,7 +409,7 @@ impl CreateBondingCurve<'_> {
     pub fn pay_launch_fee(&mut self) -> Result<()> {
         // transfer SOL to fee recipient
         // sender is signer, must go through system program
-        let fee_to = &self.bonding_curve_fee_vault;
+        let fee_to = &self.platform_distributor;
         let fee_from = &self.creator;
         let fee_amount = self.global.launch_fee_lamports;
 

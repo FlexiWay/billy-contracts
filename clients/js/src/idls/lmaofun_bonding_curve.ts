@@ -139,11 +139,6 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
@@ -160,11 +155,6 @@ export type LmaofunBondingCurve = {
         },
         {
           "name": "bondingCurveTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -257,7 +247,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -401,7 +391,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -435,24 +425,6 @@ export type LmaofunBondingCurve = {
     }
   ],
   "accounts": [
-    {
-      "name": "bondingCurveFeeVault",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lastWithdrawTime",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "totalWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "bondingCurve",
       "type": {
@@ -605,6 +577,16 @@ export type LmaofunBondingCurve = {
             "type": {
               "option": "i64"
             }
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }
@@ -1429,11 +1411,6 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
@@ -1450,11 +1427,6 @@ export const IDL: LmaofunBondingCurve = {
         },
         {
           "name": "bondingCurveTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bondingCurveFeeVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1547,7 +1519,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -1691,7 +1663,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveFeeVault",
+          "name": "platformDistributor",
           "isMut": true,
           "isSigner": false
         },
@@ -1725,24 +1697,6 @@ export const IDL: LmaofunBondingCurve = {
     }
   ],
   "accounts": [
-    {
-      "name": "bondingCurveFeeVault",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lastWithdrawTime",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "totalWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "bondingCurve",
       "type": {
@@ -1895,6 +1849,16 @@ export const IDL: LmaofunBondingCurve = {
             "type": {
               "option": "i64"
             }
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }

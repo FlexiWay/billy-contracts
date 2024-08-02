@@ -30,12 +30,6 @@ kinobi.update(
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },
-    bondingCurveFeeVault: {
-      seeds: [
-        k.constantPdaSeedNodeFromString("bonding-curve-fee-vault"),
-        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
-      ],
-    },
     brandDistributor: {
       seeds: [
         k.constantPdaSeedNodeFromString("brand-distributor-data"),
