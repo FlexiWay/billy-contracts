@@ -165,13 +165,18 @@ impl Swap<'_> {
 
             msg!("BuyResult: {:#?}", buy_result);
 
+            Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
+
+            let bonding_curve_total_lamports = ctx.accounts.bonding_curve.get_lamports();
+            let min_balance = Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
+            let bonding_curve_pool_lamports = bonding_curve_total_lamports - min_balance;
+
             // can be completed only after a buy
-            if ctx.accounts.bonding_curve.real_token_reserves == 0 {
+            if bonding_curve_pool_lamports >= ctx.accounts.bonding_curve.sol_launch_threshold {
                 // has been completed
                 ctx.accounts.bonding_curve.complete = true;
                 locker.revoke_freeze_authority()?;
             }
-            Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
 
         BondingCurve::invariant(
