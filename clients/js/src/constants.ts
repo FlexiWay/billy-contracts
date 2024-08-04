@@ -27,12 +27,15 @@ export const SIMPLE_DEFAULT_BONDING_CURVE_PRESET:CreateBondingCurveInstructionAr
     symbol: "SBC",
     uri: "https://www.simpleBondingCurve.com",
     vestingTerms: none(),
-    // startTime: Date.now(),
     startTime: none(),
     tokenTotalSupply: DEFAULT_TOKEN_SUPPLY,
+
     solLaunchThreshold: 300 *LAMPORTS_PER_SOL,
+
+    // THESE WILL BE REMOVED FROM PARAMS
     virtualTokenMultiplierBps : VIRTUAL_TOKEN_MULTIPLIER_BPS,
     virtualSolReserves: 30 * LAMPORTS_PER_SOL,
+
     allocation: INIT_ALLOCATIONS_PCS,
 
 }

@@ -44,8 +44,9 @@ impl WithdrawFees<'_> {
         let clock = Clock::get()?;
         let from = &mut ctx.accounts.platform_vault;
         let to = &ctx.accounts.authority;
-
-        let min_balance = Rent::get()?.minimum_balance(8 + PlatformVault::INIT_SPACE as usize);
+        let vault_size = 8 + PlatformVault::INIT_SPACE as usize;
+        msg!("vault_size: {}", vault_size);
+        let min_balance = Rent::get()?.minimum_balance(vault_size);
 
         let amount = from.get_lamports() - min_balance;
 
@@ -56,8 +57,8 @@ impl WithdrawFees<'_> {
         from.sub_lamports(amount)?;
         to.add_lamports(amount)?;
 
-        let prev_withdraw_time = from.last_fee_withdrawal.unwrap_or(0);
-        from.last_fee_withdrawal = Some(clock.unix_timestamp);
+        let prev_withdraw_time = from.last_fee_withdrawal;
+        from.last_fee_withdrawal = clock.unix_timestamp;
         from.fees_withdrawn += amount;
 
         emit_cpi!(WithdrawEvent {
@@ -69,7 +70,7 @@ impl WithdrawFees<'_> {
             total_withdrawn: from.fees_withdrawn,
 
             previous_withdraw_time: prev_withdraw_time,
-            new_withdraw_time: from.last_fee_withdrawal.unwrap(),
+            new_withdraw_time: from.last_fee_withdrawal,
         });
 
         Ok(())

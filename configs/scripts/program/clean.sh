@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-OUTPUT="./programs/.bin"
+OUTPUT="./.programsBin"
 # go to parent folder
 cd $(dirname $(dirname $(dirname ${SCRIPT_DIR})))
 

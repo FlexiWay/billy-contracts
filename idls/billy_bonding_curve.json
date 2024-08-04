@@ -316,7 +316,7 @@
         },
         {
           "name": "bondingCurve",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -582,9 +582,7 @@
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           }
         ]
       }
@@ -612,15 +610,11 @@
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "lastFeeWithdrawal",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "feesWithdrawn",

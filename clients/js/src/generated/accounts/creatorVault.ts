@@ -6,19 +6,19 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Account, Context, Option, OptionOrNullable, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, i64, mapSerializer, option, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
+import { Serializer, array, i64, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 
   
   export type CreatorVault = Account<CreatorVaultAccountData>;
 
-  export type CreatorVaultAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: Option<bigint>;  };
+  export type CreatorVaultAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: bigint;  };
 
-export type CreatorVaultAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: OptionOrNullable<number | bigint>;  };
+export type CreatorVaultAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: number | bigint;  };
 
 
   export function getCreatorVaultAccountDataSerializer(): Serializer<CreatorVaultAccountDataArgs, CreatorVaultAccountData> {
-  return mapSerializer<CreatorVaultAccountDataArgs, any, CreatorVaultAccountData>(struct<CreatorVaultAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', option(i64())]], { description: 'CreatorVaultAccountData' }), (value) => ({ ...value, discriminator: [200, 135, 38, 98, 35, 236, 238, 12] }) ) as Serializer<CreatorVaultAccountDataArgs, CreatorVaultAccountData>;
+  return mapSerializer<CreatorVaultAccountDataArgs, any, CreatorVaultAccountData>(struct<CreatorVaultAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', i64()]], { description: 'CreatorVaultAccountData' }), (value) => ({ ...value, discriminator: [200, 135, 38, 98, 35, 236, 238, 12] }) ) as Serializer<CreatorVaultAccountDataArgs, CreatorVaultAccountData>;
 }
 
 
@@ -73,11 +73,14 @@ export async function safeFetchAllCreatorVault(
 export function getCreatorVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint> }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())] })
+    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, i64()] })
     .deserializeUsing<CreatorVault>((account) => deserializeCreatorVault(account))      .whereField('discriminator', [200, 135, 38, 98, 35, 236, 238, 12])
     ;
 }
 
+export function getCreatorVaultSize(): number {
+  return 24;
+}
 
 export function findCreatorVaultPda(
   context: Pick<Context, 'eddsa' | 'programs'>,

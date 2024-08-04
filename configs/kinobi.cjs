@@ -21,6 +21,18 @@ const MINT_NODE_DESC = "The mint of the bonding curve tkn";
 // Update accounts.
 kinobi.update(
   new k.updateAccountsVisitor({
+    platformVault: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("platform-vault"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
+    creatorVault: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("creator-vault"),
+        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
+      ],
+    },
     global: {
       seeds: [k.constantPdaSeedNodeFromString("global")],
     },
@@ -33,18 +45,6 @@ kinobi.update(
     brandVault: {
       seeds: [
         k.constantPdaSeedNodeFromString("brand-vault"),
-        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
-      ],
-    },
-    platformVault: {
-      seeds: [
-        k.constantPdaSeedNodeFromString("platform-vault"),
-        k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
-      ],
-    },
-    creatorVault: {
-      seeds: [
-        k.constantPdaSeedNodeFromString("creator-vault"),
         k.variablePdaSeedNode("mint", k.publicKeyTypeNode(), MINT_NODE_DESC),
       ],
     },

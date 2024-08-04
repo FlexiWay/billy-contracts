@@ -316,7 +316,7 @@ export type BillyBondingCurve = {
         },
         {
           "name": "bondingCurve",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -582,9 +582,7 @@ export type BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           }
         ]
       }
@@ -612,15 +610,11 @@ export type BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "lastFeeWithdrawal",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "feesWithdrawn",
@@ -1588,7 +1582,7 @@ export const IDL: BillyBondingCurve = {
         },
         {
           "name": "bondingCurve",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1854,9 +1848,7 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           }
         ]
       }
@@ -1884,15 +1876,11 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "lastFeeWithdrawal",
-            "type": {
-              "option": "i64"
-            }
+            "type": "i64"
           },
           {
             "name": "feesWithdrawn",

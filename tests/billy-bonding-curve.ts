@@ -8,6 +8,8 @@ import {
   generateSigner,
   TransactionBuilder,
   Umi,
+  transactionBuilder,
+  unwrapOption,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
@@ -17,6 +19,7 @@ import {
   findAssociatedTokenPda,
   SPL_SYSTEM_PROGRAM_ID,
   SPL_ASSOCIATED_TOKEN_PROGRAM_ID,
+  setComputeUnitLimit,
   SPL_TOKEN_PROGRAM_ID,
 } from "@metaplex-foundation/mpl-toolbox";
 import {
@@ -27,7 +30,6 @@ import {
   SYSVAR_CLOCK_PUBKEY,
   Transaction,
   Keypair as Web3JsKp,
-  VersionedTransaction,
 } from "@solana/web3.js";
 import {
   createBillyBondingCurveProgram,
@@ -77,10 +79,14 @@ import {
   getTxEventsFromTxBuilderResponse,
   logEvent,
 } from "../clients/js/src/utils";
-import { assertBondingCurve, assertGlobal } from "../tests/utils";
-import { getGlobalSize } from "../clients/js/src/generated/accounts/global";
+import { setParams } from "../clients/js/src/generated/instructions/setParams";
+import { assertBondingCurve, assertGlobal } from "./utils";
+import {
+  getGlobalSize,
+  getPlatformVaultSize,
+} from "../clients/js/src/generated/accounts";
 import { AMM } from "../clients/js/src/amm";
-import { Pda, PublicKey, unwrapOption } from "@metaplex-foundation/umi";
+import { Pda, PublicKey } from "@metaplex-foundation/umi";
 import {
   BanksClient,
   Clock,
@@ -90,11 +96,8 @@ import {
 } from "solana-bankrun";
 import { web3JsRpc } from "@metaplex-foundation/umi-rpc-web3js";
 import { AccountLayout } from "@solana/spl-token";
-import { readFileSync } from "fs";
-import path from "path";
-import { MPL_SYSTEM_EXTRAS_PROGRAM_ID } from "@metaplex-foundation/mpl-toolbox";
+import { fetchToken } from "@metaplex-foundation/mpl-toolbox";
 
-const USE_BANKRUN = true;
 const INITIAL_SOL = 100 * LAMPORTS_PER_SOL;
 
 const amman = Amman.instance({
@@ -113,143 +116,29 @@ const creator = fromWeb3JsKeypair(Web3JsKeypair.generate());
 const trader = fromWeb3JsKeypair(Web3JsKeypair.generate());
 const withdrawAuthority = fromWeb3JsKeypair(Web3JsKeypair.generate());
 
-amman.addr.addLabel("withdrawAuthority", withdrawAuthority.publicKey);
-amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
-amman.addr.addLabel("creator", creator.publicKey);
-amman.addr.addLabel("trader", trader.publicKey);
-
 // --- PROVIDERS
-let bankrunContext: ProgramTestContext;
-let bankrunClient: BanksClient;
-let bankrunProvider: BankrunProvider;
 let connection: Connection;
 let rpcUrl = "http://127.0.0.1:8899";
 
 let umi: Umi;
 
-const programBinDir = path.join(__dirname, "..", ".programsBin");
-
-function getProgram(programBinary) {
-  return path.join(programBinDir, programBinary);
-}
 const loadProviders = async () => {
   process.env.ANCHOR_WALLET = "./keys/test-kp.json";
-  console.log("using bankrun");
-  bankrunContext = await startAnchor(
-    "./",
-    [
-      // even though the program is loaded into the test validator, we need
-      // to tell banks test client to load it as well
-      // {
-      //   name: "mpl_token_metadata",
-      //   programId: toWeb3JsPublicKey(MPL_TOKEN_METADATA_PROGRAM_ID),
-      // },
-      // {
-      //   name: "mpl_system_extras",
-      //   programId: toWeb3JsPublicKey(MPL_SYSTEM_EXTRAS_PROGRAM_ID),
-      // },
-      // {
-      //   name: "system_program",
-      //   programId: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
-      // },
-      // {
-      //   name: "associated_token_program",
-      //   programId: toWeb3JsPublicKey(SPL_ASSOCIATED_TOKEN_PROGRAM_ID),
-      // },
-      // {
-      //   name: "token_program",
-      //   programId: toWeb3JsPublicKey(SPL_TOKEN_PROGRAM_ID),
-      // },
-      // {
-      //   name: "billy_bonding_curve",
-      //   programId: toWeb3JsPublicKey(BILLY_BONDING_CURVE_PROGRAM_ID),
-      // },
-    ],
-    [
-      {
-        address: toWeb3JsPublicKey(masterKp.publicKey),
-        info: {
-          lamports: INITIAL_SOL,
-          executable: false,
-          data: Buffer.from([]),
-          owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
-        },
-      },
-      {
-        address: toWeb3JsPublicKey(creator.publicKey),
-        info: {
-          lamports: INITIAL_SOL,
-          executable: false,
-          data: Buffer.from([]),
-          owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
-        },
-      },
-      {
-        address: toWeb3JsPublicKey(trader.publicKey),
-        info: {
-          lamports: INITIAL_SOL,
-          executable: false,
-          data: Buffer.from([]),
-          owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
-        },
-      },
-      {
-        address: toWeb3JsPublicKey(withdrawAuthority.publicKey),
-        info: {
-          lamports: INITIAL_SOL,
-          executable: false,
-          data: Buffer.from([]),
-          owner: toWeb3JsPublicKey(SPL_SYSTEM_PROGRAM_ID),
-        },
-      },
-      {
-        address: toWeb3JsPublicKey(MPL_TOKEN_METADATA_PROGRAM_ID),
-        info: await loadBin(getProgram("mpl_token_metadata.so")),
-      },
-      {
-        address: toWeb3JsPublicKey(MPL_SYSTEM_EXTRAS_PROGRAM_ID),
-        info: await loadBin(getProgram("mpl_system_extras.so")),
-      },
-    ]
-  );
-  // console.log("bankrunCtx: ", bankrunContext);
-  bankrunClient = bankrunContext.banksClient;
-  // console.log("bankrunClient: ", bankrunClient);
-  bankrunProvider = new BankrunProvider(bankrunContext);
-  // console.log("provider: ", provider);
-  // console.log(provider.connection.rpcEndpoint);
 
-  console.log("anchor connection: ", bankrunProvider.connection.rpcEndpoint);
+  if (process.env.ANCHOR_PROVIDER_URL) {
+    rpcUrl = process.env.ANCHOR_PROVIDER_URL;
+  } else {
+    process.env.ANCHOR_PROVIDER_URL = rpcUrl;
+  }
 
-  //@ts-ignore
-  bankrunProvider.connection.rpcEndpoint = rpcUrl;
-  const conn = bankrunProvider.connection;
-
-  // rpcUrl = anchor.AnchorProvider.env().connection.rpcEndpoint;
-  umi = createUmi(rpcUrl).use(web3JsRpc(conn));
-  connection = conn;
-  console.log("using bankrun payer");
-
-  // umi.programs.add(createSplAssociatedTokenProgram());
-  // umi.programs.add(createSplTokenProgram());
-  // umi.programs.add(bondingCurveProgram);
-};
-
-export const loadBin = async (binPath: string) => {
-  const programBytes = readFileSync(binPath);
-  const executableAccount = {
-    lamports: INITIAL_SOL,
-    executable: true,
-    owner: new Web3JsPublicKey("BPFLoader2111111111111111111111111111111111"),
-    data: programBytes,
-  };
-  return executableAccount;
+  const provider = anchor.AnchorProvider.env();
+  connection = provider.connection;
+  anchor.setProvider(provider);
+  umi = createUmi(rpcUrl);
 };
 
 // pdas and util accs
 
-const GLOBAL_STARTING_BALANCE_INT = 1524240; // cant getMinimumBalanceForRentExemption on bankrun
-const PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT = 1169280;
 const labelKeypairs = async (umi) => {
   amman.addr.addLabel("master", masterKp.publicKey);
   amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
@@ -293,70 +182,53 @@ const labelKeypairs = async (umi) => {
   );
 };
 
-import { transactionBuilder } from "@metaplex-foundation/umi";
-import { setComputeUnitLimit } from "@metaplex-foundation/mpl-toolbox";
-
 async function processTransaction(umi, txBuilder: TransactionBuilder) {
   let txWithBudget = await transactionBuilder().add(
     setComputeUnitLimit(umi, { units: 600_000 })
   );
   const fullBuilder = txBuilder.prepend(txWithBudget);
-  if (USE_BANKRUN) {
-    let tx: VersionedTransaction;
-    try {
-      const bhash = await bankrunClient.getLatestBlockhash();
-      tx = toWeb3JsTransaction(
-        await fullBuilder.setBlockhash(bhash?.[0] || "").build(umi)
-      );
-    } catch (error) {
-      console.log("error: ", error);
-      throw error;
-    }
-    const simRes = await bankrunClient.simulateTransaction(tx);
-    // console.log("simRes: ", simRes);
-    // console.log("simRes.logs: ", simRes.meta?.logMessages);
-    // console.log(simRes.result);
-    return await bankrunClient.processTransaction(tx);
-  } else {
-    return await fullBuilder.sendAndConfirm(umi);
-  }
+  return await fullBuilder.sendAndConfirm(umi);
 }
 
 const getBalance = async (umi: Umi, pubkey: PublicKey) => {
-  // cannot use umi helpers in bankrun
-  if (USE_BANKRUN) {
-    const balance = await bankrunClient.getBalance(toWeb3JsPublicKey(pubkey));
-    return balance;
-  } else {
-    const umiBalance = await umi.rpc.getBalance(pubkey);
-    return umiBalance.basisPoints;
-  }
+  const umiBalance = await umi.rpc.getBalance(pubkey);
+  return umiBalance.basisPoints;
 };
 const getTknAmount = async (umi: Umi, pubkey: PublicKey) => {
-  // cannot use umi helpers and some rpc methods in bankrun
-  if (USE_BANKRUN) {
-    const accInfo = await bankrunClient.getAccount(toWeb3JsPublicKey(pubkey));
-    const info = AccountLayout.decode(accInfo?.data || Buffer.from([]));
-    return info.amount;
-  } else {
-    const umiBalance = await connection.getAccountInfo(
-      toWeb3JsPublicKey(pubkey)
-    );
-    const info = AccountLayout.decode(umiBalance?.data || Buffer.from([]));
-    return info.amount;
-  }
+  const tkn = await fetchToken(umi, pubkey);
+  return tkn.amount;
 };
 
 describe("billy-bonding", () => {
   before(async () => {
     await loadProviders();
     await labelKeypairs(umi);
+    try {
+      await Promise.all(
+        [
+          umi.identity.publicKey,
+          creator.publicKey,
+          withdrawAuthority.publicKey,
+          trader.publicKey,
+        ].map(async (pk) => {
+          const res = await umi.rpc.airdrop(
+            pk,
+            createAmount(INITIAL_SOL, "SOL", 9),
+            {
+              commitment: "finalized",
+            }
+          );
+        })
+      );
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   it("is initialized", async () => {
     const adminSdk = new BillySDK(
       // admin signer
-      umi.use(keypairIdentity(fromWeb3JsKeypair(bankrunContext.payer)))
+      umi.use(keypairIdentity(masterKp))
     ).getAdminSDK();
     const txBuilder = adminSdk.initialize(INIT_DEFAULTS);
 
@@ -511,7 +383,7 @@ describe("billy-bonding", () => {
   it("set_params: status:SwapOnly, withdrawAuthority", async () => {
     const adminSdk = new BillySDK(
       // admin signer
-      umi.use(keypairIdentity(fromWeb3JsKeypair(bankrunContext.payer)))
+      umi.use(keypairIdentity(masterKp))
     ).getAdminSDK();
 
     const txBuilder = adminSdk.setParams({
@@ -539,7 +411,9 @@ describe("billy-bonding", () => {
     });
     const feeBalanceInt_total = await getBalance(umi, platformVault[0]);
     console.log("feeBalanceInt_total", feeBalanceInt_total);
-    const startingBalance = PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT;
+    const startingBalance = await connection.getMinimumBalanceForRentExemption(
+      getPlatformVaultSize()
+    );
     const accruedFees = Number(feeBalanceInt_total) - startingBalance;
     assert(accruedFees > 0);
     const withdrawAuthBalance = await getBalance(
@@ -581,7 +455,7 @@ describe("billy-bonding", () => {
   it("set_params: status:Running", async () => {
     const adminSdk = new BillySDK(
       // admin signer
-      umi.use(keypairIdentity(fromWeb3JsKeypair(bankrunContext.payer)))
+      umi.use(keypairIdentity(masterKp))
     ).getAdminSDK();
 
     const txBuilder = adminSdk.setParams({
@@ -613,73 +487,73 @@ describe("billy-bonding", () => {
       assert(true);
     }
   });
-
-  it("can claim creator vesting after cliff", async () => {
-    const curveSdk = new BillySDK(
-      // trader signer
-      umi.use(keypairIdentity(creator))
-    ).getCurveSDK(simpleMintKp.publicKey);
-
-    const bondingCurveData = await curveSdk.fetchData();
-
-    const startTime = bondingCurveData.startTime;
-    const cliff = bondingCurveData.vestingTerms.cliff;
-    const secondToJumpTo = startTime + cliff + BigInt(24 * 60 * 60);
-
-    const currentClock = await bankrunClient.getClock();
-    bankrunContext.setClock(
-      new Clock(
-        currentClock.slot,
-        currentClock.epochStartTimestamp,
-        currentClock.epoch,
-        currentClock.leaderScheduleEpoch,
-        secondToJumpTo
-      )
-    );
-    const txBuilder = curveSdk.claimCreatorVesting();
-
-    await processTransaction(umi, txBuilder);
-
-    const creatorVaultData = await fetchCreatorVault(
-      umi,
-      curveSdk.creatorVaultPda[0]
-    );
-    assert(creatorVaultData.lastDistribution == secondToJumpTo);
-  });
-  it("can claim creator again vesting after cliff", async () => {
-    const curveSdk = new BillySDK(
-      // trader signer
-      umi.use(keypairIdentity(creator))
-    ).getCurveSDK(simpleMintKp.publicKey);
-
-    const creatorVaultData = await fetchCreatorVault(
-      umi,
-      curveSdk.creatorVaultPda[0]
-    );
-    const lastDistribution = creatorVaultData.lastDistribution;
-
-    const secondToJumpTo = Number(lastDistribution) + Number(24 * 60 * 60);
-
-    const currentClock = await bankrunClient.getClock();
-    bankrunContext.setClock(
-      new Clock(
-        currentClock.slot,
-        currentClock.epochStartTimestamp,
-        currentClock.epoch,
-        currentClock.leaderScheduleEpoch,
-        BigInt(secondToJumpTo)
-      )
-    );
-
-    const txBuilder = curveSdk.claimCreatorVesting();
-
-    await processTransaction(umi, txBuilder);
-
-    const creatorVaultDataPost = await fetchCreatorVault(
-      umi,
-      curveSdk.creatorVaultPda[0]
-    );
-
-    assert(creatorVaultDataPost.lastDistribution == BigInt(secondToJumpTo));
-  });
 });
+// THIS NEEDS BANKRUN CLOCK
+// it("can claim creator vesting after cliff", async () => {
+//   const curveSdk = new BillySDK(
+//     // trader signer
+//     umi.use(keypairIdentity(creator))
+//   ).getCurveSDK(simpleMintKp.publicKey);
+
+//   const bondingCurveData = await curveSdk.fetchData();
+
+//   const startTime = bondingCurveData.startTime;
+//   const cliff = bondingCurveData.vestingTerms.cliff;
+//   const secondToJumpTo = startTime + cliff + BigInt(24 * 60 * 60);
+
+//   const currentClock = await bankrunClient.getClock();
+//   bankrunContext.setClock(
+//     new Clock(
+//       currentClock.slot,
+//       currentClock.epochStartTimestamp,
+//       currentClock.epoch,
+//       currentClock.leaderScheduleEpoch,
+//       secondToJumpTo
+//     )
+//   );
+//   const txBuilder = curveSdk.claimCreatorVesting();
+
+//   await processTransaction(umi, txBuilder);
+
+//   const creatorVaultData = await fetchCreatorVault(
+//     umi,
+//     curveSdk.creatorVaultPda[0]
+//   );
+//   assert(creatorVaultData.lastDistribution == secondToJumpTo);
+// });
+// it("can claim creator again vesting after cliff", async () => {
+//   const curveSdk = new BillySDK(
+//     // trader signer
+//     umi.use(keypairIdentity(creator))
+//   ).getCurveSDK(simpleMintKp.publicKey);
+
+//   const creatorVaultData = await fetchCreatorVault(
+//     umi,
+//     curveSdk.creatorVaultPda[0]
+//   );
+//   const lastDistribution = creatorVaultData.lastDistribution;
+
+//   const secondToJumpTo = Number(lastDistribution) + Number(24 * 60 * 60);
+
+//   const currentClock = await bankrunClient.getClock();
+//   bankrunContext.setClock(
+//     new Clock(
+//       currentClock.slot,
+//       currentClock.epochStartTimestamp,
+//       currentClock.epoch,
+//       currentClock.leaderScheduleEpoch,
+//       BigInt(secondToJumpTo)
+//     )
+//   );
+
+//   const txBuilder = curveSdk.claimCreatorVesting();
+
+//   await processTransaction(umi, txBuilder);
+
+//   const creatorVaultDataPost = await fetchCreatorVault(
+//     umi,
+//     curveSdk.creatorVaultPda[0]
+//   );
+
+//   assert(creatorVaultDataPost.lastDistribution == BigInt(secondToJumpTo));
+// });

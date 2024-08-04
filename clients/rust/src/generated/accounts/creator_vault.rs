@@ -18,10 +18,12 @@ use solana_program::pubkey::Pubkey;
 pub struct CreatorVault {
     pub discriminator: [u8; 8],
     pub initial_vested_supply: u64,
-    pub last_distribution: Option<i64>,
+    pub last_distribution: i64,
 }
 
 impl CreatorVault {
+    pub const LEN: usize = 24;
+
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:

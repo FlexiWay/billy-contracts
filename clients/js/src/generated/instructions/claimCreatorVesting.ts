@@ -54,7 +54,7 @@ export function claimCreatorVesting(
           creator: { index: 0, isWritable: true as boolean, value: input.creator ?? null },
           creatorVault: { index: 1, isWritable: true as boolean, value: input.creatorVault ?? null },
           creatorVaultTokenAccount: { index: 2, isWritable: true as boolean, value: input.creatorVaultTokenAccount ?? null },
-          bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
+          bondingCurve: { index: 3, isWritable: false as boolean, value: input.bondingCurve ?? null },
           userTokenAccount: { index: 4, isWritable: true as boolean, value: input.userTokenAccount ?? null },
           global: { index: 5, isWritable: false as boolean, value: input.global ?? null },
           mint: { index: 6, isWritable: false as boolean, value: input.mint ?? null },

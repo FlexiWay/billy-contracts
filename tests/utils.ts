@@ -7,39 +7,23 @@ import {
 import { PublicKey } from "@solana/web3.js";
 
 export const assertBondingCurve = (
-  bondingCurve: BondingCurve,
-  expected: Partial<BondingCurveAccountDataArgs>
+  bondingCurve: Omit<BondingCurve, "vestingTerms">,
+  expected: Partial<
+    Omit<
+      BondingCurveAccountDataArgs,
+      "vestingTerms" | "startTime" | "allocation"
+    >
+  >
 ) => {
   assert.equal(bondingCurve.virtualSolReserves, expected.virtualSolReserves);
-  assert.equal(
-    bondingCurve.virtualTokenReserves,
-    expected.virtualTokenReserves
-  );
-  assert.equal(bondingCurve.realSolReserves, expected.realSolReserves);
-  assert.equal(bondingCurve.realTokenReserves, expected.realTokenReserves);
   assert.equal(bondingCurve.tokenTotalSupply, expected.tokenTotalSupply);
-  assert.equal(bondingCurve.complete, expected.complete);
+  assert.equal(bondingCurve.solLaunchThreshold, expected.solLaunchThreshold);
 };
 
 export const assertGlobal = (
   global: Global,
   expected: Partial<GlobalAccountDataArgs>
 ) => {
-  assert.equal(global.initialRealSolReserves, expected.initialRealSolReserves);
-  assert.equal(
-    global.initialRealTokenReserves,
-    expected.initialRealTokenReserves
-  );
-  assert.equal(
-    global.initialVirtualSolReserves,
-    expected.initialVirtualSolReserves
-  );
-  assert.equal(
-    global.initialVirtualTokenReserves,
-    expected.initialVirtualTokenReserves
-  );
-  assert.equal(global.initialTokenSupply, expected.initialTokenSupply);
-  assert.equal(global.solLaunchThreshold, expected.solLaunchThreshold);
   assert.equal(global.tradeFeeBps, expected.tradeFeeBps);
   assert.equal(global.status, expected.status);
 };

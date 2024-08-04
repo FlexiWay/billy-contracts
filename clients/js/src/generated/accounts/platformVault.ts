@@ -6,19 +6,19 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Account, Context, Option, OptionOrNullable, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, i64, mapSerializer, option, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
+import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
+import { Serializer, array, i64, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 
   
   export type PlatformVault = Account<PlatformVaultAccountData>;
 
-  export type PlatformVaultAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: Option<bigint>; lastFeeWithdrawal: Option<bigint>; feesWithdrawn: bigint;  };
+  export type PlatformVaultAccountData = { discriminator: Array<number>; initialVestedSupply: bigint; lastDistribution: bigint; lastFeeWithdrawal: bigint; feesWithdrawn: bigint;  };
 
-export type PlatformVaultAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: OptionOrNullable<number | bigint>; lastFeeWithdrawal: OptionOrNullable<number | bigint>; feesWithdrawn: number | bigint;  };
+export type PlatformVaultAccountDataArgs = { initialVestedSupply: number | bigint; lastDistribution: number | bigint; lastFeeWithdrawal: number | bigint; feesWithdrawn: number | bigint;  };
 
 
   export function getPlatformVaultAccountDataSerializer(): Serializer<PlatformVaultAccountDataArgs, PlatformVaultAccountData> {
-  return mapSerializer<PlatformVaultAccountDataArgs, any, PlatformVaultAccountData>(struct<PlatformVaultAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', option(i64())], ['lastFeeWithdrawal', option(i64())], ['feesWithdrawn', u64()]], { description: 'PlatformVaultAccountData' }), (value) => ({ ...value, discriminator: [223, 22, 224, 48, 29, 125, 8, 80] }) ) as Serializer<PlatformVaultAccountDataArgs, PlatformVaultAccountData>;
+  return mapSerializer<PlatformVaultAccountDataArgs, any, PlatformVaultAccountData>(struct<PlatformVaultAccountData>([['discriminator', array(u8(), { size: 8 })], ['initialVestedSupply', u64()], ['lastDistribution', i64()], ['lastFeeWithdrawal', i64()], ['feesWithdrawn', u64()]], { description: 'PlatformVaultAccountData' }), (value) => ({ ...value, discriminator: [223, 22, 224, 48, 29, 125, 8, 80] }) ) as Serializer<PlatformVaultAccountDataArgs, PlatformVaultAccountData>;
 }
 
 
@@ -73,11 +73,14 @@ export async function safeFetchAllPlatformVault(
 export function getPlatformVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint>, 'lastFeeWithdrawal': OptionOrNullable<number | bigint>, 'feesWithdrawn': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())], 'lastFeeWithdrawal': [null, option(i64())], 'feesWithdrawn': [null, u64()] })
+    .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': number | bigint, 'lastFeeWithdrawal': number | bigint, 'feesWithdrawn': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, i64()], 'lastFeeWithdrawal': [24, i64()], 'feesWithdrawn': [32, u64()] })
     .deserializeUsing<PlatformVault>((account) => deserializePlatformVault(account))      .whereField('discriminator', [223, 22, 224, 48, 29, 125, 8, 80])
     ;
 }
 
+export function getPlatformVaultSize(): number {
+  return 40;
+}
 
 export function findPlatformVaultPda(
   context: Pick<Context, 'eddsa' | 'programs'>,

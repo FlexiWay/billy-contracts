@@ -9,11 +9,7 @@ use anchor_spl::{
 use crate::{
     errors::ContractError,
     events::*,
-    state::{
-        bonding_curve::{self, *},
-        global::*,
-        vaults::PlatformVault,
-    },
+    state::{bonding_curve::*, global::*, vaults::PlatformVault},
 };
 
 use crate::state::bonding_curve::locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};

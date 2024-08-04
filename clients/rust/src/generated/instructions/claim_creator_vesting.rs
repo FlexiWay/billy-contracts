@@ -63,7 +63,7 @@ impl ClaimCreatorVesting {
             self.creator_vault_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.bonding_curve,
             false,
         ));
@@ -138,7 +138,7 @@ impl ClaimCreatorVestingInstructionData {
 ///   0. `[writable, signer]` creator
 ///   1. `[writable]` creator_vault
 ///   2. `[writable]` creator_vault_token_account
-///   3. `[writable]` bonding_curve
+///   3. `[]` bonding_curve
 ///   4. `[writable]` user_token_account
 ///   5. `[]` global
 ///   6. `[]` mint
@@ -444,7 +444,7 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
             *self.creator_vault_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.bonding_curve.key,
             false,
         ));
@@ -539,7 +539,7 @@ impl<'a, 'b> ClaimCreatorVestingCpi<'a, 'b> {
 ///   0. `[writable, signer]` creator
 ///   1. `[writable]` creator_vault
 ///   2. `[writable]` creator_vault_token_account
-///   3. `[writable]` bonding_curve
+///   3. `[]` bonding_curve
 ///   4. `[writable]` user_token_account
 ///   5. `[]` global
 ///   6. `[]` mint

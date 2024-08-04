@@ -30,7 +30,6 @@ pub struct ClaimCreatorVesting<'info> {
     creator_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
@@ -93,7 +92,8 @@ impl ClaimCreatorVesting<'_> {
             tokens_per_second
         );
         let start_second: i64;
-        if let Some(last_distribution) = ctx.accounts.creator_vault.last_distribution {
+        if i64::default() != ctx.accounts.creator_vault.last_distribution {
+            let last_distribution = ctx.accounts.creator_vault.last_distribution;
             msg!(
                 "ClaimCreatorVesting::handler: last_distribution: {}",
                 last_distribution
@@ -104,8 +104,9 @@ impl ClaimCreatorVesting<'_> {
             );
             start_second = last_distribution + 1;
         } else {
+            msg!("First distribution");
             start_second = ctx.accounts.bonding_curve.start_time
-                + ctx.accounts.bonding_curve.vesting_terms.cliff;
+                + ctx.accounts.bonding_curve.vesting_terms.cliff
         }
         msg!(
             "ClaimCreatorVesting::handler: start_second: {}",
@@ -141,7 +142,7 @@ impl ClaimCreatorVesting<'_> {
             ),
             tokens_to_distribute,
         )?;
-        ctx.accounts.creator_vault.last_distribution = Some(clock.unix_timestamp);
+        ctx.accounts.creator_vault.last_distribution = clock.unix_timestamp;
         msg!("ClaimCreatorVesting::handler: done");
         Ok(())
     }

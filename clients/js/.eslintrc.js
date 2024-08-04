@@ -18,6 +18,7 @@ module.exports = {
     'max-classes-per-file': 'off',
     'no-param-reassign': 'off',
     'func-names': 'off',
+    '@typescript-eslint/lines-between-class-members': 'off',
   },
   ignorePatterns: ['dist/**', '.eslintrc.js'],
 };

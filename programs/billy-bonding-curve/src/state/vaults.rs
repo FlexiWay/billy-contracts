@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace, Debug, Default)]
 pub struct CreatorVault {
     pub initial_vested_supply: u64,
-    pub last_distribution: Option<i64>,
+    pub last_distribution: i64,
 }
 impl CreatorVault {
     pub const SEED_PREFIX: &'static str = "creator-vault";
@@ -38,8 +38,8 @@ impl PresaleVault {
 #[derive(InitSpace, Debug, Default)]
 pub struct PlatformVault {
     pub initial_vested_supply: u64,
-    pub last_distribution: Option<i64>,
-    pub last_fee_withdrawal: Option<i64>,
+    pub last_distribution: i64,
+    pub last_fee_withdrawal: i64,
     pub fees_withdrawn: u64,
 }
 impl PlatformVault {
