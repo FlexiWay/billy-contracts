@@ -9,7 +9,7 @@ use num_derive::FromPrimitive;
 use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
-pub enum LmaofunBondingCurveError {
+pub enum BillyBondingCurveError {
     /// 6000 (0x1770) - Invalid Global Authority
     #[error("Invalid Global Authority")]
     InvalidGlobalAuthority,
@@ -87,7 +87,7 @@ pub enum LmaofunBondingCurveError {
     NoFeesToWithdraw,
 }
 
-impl solana_program::program_error::PrintProgramError for LmaofunBondingCurveError {
+impl solana_program::program_error::PrintProgramError for BillyBondingCurveError {
     fn print<E>(&self) {
         solana_program::msg!(&self.to_string());
     }

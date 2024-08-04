@@ -13,7 +13,7 @@ use state::global::*;
 declare_id!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
 
 #[program]
-pub mod lmaofun_bonding_curve {
+pub mod billy_bonding_curve {
 
     use super::*;
 

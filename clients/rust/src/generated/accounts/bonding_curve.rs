@@ -78,14 +78,14 @@ impl BondingCurve {
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
             &["bonding-curve".as_bytes(), mint.as_ref(), &[bump]],
-            &crate::LMAOFUN_BONDING_CURVE_ID,
+            &crate::BILLY_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda(mint: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
             &["bonding-curve".as_bytes(), mint.as_ref()],
-            &crate::LMAOFUN_BONDING_CURVE_ID,
+            &crate::BILLY_BONDING_CURVE_ID,
         )
     }
 

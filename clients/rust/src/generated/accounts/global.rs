@@ -50,14 +50,14 @@ impl Global {
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
             &["global".as_bytes(), &[bump]],
-            &crate::LMAOFUN_BONDING_CURVE_ID,
+            &crate::BILLY_BONDING_CURVE_ID,
         )
     }
 
     pub fn find_pda() -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
             &["global".as_bytes()],
-            &crate::LMAOFUN_BONDING_CURVE_ID,
+            &crate::BILLY_BONDING_CURVE_ID,
         )
     }
 

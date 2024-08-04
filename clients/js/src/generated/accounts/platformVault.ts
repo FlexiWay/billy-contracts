@@ -71,7 +71,7 @@ export async function safeFetchAllPlatformVault(
 }
 
 export function getPlatformVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint>, 'lastFeeWithdrawal': OptionOrNullable<number | bigint>, 'feesWithdrawn': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())], 'lastFeeWithdrawal': [null, option(i64())], 'feesWithdrawn': [null, u64()] })
     .deserializeUsing<PlatformVault>((account) => deserializePlatformVault(account))      .whereField('discriminator', [223, 22, 224, 48, 29, 125, 8, 80])
@@ -86,7 +86,7 @@ export function findPlatformVaultPda(
           mint: PublicKey;
                   }
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("platform-vault"),
                         publicKeySerializer().serialize(seeds.mint),

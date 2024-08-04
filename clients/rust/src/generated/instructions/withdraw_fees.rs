@@ -79,7 +79,7 @@ impl WithdrawFees {
         let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
-            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
+            program_id: crate::BILLY_BONDING_CURVE_ID,
             accounts,
             data,
         }
@@ -364,7 +364,7 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
         let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
+            program_id: crate::BILLY_BONDING_CURVE_ID,
             accounts,
             data,
         };

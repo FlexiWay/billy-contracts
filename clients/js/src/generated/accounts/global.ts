@@ -72,7 +72,7 @@ export async function safeFetchAllGlobal(
 }
 
 export function getGlobalGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'status': ProgramStatusArgs, 'initialized': boolean, 'globalAuthority': PublicKey, 'withdrawAuthority': PublicKey, 'tradeFeeBps': number | bigint, 'launchFeeLamports': number | bigint, 'createdMintDecimals': number }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'status': [8, getProgramStatusSerializer()], 'initialized': [9, bool()], 'globalAuthority': [10, publicKeySerializer()], 'withdrawAuthority': [42, publicKeySerializer()], 'tradeFeeBps': [74, u64()], 'launchFeeLamports': [82, u64()], 'createdMintDecimals': [90, u8()] })
     .deserializeUsing<Global>((account) => deserializeGlobal(account))      .whereField('discriminator', [167, 232, 232, 177, 200, 108, 114, 127])
@@ -86,7 +86,7 @@ export function getGlobalSize(): number {
 export function findGlobalPda(
   context: Pick<Context, 'eddsa' | 'programs'>,
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("global"),
             ]);

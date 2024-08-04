@@ -71,7 +71,7 @@ export async function safeFetchAllPresaleVault(
 }
 
 export function getPresaleVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()] })
     .deserializeUsing<PresaleVault>((account) => deserializePresaleVault(account))      .whereField('discriminator', [102, 155, 208, 196, 54, 144, 19, 203])
@@ -89,7 +89,7 @@ export function findPresaleVaultPda(
           mint: PublicKey;
                   }
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("presale-vault"),
                         publicKeySerializer().serialize(seeds.mint),

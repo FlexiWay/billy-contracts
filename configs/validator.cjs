@@ -14,7 +14,7 @@ module.exports = {
       {
         label: "Lmao.fun Bonding Curve Program",
         programId: "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP",
-        deployPath: getProgram("lmaofun_bonding_curve.so"),
+        deployPath: getProgram("billy_bonding_curve.so"),
       },
 
       // Below are external programs that should be included in the local validator.

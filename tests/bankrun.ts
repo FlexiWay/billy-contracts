@@ -30,11 +30,11 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import {
-  createLmaofunBondingCurveProgram,
+  createBillyBondingCurveProgram,
   fetchGlobal,
   findGlobalPda,
   initialize,
-  LMAOFUN_BONDING_CURVE_PROGRAM_ID,
+  BILLY_BONDING_CURVE_PROGRAM_ID,
   ProgramStatus,
   createBondingCurve,
   safeFetchBondingCurve,
@@ -67,7 +67,7 @@ import {
   SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
 } from "../clients/js/src/constants";
 import { Program } from "@coral-xyz/anchor";
-import { LmaofunBondingCurve } from "../target/types/lmaofun_bonding_curve";
+import { BillyBondingCurve } from "../target/types/billy_bonding_curve";
 import {
   calculateFee,
   findEvtAuthorityPda,
@@ -100,7 +100,7 @@ const INITIAL_SOL = 100 * LAMPORTS_PER_SOL;
 const amman = Amman.instance({
   ammanClientOpts: { autoUnref: false, ack: true },
   knownLabels: {
-    [LMAOFUN_BONDING_CURVE_PROGRAM_ID.toString()]: "LmaofunBondingCurveProgram",
+    [BILLY_BONDING_CURVE_PROGRAM_ID.toString()]: "BillyBondingCurveProgram",
   },
 });
 
@@ -127,7 +127,7 @@ let rpcUrl = "http://127.0.0.1:8899";
 
 let umi: Umi;
 
-const bondingCurveProgram = createLmaofunBondingCurveProgram();
+const bondingCurveProgram = createBillyBondingCurveProgram();
 
 const programBinDir = path.join(__dirname, "..", ".programsBin");
 
@@ -163,8 +163,8 @@ const loadProviders = async () => {
       //   programId: toWeb3JsPublicKey(SPL_TOKEN_PROGRAM_ID),
       // },
       // {
-      //   name: "lmaofun_bonding_curve",
-      //   programId: toWeb3JsPublicKey(LMAOFUN_BONDING_CURVE_PROGRAM_ID),
+      //   name: "billy_bonding_curve",
+      //   programId: toWeb3JsPublicKey(BILLY_BONDING_CURVE_PROGRAM_ID),
       // },
     ],
     [
@@ -261,7 +261,7 @@ const loadKeypairs = async (umi) => {
   amman.addr.addLabel("eventAuthority", eventAuthority);
   evtAuthorityAccs = {
     eventAuthority,
-    program: LMAOFUN_BONDING_CURVE_PROGRAM_ID,
+    program: BILLY_BONDING_CURVE_PROGRAM_ID,
   };
 };
 
@@ -319,7 +319,7 @@ const getTknAmount = async (umi: Umi, pubkey: PublicKey) => {
   }
 };
 
-describe("lmaofun-bonding", () => {
+describe("billy-bonding", () => {
   before(async () => {
     await loadProviders();
     await loadKeypairs(umi);

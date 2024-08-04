@@ -71,7 +71,7 @@ export async function safeFetchAllBrandVault(
 }
 
 export function getBrandVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'launchBrandkitSupply': number | bigint, 'lifetimeBrandkitSupply': number | bigint, 'initialVestedSupply': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'launchBrandkitSupply': [8, u64()], 'lifetimeBrandkitSupply': [16, u64()], 'initialVestedSupply': [24, u64()] })
     .deserializeUsing<BrandVault>((account) => deserializeBrandVault(account))      .whereField('discriminator', [151, 78, 229, 240, 28, 131, 251, 218])
@@ -89,7 +89,7 @@ export function findBrandVaultPda(
           mint: PublicKey;
                   }
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("brand-vault"),
                         publicKeySerializer().serialize(seeds.mint),

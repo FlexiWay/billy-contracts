@@ -7,12 +7,12 @@ const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
 const kinobi = k.createFromIdls([
-  path.join(idlDir, "lmaofun_bonding_curve.json"),
+  path.join(idlDir, "billy_bonding_curve.json"),
 ]);
 
 kinobi.update(
   new k.updateProgramsVisitor({
-    lmaofunBonding: { name: "lmaofunBondingCurve", prefix: "lbc" },
+    billyBonding: { name: "billyBondingCurve", prefix: "lbc" },
   })
 );
 

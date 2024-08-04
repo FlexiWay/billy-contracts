@@ -11,15 +11,15 @@ import { IdlEvent } from '@coral-xyz/anchor/dist/cjs/idl';
 import { BN } from '@coral-xyz/anchor';
 
 // eslint-disable-next-line import/extensions
-import  {LmaofunBondingCurve}  from './idls/lmaofun_bonding_curve';
-import { LMAOFUN_BONDING_CURVE_PROGRAM_ID } from './generated/programs/lmaofunBondingCurve';
+import  {BillyBondingCurve}  from './idls/billy_bonding_curve';
+import { BILLY_BONDING_CURVE_PROGRAM_ID } from './generated/programs/billyBondingCurve';
 
 export const calculateFee = (amount: bigint, feeBps: number): bigint => (amount * BigInt(feeBps)) / 10000n
 const EVENT_AUTHORITY_PDA_SEED = "__event_authority";
 export function findEvtAuthorityPda(
     context: Pick<Context, 'eddsa' | 'programs'>,
     ): Pda {
-    const programId = context.programs.getPublicKey('bondingCurve', LMAOFUN_BONDING_CURVE_PROGRAM_ID);
+    const programId = context.programs.getPublicKey('bondingCurve', BILLY_BONDING_CURVE_PROGRAM_ID);
     return context.eddsa.findPda(programId, [
                     string({ size: 'variable' }).serialize(EVENT_AUTHORITY_PDA_SEED),
               ]);
@@ -29,16 +29,16 @@ export function findEvtAuthorityPda(
 export function findEvtAuthorityPdaRaw(
 
     ): [PublicKey, number] {
-    const programId = toWeb3JsPublicKey(LMAOFUN_BONDING_CURVE_PROGRAM_ID);
+    const programId = toWeb3JsPublicKey(BILLY_BONDING_CURVE_PROGRAM_ID);
    const pda = PublicKey.findProgramAddressSync([Buffer.from(EVENT_AUTHORITY_PDA_SEED)], programId);
    return pda
   }
 
 
 
-type EventKeys = keyof anchor.IdlEvents<LmaofunBondingCurve>;
+type EventKeys = keyof anchor.IdlEvents<BillyBondingCurve>;
 
-const validEventNames: Array<keyof anchor.IdlEvents<LmaofunBondingCurve>> = [
+const validEventNames: Array<keyof anchor.IdlEvents<BillyBondingCurve>> = [
   "GlobalUpdateEvent",
   "CreateEvent",
 ];
@@ -55,7 +55,7 @@ export const logEvent = (event: anchor.Event<IdlEvent, Record<string, string>>)=
   console.log(event.name, normalized);
 }
 
-export const getTxEventsFromTxBuilderResponse = async (conn:Connection, program: anchor.Program<LmaofunBondingCurve>, txBuilderRes:{
+export const getTxEventsFromTxBuilderResponse = async (conn:Connection, program: anchor.Program<BillyBondingCurve>, txBuilderRes:{
     signature: TransactionSignature;
     result: RpcConfirmTransactionResult;
 }) => {
@@ -63,13 +63,13 @@ export const getTxEventsFromTxBuilderResponse = async (conn:Connection, program:
     return  getTransactionEvents(conn, program, sig);
 }
 
-export const getTransactionEvents = async (conn:Connection, program: anchor.Program<LmaofunBondingCurve>, sig: string) => {
+export const getTransactionEvents = async (conn:Connection, program: anchor.Program<BillyBondingCurve>, sig: string) => {
     const txDetails = await getTxDetails(conn, sig);
     return getTransactionEventsFromDetails(program, txDetails);
 }
 
 export const getTransactionEventsFromDetails = (
-  program: anchor.Program<LmaofunBondingCurve>,
+  program: anchor.Program<BillyBondingCurve>,
   txResponse: anchor.web3.VersionedTransactionResponse | null
 ) => {
   if (!txResponse) {
@@ -112,14 +112,14 @@ export const getTransactionEventsFromDetails = (
 
 const isEventName = (
   eventName: string
-): eventName is keyof anchor.IdlEvents<LmaofunBondingCurve> => validEventNames.includes(
-  eventName as keyof anchor.IdlEvents<LmaofunBondingCurve>
+): eventName is keyof anchor.IdlEvents<BillyBondingCurve> => validEventNames.includes(
+  eventName as keyof anchor.IdlEvents<BillyBondingCurve>
 );
 
 export const toEvent = <E extends EventKeys>(
   eventName: E,
   event: any
-): anchor.IdlEvents<LmaofunBondingCurve>[E] | null => {
+): anchor.IdlEvents<BillyBondingCurve>[E] | null => {
   if (isEventName(eventName)) {
     return getEvent(eventName, event.data);
   }
@@ -128,8 +128,8 @@ export const toEvent = <E extends EventKeys>(
 
 const getEvent = <E extends EventKeys>(
   eventName: E,
-  event: anchor.IdlEvents<LmaofunBondingCurve>[E]
-): anchor.IdlEvents<LmaofunBondingCurve>[E] => event
+  event: anchor.IdlEvents<BillyBondingCurve>[E]
+): anchor.IdlEvents<BillyBondingCurve>[E] => event
 
 export const getTxDetails = async (connection: anchor.web3.Connection, sig: string) => {
   const latestBlockHash = await connection.getLatestBlockhash("processed");

@@ -7,10 +7,10 @@ const programDir = path.join(__dirname, "..", "programs");
 
 generateIdl({
   generator: "anchor",
-  programName: "lmaofun_bonding_curve",
+  programName: "billy_bonding_curve",
   programId: "71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP",
   idlDir,
   binaryInstallDir,
-  programDir: path.join(programDir, "lmaofun-bonding-curve"),
+  programDir: path.join(programDir, "billy-bonding-curve"),
   rustbin: { locked: true },
 });

@@ -7,6 +7,5 @@
 
 use solana_program::{pubkey, pubkey::Pubkey};
 
-/// `lmaofun_bonding_curve` program ID.
-pub const LMAOFUN_BONDING_CURVE_ID: Pubkey =
-    pubkey!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");
+/// `billy_bonding_curve` program ID.
+pub const BILLY_BONDING_CURVE_ID: Pubkey = pubkey!("71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP");

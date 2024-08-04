@@ -341,7 +341,7 @@ nameToErrorMap.set('NoFeesToWithdraw', NoFeesToWithdrawError);
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  */
-export function getLmaofunBondingCurveErrorFromCode(code: number, program: Program, cause?: Error): ProgramError | null {
+export function getBillyBondingCurveErrorFromCode(code: number, program: Program, cause?: Error): ProgramError | null {
   const constructor = codeToErrorMap.get(code);
   return constructor ? new constructor(program, cause) : null;
 }
@@ -350,7 +350,7 @@ export function getLmaofunBondingCurveErrorFromCode(code: number, program: Progr
  * Attempts to resolve a custom program error from the provided error name, i.e. 'Unauthorized'.
  * @category Errors
  */
-export function getLmaofunBondingCurveErrorFromName(name: string, program: Program, cause?: Error): ProgramError | null {
+export function getBillyBondingCurveErrorFromName(name: string, program: Program, cause?: Error): ProgramError | null {
   const constructor = nameToErrorMap.get(name);
   return constructor ? new constructor(program, cause) : null;
 }

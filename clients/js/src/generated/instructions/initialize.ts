@@ -43,7 +43,7 @@ export function initialize(
                         input: InitializeInstructionAccounts & InitializeInstructionArgs,
       ): TransactionBuilder {
   // Program ID.
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
 
   // Accounts.
   const resolvedAccounts = {

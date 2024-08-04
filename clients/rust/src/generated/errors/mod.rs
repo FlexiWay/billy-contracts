@@ -5,6 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod lmaofun_bonding_curve;
+pub(crate) mod billy_bonding_curve;
 
-pub use self::lmaofun_bonding_curve::LmaofunBondingCurveError;
+pub use self::billy_bonding_curve::BillyBondingCurveError;

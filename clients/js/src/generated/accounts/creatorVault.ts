@@ -71,7 +71,7 @@ export async function safeFetchAllCreatorVault(
 }
 
 export function getCreatorVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'initialVestedSupply': number | bigint, 'lastDistribution': OptionOrNullable<number | bigint> }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'initialVestedSupply': [8, u64()], 'lastDistribution': [16, option(i64())] })
     .deserializeUsing<CreatorVault>((account) => deserializeCreatorVault(account))      .whereField('discriminator', [200, 135, 38, 98, 35, 236, 238, 12])
@@ -86,7 +86,7 @@ export function findCreatorVaultPda(
           mint: PublicKey;
                   }
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("creator-vault"),
                         publicKeySerializer().serialize(seeds.mint),

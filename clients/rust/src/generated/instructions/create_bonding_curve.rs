@@ -172,7 +172,7 @@ impl CreateBondingCurve {
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
-            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
+            program_id: crate::BILLY_BONDING_CURVE_ID,
             accounts,
             data,
         }
@@ -849,7 +849,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::LMAOFUN_BONDING_CURVE_ID,
+            program_id: crate::BILLY_BONDING_CURVE_ID,
             accounts,
             data,
         };

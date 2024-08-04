@@ -1,7 +1,7 @@
 [package]
-name = "lmaofun-bonding-curve-client"
+name = "billy-bonding-curve-client"
 version = "1.0.0"
-description = "LMAOFUN Bonding Curve Contract"
+description = "BILLY Bonding Curve Contract"
 license-file = "../../LICENSE"
 edition = "2021"
 readme = "README.md"

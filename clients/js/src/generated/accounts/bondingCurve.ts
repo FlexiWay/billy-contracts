@@ -72,7 +72,7 @@ export async function safeFetchAllBondingCurve(
 }
 
 export function getBondingCurveGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
     .registerFields<{ 'discriminator': Array<number>, 'mint': PublicKey, 'creator': PublicKey, 'platformAuthority': PublicKey, 'brandAuthority': PublicKey, 'virtualTokenMultiplierBps': number | bigint, 'virtualSolReserves': number | bigint, 'virtualTokenReserves': number | bigint, 'initialVirtualTokenReserves': number | bigint, 'realSolReserves': number | bigint, 'realTokenReserves': number | bigint, 'tokenTotalSupply': number | bigint, 'creatorVestedSupply': number | bigint, 'presaleSupply': number | bigint, 'bondingSupply': number | bigint, 'cexSupply': number | bigint, 'launchBrandkitSupply': number | bigint, 'lifetimeBrandkitSupply': number | bigint, 'platformSupply': number | bigint, 'solLaunchThreshold': number | bigint, 'startTime': number | bigint, 'complete': boolean, 'vestingTerms': VestingTermsArgs, 'allocation': AllocationDataArgs, 'bump': number }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'mint': [8, publicKeySerializer()], 'creator': [40, publicKeySerializer()], 'platformAuthority': [72, publicKeySerializer()], 'brandAuthority': [104, publicKeySerializer()], 'virtualTokenMultiplierBps': [136, u64()], 'virtualSolReserves': [144, u64()], 'virtualTokenReserves': [152, u128()], 'initialVirtualTokenReserves': [168, u128()], 'realSolReserves': [184, u64()], 'realTokenReserves': [192, u64()], 'tokenTotalSupply': [200, u64()], 'creatorVestedSupply': [208, u64()], 'presaleSupply': [216, u64()], 'bondingSupply': [224, u64()], 'cexSupply': [232, u64()], 'launchBrandkitSupply': [240, u64()], 'lifetimeBrandkitSupply': [248, u64()], 'platformSupply': [256, u64()], 'solLaunchThreshold': [264, u64()], 'startTime': [272, i64()], 'complete': [280, bool()], 'vestingTerms': [281, getVestingTermsSerializer()], 'allocation': [297, getAllocationDataSerializer()], 'bump': [353, u8()] })
     .deserializeUsing<BondingCurve>((account) => deserializeBondingCurve(account))      .whereField('discriminator', [23, 183, 248, 55, 96, 216, 172, 96])
@@ -90,7 +90,7 @@ export function findBondingCurvePda(
           mint: PublicKey;
                   }
   ): Pda {
-  const programId = context.programs.getPublicKey('lmaofunBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
+  const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return context.eddsa.findPda(programId, [
                   string({ size: 'variable' }).serialize("bonding-curve"),
                         publicKeySerializer().serialize(seeds.mint),

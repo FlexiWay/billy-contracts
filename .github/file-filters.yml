@@ -11,13 +11,13 @@ program_common: &program_common
   - ".github/file-filters.yml"
   - ".github/.env"
 
-lmaofun_composite_bonding_curve: &lmaofun_composite_bonding_curve
+billy_composite_bonding_curve: &billy_composite_bonding_curve
   - *program_common
-  - "programs/lmaofun-bonding-curve/**"
+  - "programs/billy-bonding-curve/**"
   - "submodules/**"
 
 programs: &programs
-  - *lmaofun_composite_bonding_curve
+  - *billy_composite_bonding_curve
 
 # Clients.
 
