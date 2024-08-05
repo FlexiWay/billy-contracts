@@ -250,13 +250,8 @@ export const loadBin = async (binPath: string) => {
 
 const GLOBAL_STARTING_BALANCE_INT = 1524240; // cant getMinimumBalanceForRentExemption on bankrun
 const PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT = 1169280;
-const labelKeypairs = async (umi) => {
-  amman.addr.addLabel("master", masterKp.publicKey);
-  amman.addr.addLabel("simpleMint", simpleMintKp.publicKey);
-  amman.addr.addLabel("creator", creator.publicKey);
-  amman.addr.addLabel("trader", trader.publicKey);
-  amman.addr.addLabel("withdrawAuthority", withdrawAuthority.publicKey);
 
+const labelKeypairs = async (umi) => {
   const curveSdk = new BillySDK(
     // master signer
     umi.use(keypairIdentity(masterKp))

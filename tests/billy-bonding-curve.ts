@@ -183,6 +183,7 @@ const labelKeypairs = async (umi) => {
 };
 
 async function processTransaction(umi, txBuilder: TransactionBuilder) {
+  // todo move to sdk
   let txWithBudget = await transactionBuilder().add(
     setComputeUnitLimit(umi, { units: 600_000 })
   );
