@@ -56,7 +56,7 @@ pub struct Swap<'info> {
         seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    platform_vault: Box<Account<'info, PlatformVault>>,
+    platform_vault: AccountLoader<'info, PlatformVault>,
     #[account(
         init_if_needed,
         payer = user,

@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-#[account]
+#[account(zero_copy(unsafe))]
+#[repr(packed)]
 #[derive(InitSpace, Debug, Default)]
 pub struct CreatorVault {
     pub initial_vested_supply: u64,
@@ -17,7 +18,8 @@ impl CreatorVault {
     }
 }
 
-#[account]
+#[account(zero_copy(unsafe))]
+#[repr(packed)]
 #[derive(InitSpace, Debug, Default)]
 pub struct PresaleVault {
     pub initial_vested_supply: u64,
@@ -34,7 +36,8 @@ impl PresaleVault {
     }
 }
 
-#[account]
+#[account(zero_copy(unsafe))]
+#[repr(packed)]
 #[derive(InitSpace, Debug, Default)]
 pub struct PlatformVault {
     pub initial_vested_supply: u64,
@@ -54,7 +57,8 @@ impl PlatformVault {
     }
 }
 
-#[account]
+#[account(zero_copy(unsafe))]
+#[repr(packed)]
 #[derive(InitSpace, Debug, Default)]
 pub struct BrandVault {
     pub launch_brandkit_supply: u64,

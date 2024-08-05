@@ -1,5 +1,5 @@
-use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
+use anchor_lang::{prelude::*, Discriminator};
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{
@@ -8,6 +8,7 @@ use anchor_spl::{
     },
     token::{mint_to, Mint, MintTo, Token, TokenAccount},
 };
+use arrayref::array_ref;
 
 use crate::state::{
     allocation::AllocationData,
@@ -42,7 +43,7 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + CreatorVault::INIT_SPACE,
         bump,
     )]
-    creator_vault: Box<Account<'info, CreatorVault>>,
+    creator_vault: AccountLoader<'info, CreatorVault>,
     #[account(
         init,
         payer = creator,
@@ -58,7 +59,7 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + PresaleVault::INIT_SPACE,
         bump,
     )]
-    presale_vault: Box<Account<'info, PresaleVault>>,
+    presale_vault: AccountLoader<'info, PresaleVault>,
     #[account(
         init,
         payer = creator,
@@ -67,9 +68,9 @@ pub struct CreateBondingCurve<'info> {
     )]
     presale_vault_token_account: Box<Account<'info, TokenAccount>>,
 
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account()]
-    brand_authority: UncheckedAccount<'info>,
+    // /// CHECK: This is not dangerous because we don't read or write from this account
+    // #[account()]
+    // brand_authority: UncheckedAccount<'info>,
     #[account(
         init,
         payer = creator,
@@ -77,7 +78,7 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + BrandVault::INIT_SPACE,
         bump,
     )]
-    brand_vault: Box<Account<'info, BrandVault>>,
+    brand_vault: AccountLoader<'info, BrandVault>,
     #[account(
         init,
         payer = creator,
@@ -93,7 +94,7 @@ pub struct CreateBondingCurve<'info> {
         space = 8 + PlatformVault::INIT_SPACE,
         bump,
     )]
-    platform_vault: Box<Account<'info, PlatformVault>>,
+    platform_vault: AccountLoader<'info, PlatformVault>,
     #[account(
         init,
         payer = creator,
@@ -127,14 +128,13 @@ pub struct CreateBondingCurve<'info> {
     )]
     global: Box<Account<'info, Global>>,
 
-    #[account(
-        init,
-        payer = creator,
-        associated_token::mint = mint,
-        associated_token::authority = global,
-    )]
-    global_token_account: Box<Account<'info, TokenAccount>>,
-
+    // #[account(
+    //     init,
+    //     payer = creator,
+    //     associated_token::mint = mint,
+    //     associated_token::authority = global,
+    // )]
+    // global_token_account: Box<Account<'info, TokenAccount>>,
     ///CHECK: Using seed to validate metadata account
     #[account(
         mut,
@@ -205,7 +205,7 @@ impl CreateBondingCurve<'_> {
         let bc = d.update_from_params(
             self.mint.key(),
             self.creator.key(),
-            self.brand_authority.key(),
+            self.creator.key(),
             self.global.withdraw_authority.key(),
             &params,
             &clock,
@@ -234,7 +234,7 @@ impl CreateBondingCurve<'_> {
         ctx.accounts.bonding_curve.update_from_params(
             ctx.accounts.mint.key(),
             ctx.accounts.creator.key(),
-            ctx.accounts.brand_authority.key(),
+            ctx.accounts.creator.key(),
             ctx.accounts.global.withdraw_authority.key(),
             &params,
             &clock,
@@ -341,7 +341,9 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.creator_vested_supply,
             )?;
-            self.creator_vault.initial_vested_supply = bonding_curve.creator_vested_supply;
+
+            self.creator_vault.load_init()?.initial_vested_supply =
+                bonding_curve.creator_vested_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.creator_vested_supply minted");
         }
 
@@ -359,7 +361,7 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.presale_supply,
             )?;
-            self.presale_vault.initial_vested_supply = bonding_curve.presale_supply;
+            self.presale_vault.load_init()?.initial_vested_supply = bonding_curve.presale_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.presale_supply minted");
         }
         if bonding_curve.launch_brandkit_supply > 0 || bonding_curve.lifetime_brandkit_supply > 0 {
@@ -378,9 +380,10 @@ impl CreateBondingCurve<'_> {
                 ),
                 amount,
             )?;
-            self.brand_vault.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
-            self.brand_vault.lifetime_brandkit_supply = bonding_curve.lifetime_brandkit_supply;
-            self.brand_vault.initial_vested_supply = amount;
+            let mut brand_vault = self.brand_vault.load_init()?;
+            brand_vault.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
+            brand_vault.lifetime_brandkit_supply = bonding_curve.lifetime_brandkit_supply;
+            brand_vault.initial_vested_supply = amount;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
         }
         if bonding_curve.platform_supply > 0 {
@@ -397,7 +400,8 @@ impl CreateBondingCurve<'_> {
                 ),
                 bonding_curve.platform_supply,
             )?;
-            self.platform_vault.initial_vested_supply = bonding_curve.platform_supply;
+
+            self.platform_vault.load_init()?.initial_vested_supply = bonding_curve.platform_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
         }
         // mint CURVE tokens to bonding_curve_token_account
@@ -415,20 +419,20 @@ impl CreateBondingCurve<'_> {
         )?;
         msg!("CreateBondingCurve::mint_allocations:bonding_curve.bonding_supply minted");
 
-        // mint RAYDIUM POOL tokens to global_token_account
-        mint_to(
-            CpiContext::new_with_signer(
-                self.token_program.to_account_info(),
-                MintTo {
-                    authority: mint_authority_info.clone(),
-                    to: self.global_token_account.to_account_info(),
-                    mint: mint_info.clone(),
-                },
-                mint_auth_signer_seeds,
-            ),
-            bonding_curve.pool_supply,
-        )?;
-        msg!("CreateBondingCurve::mint_allocations:bonding_curve.pool_supply minted");
+        // // mint RAYDIUM POOL tokens to global_token_account
+        // mint_to(
+        //     CpiContext::new_with_signer(
+        //         self.token_program.to_account_info(),
+        //         MintTo {
+        //             authority: mint_authority_info.clone(),
+        //             to: self.global_token_account.to_account_info(),
+        //             mint: mint_info.clone(),
+        //         },
+        //         mint_auth_signer_seeds,
+        //     ),
+        //     bonding_curve.pool_supply,
+        // )?;
+        // msg!("CreateBondingCurve::mint_allocations:bonding_curve.pool_supply minted");
         msg!("CreateBondingCurve::mint_allocations: done");
         Ok(())
     }

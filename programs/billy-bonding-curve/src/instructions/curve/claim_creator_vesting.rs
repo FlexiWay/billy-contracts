@@ -21,7 +21,7 @@ pub struct ClaimCreatorVesting<'info> {
         seeds = [CreatorVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    creator_vault: Box<Account<'info, CreatorVault>>,
+    creator_vault: AccountLoader<'info, CreatorVault>,
     #[account(
         mut,
         associated_token::mint = mint,
@@ -82,67 +82,70 @@ impl ClaimCreatorVesting<'_> {
     }
     pub fn handler(ctx: Context<ClaimCreatorVesting>) -> Result<()> {
         let clock = Clock::get()?;
+        {
+            let acc_info = ctx.accounts.creator_vault.to_account_info().clone();
+            let creator_vault = ctx.accounts.creator_vault.load()?;
+            let tokens_per_second = (creator_vault.initial_vested_supply as i64)
+                .checked_div(ctx.accounts.bonding_curve.vesting_terms.duration)
+                .unwrap() as u64;
 
-        let tokens_per_second = (ctx.accounts.creator_vault.initial_vested_supply as i64)
-            .checked_div(ctx.accounts.bonding_curve.vesting_terms.duration)
-            .unwrap() as u64;
-
-        msg!(
-            "ClaimCreatorVesting::handler: tokens_per_second: {}",
-            tokens_per_second
-        );
-        let start_second: i64;
-        if i64::default() != ctx.accounts.creator_vault.last_distribution {
-            let last_distribution = ctx.accounts.creator_vault.last_distribution;
             msg!(
-                "ClaimCreatorVesting::handler: last_distribution: {}",
-                last_distribution
+                "ClaimCreatorVesting::handler: tokens_per_second: {}",
+                tokens_per_second
             );
-            require!(
-                clock.unix_timestamp > last_distribution,
-                ContractError::VestingPeriodNotOver
+            let start_second: i64;
+            if i64::default() != creator_vault.last_distribution {
+                let last_distribution = creator_vault.last_distribution;
+                msg!(
+                    "ClaimCreatorVesting::handler: last_distribution: {}",
+                    last_distribution
+                );
+                require!(
+                    clock.unix_timestamp > last_distribution,
+                    ContractError::VestingPeriodNotOver
+                );
+                start_second = last_distribution + 1;
+            } else {
+                msg!("First distribution");
+                start_second = ctx.accounts.bonding_curve.start_time
+                    + ctx.accounts.bonding_curve.vesting_terms.cliff
+            }
+            msg!(
+                "ClaimCreatorVesting::handler: start_second: {}",
+                start_second
             );
-            start_second = last_distribution + 1;
-        } else {
-            msg!("First distribution");
-            start_second = ctx.accounts.bonding_curve.start_time
-                + ctx.accounts.bonding_curve.vesting_terms.cliff
+            let seconds_since_start_second =
+                clock.unix_timestamp.checked_sub(start_second).unwrap();
+            msg!(
+                "ClaimCreatorVesting::handler: seconds_since_start_second: {}",
+                seconds_since_start_second
+            );
+            let tokens_to_distribute = tokens_per_second
+                .checked_mul(seconds_since_start_second as u64)
+                .unwrap();
+            msg!(
+                "ClaimCreatorVesting::handler: tokens_to_distribute: {}",
+                tokens_to_distribute
+            );
+
+            let mint_k = ctx.accounts.bonding_curve.mint.key();
+            let signer = CreatorVault::get_signer(&ctx.bumps.creator_vault, &mint_k);
+            let signer_seeds = &[&signer[..]];
+
+            token::transfer(
+                CpiContext::new_with_signer(
+                    ctx.accounts.token_program.to_account_info(),
+                    token::Transfer {
+                        from: ctx.accounts.creator_vault_token_account.to_account_info(),
+                        to: ctx.accounts.user_token_account.to_account_info(),
+                        authority: acc_info,
+                    },
+                    signer_seeds,
+                ),
+                tokens_to_distribute,
+            )?;
         }
-        msg!(
-            "ClaimCreatorVesting::handler: start_second: {}",
-            start_second
-        );
-        let seconds_since_start_second = clock.unix_timestamp.checked_sub(start_second).unwrap();
-        msg!(
-            "ClaimCreatorVesting::handler: seconds_since_start_second: {}",
-            seconds_since_start_second
-        );
-        let tokens_to_distribute = tokens_per_second
-            .checked_mul(seconds_since_start_second as u64)
-            .unwrap();
-        msg!(
-            "ClaimCreatorVesting::handler: tokens_to_distribute: {}",
-            tokens_to_distribute
-        );
-        let user_token_account = ctx.accounts.user_token_account.to_account_info();
-        let creator_vault_token_account =
-            ctx.accounts.creator_vault_token_account.to_account_info();
-        let mint_k = ctx.accounts.bonding_curve.mint.key();
-        let signer = CreatorVault::get_signer(&ctx.bumps.creator_vault, &mint_k);
-        let signer_seeds = &[&signer[..]];
-        token::transfer(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                token::Transfer {
-                    from: creator_vault_token_account,
-                    to: user_token_account,
-                    authority: ctx.accounts.creator_vault.to_account_info(),
-                },
-                signer_seeds,
-            ),
-            tokens_to_distribute,
-        )?;
-        ctx.accounts.creator_vault.last_distribution = clock.unix_timestamp;
+        ctx.accounts.creator_vault.load_mut()?.last_distribution = clock.unix_timestamp;
         msg!("ClaimCreatorVesting::handler: done");
         Ok(())
     }

@@ -29,7 +29,7 @@ pub struct WithdrawFees<'info> {
         seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    platform_vault: Box<Account<'info, PlatformVault>>,
+    platform_vault: AccountLoader<'info, PlatformVault>,
 
     system_program: Program<'info, System>,
 
@@ -57,9 +57,10 @@ impl WithdrawFees<'_> {
         from.sub_lamports(amount)?;
         to.add_lamports(amount)?;
 
-        let prev_withdraw_time = from.last_fee_withdrawal;
-        from.last_fee_withdrawal = clock.unix_timestamp;
-        from.fees_withdrawn += amount;
+        let mut from_ref = from.load_mut()?;
+        let prev_withdraw_time = from_ref.last_fee_withdrawal;
+        from_ref.last_fee_withdrawal = clock.unix_timestamp;
+        from_ref.fees_withdrawn += amount;
 
         emit_cpi!(WithdrawEvent {
             withdraw_authority: ctx.accounts.authority.key(),
@@ -67,10 +68,10 @@ impl WithdrawFees<'_> {
             fee_vault: from.key(),
 
             withdrawn: amount,
-            total_withdrawn: from.fees_withdrawn,
+            total_withdrawn: from_ref.fees_withdrawn,
 
             previous_withdraw_time: prev_withdraw_time,
-            new_withdraw_time: from.last_fee_withdrawal,
+            new_withdraw_time: from_ref.last_fee_withdrawal,
         });
 
         Ok(())

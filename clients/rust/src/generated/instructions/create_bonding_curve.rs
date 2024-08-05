@@ -26,8 +26,6 @@ pub struct CreateBondingCurve {
 
     pub presale_vault_token_account: solana_program::pubkey::Pubkey,
 
-    pub brand_authority: solana_program::pubkey::Pubkey,
-
     pub brand_vault: solana_program::pubkey::Pubkey,
 
     pub brand_vault_token_account: solana_program::pubkey::Pubkey,
@@ -41,8 +39,6 @@ pub struct CreateBondingCurve {
     pub bonding_curve_token_account: solana_program::pubkey::Pubkey,
 
     pub global: solana_program::pubkey::Pubkey,
-
-    pub global_token_account: solana_program::pubkey::Pubkey,
 
     pub metadata: solana_program::pubkey::Pubkey,
 
@@ -76,7 +72,7 @@ impl CreateBondingCurve {
         args: CreateBondingCurveInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(24 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(22 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.mint, true,
         ));
@@ -98,10 +94,6 @@ impl CreateBondingCurve {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.presale_vault_token_account,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.brand_authority,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -130,10 +122,6 @@ impl CreateBondingCurve {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.global,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.global_token_account,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -226,24 +214,22 @@ pub struct CreateBondingCurveInstructionArgs {
 ///   3. `[writable]` creator_vault_token_account
 ///   4. `[writable]` presale_vault
 ///   5. `[writable]` presale_vault_token_account
-///   6. `[]` brand_authority
-///   7. `[writable]` brand_vault
-///   8. `[writable]` brand_vault_token_account
-///   9. `[writable]` platform_vault
-///   10. `[writable]` platform_vault_token_account
-///   11. `[writable]` bonding_curve
-///   12. `[writable]` bonding_curve_token_account
-///   13. `[]` global
-///   14. `[writable]` global_token_account
-///   15. `[writable]` metadata
-///   16. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   17. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   18. `[]` associated_token_program
-///   19. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
-///   20. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
-///   21. `[]` clock
-///   22. `[]` event_authority
-///   23. `[]` program
+///   6. `[writable]` brand_vault
+///   7. `[writable]` brand_vault_token_account
+///   8. `[writable]` platform_vault
+///   9. `[writable]` platform_vault_token_account
+///   10. `[writable]` bonding_curve
+///   11. `[writable]` bonding_curve_token_account
+///   12. `[]` global
+///   13. `[writable]` metadata
+///   14. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   15. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   16. `[]` associated_token_program
+///   17. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
+///   18. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
+///   19. `[]` clock
+///   20. `[]` event_authority
+///   21. `[]` program
 #[derive(Default)]
 pub struct CreateBondingCurveBuilder {
     mint: Option<solana_program::pubkey::Pubkey>,
@@ -252,7 +238,6 @@ pub struct CreateBondingCurveBuilder {
     creator_vault_token_account: Option<solana_program::pubkey::Pubkey>,
     presale_vault: Option<solana_program::pubkey::Pubkey>,
     presale_vault_token_account: Option<solana_program::pubkey::Pubkey>,
-    brand_authority: Option<solana_program::pubkey::Pubkey>,
     brand_vault: Option<solana_program::pubkey::Pubkey>,
     brand_vault_token_account: Option<solana_program::pubkey::Pubkey>,
     platform_vault: Option<solana_program::pubkey::Pubkey>,
@@ -260,7 +245,6 @@ pub struct CreateBondingCurveBuilder {
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve_token_account: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
-    global_token_account: Option<solana_program::pubkey::Pubkey>,
     metadata: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     token_program: Option<solana_program::pubkey::Pubkey>,
@@ -324,14 +308,6 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn brand_authority(
-        &mut self,
-        brand_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.brand_authority = Some(brand_authority);
-        self
-    }
-    #[inline(always)]
     pub fn brand_vault(&mut self, brand_vault: solana_program::pubkey::Pubkey) -> &mut Self {
         self.brand_vault = Some(brand_vault);
         self
@@ -373,14 +349,6 @@ impl CreateBondingCurveBuilder {
     #[inline(always)]
     pub fn global(&mut self, global: solana_program::pubkey::Pubkey) -> &mut Self {
         self.global = Some(global);
-        self
-    }
-    #[inline(always)]
-    pub fn global_token_account(
-        &mut self,
-        global_token_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.global_token_account = Some(global_token_account);
         self
     }
     #[inline(always)]
@@ -525,7 +493,6 @@ impl CreateBondingCurveBuilder {
                 presale_vault_token_account: self
                     .presale_vault_token_account
                     .expect("presale_vault_token_account is not set"),
-                brand_authority: self.brand_authority.expect("brand_authority is not set"),
                 brand_vault: self.brand_vault.expect("brand_vault is not set"),
                 brand_vault_token_account: self
                     .brand_vault_token_account
@@ -539,9 +506,6 @@ impl CreateBondingCurveBuilder {
                     .bonding_curve_token_account
                     .expect("bonding_curve_token_account is not set"),
                 global: self.global.expect("global is not set"),
-                global_token_account: self
-                    .global_token_account
-                    .expect("global_token_account is not set"),
                 metadata: self.metadata.expect("metadata is not set"),
                 system_program: self
                     .system_program
@@ -605,8 +569,6 @@ pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
 
     pub presale_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
-
     pub brand_vault: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub brand_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
@@ -620,8 +582,6 @@ pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
     pub bonding_curve_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub global_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -659,8 +619,6 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
 
     pub presale_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
-
     pub brand_vault: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub brand_vault_token_account: &'b solana_program::account_info::AccountInfo<'a>,
@@ -674,8 +632,6 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
     pub bonding_curve_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub global_token_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -712,7 +668,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             creator_vault_token_account: accounts.creator_vault_token_account,
             presale_vault: accounts.presale_vault,
             presale_vault_token_account: accounts.presale_vault_token_account,
-            brand_authority: accounts.brand_authority,
             brand_vault: accounts.brand_vault,
             brand_vault_token_account: accounts.brand_vault_token_account,
             platform_vault: accounts.platform_vault,
@@ -720,7 +675,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             bonding_curve: accounts.bonding_curve,
             bonding_curve_token_account: accounts.bonding_curve_token_account,
             global: accounts.global,
-            global_token_account: accounts.global_token_account,
             metadata: accounts.metadata,
             system_program: accounts.system_program,
             token_program: accounts.token_program,
@@ -766,7 +720,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(24 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(22 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.mint.key,
             true,
@@ -789,10 +743,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.presale_vault_token_account.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.brand_authority.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -821,10 +771,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.global.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.global_token_account.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -881,7 +827,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(24 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(22 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.creator.clone());
@@ -889,7 +835,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         account_infos.push(self.creator_vault_token_account.clone());
         account_infos.push(self.presale_vault.clone());
         account_infos.push(self.presale_vault_token_account.clone());
-        account_infos.push(self.brand_authority.clone());
         account_infos.push(self.brand_vault.clone());
         account_infos.push(self.brand_vault_token_account.clone());
         account_infos.push(self.platform_vault.clone());
@@ -897,7 +842,6 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve_token_account.clone());
         account_infos.push(self.global.clone());
-        account_infos.push(self.global_token_account.clone());
         account_infos.push(self.metadata.clone());
         account_infos.push(self.system_program.clone());
         account_infos.push(self.token_program.clone());
@@ -929,24 +873,22 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
 ///   3. `[writable]` creator_vault_token_account
 ///   4. `[writable]` presale_vault
 ///   5. `[writable]` presale_vault_token_account
-///   6. `[]` brand_authority
-///   7. `[writable]` brand_vault
-///   8. `[writable]` brand_vault_token_account
-///   9. `[writable]` platform_vault
-///   10. `[writable]` platform_vault_token_account
-///   11. `[writable]` bonding_curve
-///   12. `[writable]` bonding_curve_token_account
-///   13. `[]` global
-///   14. `[writable]` global_token_account
-///   15. `[writable]` metadata
-///   16. `[]` system_program
-///   17. `[]` token_program
-///   18. `[]` associated_token_program
-///   19. `[]` token_metadata_program
-///   20. `[]` rent
-///   21. `[]` clock
-///   22. `[]` event_authority
-///   23. `[]` program
+///   6. `[writable]` brand_vault
+///   7. `[writable]` brand_vault_token_account
+///   8. `[writable]` platform_vault
+///   9. `[writable]` platform_vault_token_account
+///   10. `[writable]` bonding_curve
+///   11. `[writable]` bonding_curve_token_account
+///   12. `[]` global
+///   13. `[writable]` metadata
+///   14. `[]` system_program
+///   15. `[]` token_program
+///   16. `[]` associated_token_program
+///   17. `[]` token_metadata_program
+///   18. `[]` rent
+///   19. `[]` clock
+///   20. `[]` event_authority
+///   21. `[]` program
 pub struct CreateBondingCurveCpiBuilder<'a, 'b> {
     instruction: Box<CreateBondingCurveCpiBuilderInstruction<'a, 'b>>,
 }
@@ -961,7 +903,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             creator_vault_token_account: None,
             presale_vault: None,
             presale_vault_token_account: None,
-            brand_authority: None,
             brand_vault: None,
             brand_vault_token_account: None,
             platform_vault: None,
@@ -969,7 +910,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             bonding_curve: None,
             bonding_curve_token_account: None,
             global: None,
-            global_token_account: None,
             metadata: None,
             system_program: None,
             token_program: None,
@@ -1039,14 +979,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn brand_authority(
-        &mut self,
-        brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.brand_authority = Some(brand_authority);
-        self
-    }
-    #[inline(always)]
     pub fn brand_vault(
         &mut self,
         brand_vault: &'b solana_program::account_info::AccountInfo<'a>,
@@ -1100,14 +1032,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         global: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.global = Some(global);
-        self
-    }
-    #[inline(always)]
-    pub fn global_token_account(
-        &mut self,
-        global_token_account: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.global_token_account = Some(global_token_account);
         self
     }
     #[inline(always)]
@@ -1328,11 +1252,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
                 .presale_vault_token_account
                 .expect("presale_vault_token_account is not set"),
 
-            brand_authority: self
-                .instruction
-                .brand_authority
-                .expect("brand_authority is not set"),
-
             brand_vault: self
                 .instruction
                 .brand_vault
@@ -1364,11 +1283,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
                 .expect("bonding_curve_token_account is not set"),
 
             global: self.instruction.global.expect("global is not set"),
-
-            global_token_account: self
-                .instruction
-                .global_token_account
-                .expect("global_token_account is not set"),
 
             metadata: self.instruction.metadata.expect("metadata is not set"),
 
@@ -1419,7 +1333,6 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     creator_vault_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     presale_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     presale_vault_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    brand_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     brand_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     brand_vault_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     platform_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -1427,7 +1340,6 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    global_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     metadata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,

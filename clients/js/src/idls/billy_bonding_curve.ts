@@ -124,11 +124,6 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "brandAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "brandVault",
           "isMut": true,
           "isSigner": false
@@ -161,11 +156,6 @@ export type BillyBondingCurve = {
         {
           "name": "global",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "globalTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -1409,11 +1399,6 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "brandAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "brandVault",
           "isMut": true,
           "isSigner": false
@@ -1446,11 +1431,6 @@ export const IDL: BillyBondingCurve = {
         {
           "name": "global",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "globalTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {

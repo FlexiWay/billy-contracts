@@ -124,11 +124,6 @@
           "isSigner": false
         },
         {
-          "name": "brandAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "brandVault",
           "isMut": true,
           "isSigner": false
@@ -161,11 +156,6 @@
         {
           "name": "global",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "globalTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {
