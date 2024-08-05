@@ -50,7 +50,7 @@ mod tests {
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
         println!("{:?} \n", buy_result);
-        assert_eq!(buy_result.token_amount, 825); // Adjusted based on available tokens
+        assert_eq!(buy_result.token_amount, 494); // Adjusted based on available tokens
         assert_eq!(buy_result.sol_amount, 2000);
         assert_eq!(
             curve.real_token_reserves,
@@ -102,17 +102,17 @@ mod tests {
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // first apply buy
-        curve.apply_buy(1000).unwrap();
+        curve.apply_buy(5000).unwrap();
 
         // let curve_initial = curve.clone();
-        let result = curve.apply_sell(200).unwrap();
+        let result = curve.apply_sell(20).unwrap();
         println!("{:?} \n", result);
-        assert_eq!(result.token_amount, 200);
-        assert_eq!(result.sol_amount, 793);
-        assert_eq!(curve.virtual_token_reserves, 603);
-        assert_eq!(curve.real_token_reserves, 530);
-        assert_eq!(curve.virtual_sol_reserves, 807);
-        assert_eq!(curve.real_sol_reserves, 207);
+        assert_eq!(result.token_amount, 20);
+        assert_eq!(result.sol_amount, 1619);
+        assert_eq!(curve.virtual_token_reserves, 89);
+        assert_eq!(curve.real_token_reserves, 46);
+        assert_eq!(curve.virtual_sol_reserves, 3981);
+        assert_eq!(curve.real_sol_reserves, 3381);
     }
 
     #[test]
@@ -139,14 +139,14 @@ mod tests {
         let mut bc = BondingCurve::default();
         let curve = bc.update_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // first apply buy
-        curve.apply_buy(1000).unwrap();
+        curve.apply_buy(3000).unwrap();
 
         // let curve_initial = curve.clone();
         // Edge case: zero tokens
         assert_eq!(curve.get_sell_price(0), None);
 
         // Normal case
-        assert_eq!(curve.get_sell_price(396), Some(1000));
+        assert_eq!(curve.get_sell_price(60), Some(1998));
 
         // Should not exceed real sol reserves
         assert_eq!(curve.get_sell_price(5000), None);
@@ -182,7 +182,7 @@ mod tests {
         let result = curve.apply_buy(purchase_amount).unwrap();
         println!("{:?} \n", result);
         assert_eq!(result.sol_amount, purchase_amount);
-        assert_eq!(result.token_amount, 153);
+        assert_eq!(result.token_amount, 91);
         assert_eq!(
             curve.virtual_token_reserves,
             curve_initial.virtual_token_reserves - result.token_amount as u128
@@ -222,7 +222,7 @@ mod tests {
         assert_eq!(curve.get_buy_price(0), None);
 
         // Normal case
-        assert_eq!(curve.get_buy_price(100), Some(62));
+        assert_eq!(curve.get_buy_price(100), Some(111));
 
         // Edge case: very large token amount
         assert_eq!(curve.get_buy_price(2000), None);
@@ -254,13 +254,13 @@ mod tests {
         // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
-        assert_eq!(curve.get_tokens_for_buy_sol(100), Some(153)); // Adjusted based on current method logic
+        assert_eq!(curve.get_tokens_for_buy_sol(100), Some(91));
 
         // Test case 2: Edge case - zero SOL
         assert_eq!(curve.get_tokens_for_buy_sol(0), None);
 
         // Test case 4: Large SOL amount (but within limits)
-        assert_eq!(curve.get_tokens_for_buy_sol(3000), Some(894));
+        assert_eq!(curve.get_tokens_for_buy_sol(3000), Some(535));
 
         // Test case 5: SOL amount that would exceed real token reserves
         assert_eq!(
@@ -297,7 +297,7 @@ mod tests {
         curve.apply_buy(1000).unwrap();
 
         // Test case 1: Normal case
-        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(25));
+        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(15));
 
         // Test case 2: Edge case - zero SOL
         assert_eq!(curve.get_tokens_for_sell_sol(0), None);
@@ -306,7 +306,7 @@ mod tests {
         assert_eq!(curve.get_tokens_for_sell_sol(1001), None);
 
         // Test case 4: Large SOL amount (but within limits)
-        assert_eq!(curve.get_tokens_for_sell_sol(500), Some(125));
+        assert_eq!(curve.get_tokens_for_sell_sol(500), Some(75));
     }
 
     // FUZZ TESTS

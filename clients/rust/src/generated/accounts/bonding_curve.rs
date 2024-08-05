@@ -49,6 +49,7 @@ pub struct BondingCurve {
     pub creator_vested_supply: u64,
     pub presale_supply: u64,
     pub bonding_supply: u64,
+    pub pool_supply: u64,
     pub cex_supply: u64,
     pub launch_brandkit_supply: u64,
     pub lifetime_brandkit_supply: u64,
@@ -62,7 +63,7 @@ pub struct BondingCurve {
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 354;
+    pub const LEN: usize = 370;
 
     /// Prefix values used to generate a PDA for this account.
     ///

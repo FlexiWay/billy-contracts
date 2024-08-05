@@ -9,13 +9,13 @@
 import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 
 
-export type AllocationData = { creator: bigint; cex: bigint; launchBrandkit: bigint; lifetimeBrandkit: bigint; platform: bigint; presale: bigint; poolReserve: bigint;  };
+export type AllocationData = { creator: bigint; cex: bigint; launchBrandkit: bigint; lifetimeBrandkit: bigint; platform: bigint; presale: bigint; curveReserve: bigint; poolReserve: bigint;  };
 
-export type AllocationDataArgs = { creator: number | bigint; cex: number | bigint; launchBrandkit: number | bigint; lifetimeBrandkit: number | bigint; platform: number | bigint; presale: number | bigint; poolReserve: number | bigint;  };
+export type AllocationDataArgs = { creator: number | bigint; cex: number | bigint; launchBrandkit: number | bigint; lifetimeBrandkit: number | bigint; platform: number | bigint; presale: number | bigint; curveReserve: number | bigint; poolReserve: number | bigint;  };
 
 
 export function getAllocationDataSerializer(): Serializer<AllocationDataArgs, AllocationData> {
-  return struct<AllocationData>([['creator', u64()], ['cex', u64()], ['launchBrandkit', u64()], ['lifetimeBrandkit', u64()], ['platform', u64()], ['presale', u64()], ['poolReserve', u64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
+  return struct<AllocationData>([['creator', u64()], ['cex', u64()], ['launchBrandkit', u64()], ['lifetimeBrandkit', u64()], ['platform', u64()], ['presale', u64()], ['curveReserve', u64()], ['poolReserve', u64()]], { description: 'AllocationData' }) as Serializer<AllocationDataArgs, AllocationData>;
 }
 
 

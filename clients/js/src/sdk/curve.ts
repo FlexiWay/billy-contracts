@@ -15,6 +15,7 @@ export class CurveSDK{
 
     mint:PublicKey;
     userTokenAccount:Pda;
+    globalTokenAccount:Pda;
 
     bondingCurvePda:Pda;
     bondingCurveTokenAccount:Pda;
@@ -65,6 +66,7 @@ export class CurveSDK{
         }
         const txBuilder = createBondingCurve(this.umi, {
             global: this.Billy.globalPda[0],
+            globalTokenAccount: this.globalTokenAccount[0],
 
             creator:this.umi.identity,
             mint: createSignerFromKeypair(this.umi, mintKp),
@@ -104,6 +106,10 @@ export class CurveSDK{
         this.userTokenAccount = findAssociatedTokenPda(this.umi, {
             mint: this.mint,
             owner: this.umi.identity.publicKey,
+        });
+        this.globalTokenAccount = findAssociatedTokenPda(this.umi, {
+            mint: this.mint,
+            owner: this.Billy.globalPda[0],
         });
 
 

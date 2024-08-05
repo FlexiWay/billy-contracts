@@ -1,6 +1,6 @@
-export type BillyBondingCurve = {
+export type LmaofunBondingCurve = {
   "version": "0.1.0",
-  "name": "billy_bonding_curve",
+  "name": "lmaofun_bonding_curve",
   "instructions": [
     {
       "name": "initialize",
@@ -164,11 +164,6 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "globalTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "metadata",
           "isMut": true,
           "isSigner": false
@@ -321,7 +316,7 @@ export type BillyBondingCurve = {
         },
         {
           "name": "bondingCurve",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -492,10 +487,6 @@ export type BillyBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "poolSupply",
-            "type": "u64"
-          },
-          {
             "name": "cexSupply",
             "type": "u64"
           },
@@ -591,7 +582,9 @@ export type BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           }
         ]
       }
@@ -619,11 +612,15 @@ export type BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "lastFeeWithdrawal",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "feesWithdrawn",
@@ -716,12 +713,6 @@ export type BillyBondingCurve = {
             }
           },
           {
-            "name": "curveReserve",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
             "name": "poolReserve",
             "type": {
               "option": "u64"
@@ -757,10 +748,6 @@ export type BillyBondingCurve = {
           },
           {
             "name": "presale",
-            "type": "u64"
-          },
-          {
-            "name": "curveReserve",
             "type": "u64"
           },
           {
@@ -1283,9 +1270,9 @@ export type BillyBondingCurve = {
   ]
 };
 
-export const IDL: BillyBondingCurve = {
+export const IDL: LmaofunBondingCurve = {
   "version": "0.1.0",
-  "name": "billy_bonding_curve",
+  "name": "lmaofun_bonding_curve",
   "instructions": [
     {
       "name": "initialize",
@@ -1449,11 +1436,6 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "globalTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "metadata",
           "isMut": true,
           "isSigner": false
@@ -1606,7 +1588,7 @@ export const IDL: BillyBondingCurve = {
         },
         {
           "name": "bondingCurve",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1777,10 +1759,6 @@ export const IDL: BillyBondingCurve = {
             "type": "u64"
           },
           {
-            "name": "poolSupply",
-            "type": "u64"
-          },
-          {
             "name": "cexSupply",
             "type": "u64"
           },
@@ -1876,7 +1854,9 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           }
         ]
       }
@@ -1904,11 +1884,15 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "lastDistribution",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "lastFeeWithdrawal",
-            "type": "i64"
+            "type": {
+              "option": "i64"
+            }
           },
           {
             "name": "feesWithdrawn",
@@ -2001,12 +1985,6 @@ export const IDL: BillyBondingCurve = {
             }
           },
           {
-            "name": "curveReserve",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
             "name": "poolReserve",
             "type": {
               "option": "u64"
@@ -2042,10 +2020,6 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "presale",
-            "type": "u64"
-          },
-          {
-            "name": "curveReserve",
             "type": "u64"
           },
           {

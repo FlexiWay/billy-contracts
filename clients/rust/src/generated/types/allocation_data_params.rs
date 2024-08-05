@@ -21,5 +21,6 @@ pub struct AllocationDataParams {
     pub lifetime_brandkit: Option<u64>,
     pub platform: Option<u64>,
     pub presale: Option<u64>,
+    pub curve_reserve: Option<u64>,
     pub pool_reserve: Option<u64>,
 }

@@ -12,6 +12,7 @@ pub struct AllocationDataParams {
     pub lifetime_brandkit: Option<u64>,
     pub platform: Option<u64>,
     pub presale: Option<u64>,
+    pub curve_reserve: Option<u64>,
     pub pool_reserve: Option<u64>,
 }
 impl Default for AllocationDataParams {
@@ -23,6 +24,7 @@ impl Default for AllocationDataParams {
             lifetime_brandkit: None,
             platform: None,
             presale: None,
+            curve_reserve: None,
             pool_reserve: None,
         }
     }
@@ -38,6 +40,7 @@ pub struct AllocationData {
     pub lifetime_brandkit: u64,
     pub platform: u64,
     pub presale: u64,
+    pub curve_reserve: u64,
     pub pool_reserve: u64,
 }
 
@@ -53,6 +56,7 @@ impl From<AllocationDataParams> for AllocationData {
                 .unwrap_or(default.lifetime_brandkit),
             platform: params.platform.unwrap_or(default.platform),
             presale: params.presale.unwrap_or(default.presale),
+            curve_reserve: params.curve_reserve.unwrap_or(default.curve_reserve),
             pool_reserve: params.pool_reserve.unwrap_or(default.pool_reserve),
         }
     }
@@ -60,14 +64,16 @@ impl From<AllocationDataParams> for AllocationData {
 
 impl Default for AllocationData {
     fn default() -> Self {
+        // TODO: discuss with team
         Self {
-            creator: 1000,
+            creator: 500,
             cex: 1000,
             launch_brandkit: 1000,
             lifetime_brandkit: 1000,
-            platform: 1000,
+            platform: 500,
             presale: 0u64,
-            pool_reserve: 5000,
+            curve_reserve: 3000,
+            pool_reserve: 3000,
         }
     }
 }
@@ -79,8 +85,9 @@ impl AllocationData {
             + self.lifetime_brandkit
             + self.platform
             + self.presale
+            + self.curve_reserve
             + self.pool_reserve
             == BASIS_POINTS_DIVISOR;
-        sum_is_right && self.pool_reserve > 0
+        sum_is_right && self.curve_reserve > 0 && self.pool_reserve == self.curve_reserve
     }
 }

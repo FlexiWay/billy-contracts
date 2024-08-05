@@ -164,6 +164,11 @@
           "isSigner": false
         },
         {
+          "name": "globalTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "metadata",
           "isMut": true,
           "isSigner": false
@@ -487,6 +492,10 @@
             "type": "u64"
           },
           {
+            "name": "poolSupply",
+            "type": "u64"
+          },
+          {
             "name": "cexSupply",
             "type": "u64"
           },
@@ -707,6 +716,12 @@
             }
           },
           {
+            "name": "curveReserve",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
             "name": "poolReserve",
             "type": {
               "option": "u64"
@@ -742,6 +757,10 @@
           },
           {
             "name": "presale",
+            "type": "u64"
+          },
+          {
+            "name": "curveReserve",
             "type": "u64"
           },
           {

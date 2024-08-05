@@ -44,7 +44,7 @@ pub struct CreateBondingCurve<'info> {
     )]
     creator_vault: Box<Account<'info, CreatorVault>>,
     #[account(
-        init_if_needed,
+        init,
         payer = creator,
         associated_token::mint = mint,
         associated_token::authority = creator_vault,
@@ -60,7 +60,7 @@ pub struct CreateBondingCurve<'info> {
     )]
     presale_vault: Box<Account<'info, PresaleVault>>,
     #[account(
-        init_if_needed,
+        init,
         payer = creator,
         associated_token::mint = mint,
         associated_token::authority = presale_vault,
@@ -79,7 +79,7 @@ pub struct CreateBondingCurve<'info> {
     )]
     brand_vault: Box<Account<'info, BrandVault>>,
     #[account(
-        init_if_needed,
+        init,
         payer = creator,
         associated_token::mint = mint,
         associated_token::authority = brand_vault,
@@ -95,7 +95,7 @@ pub struct CreateBondingCurve<'info> {
     )]
     platform_vault: Box<Account<'info, PlatformVault>>,
     #[account(
-        init_if_needed,
+        init,
         payer = creator,
         associated_token::mint = mint,
         associated_token::authority = platform_vault,
@@ -112,21 +112,13 @@ pub struct CreateBondingCurve<'info> {
     bonding_curve: Box<Account<'info, BondingCurve>>,
 
     #[account(
-        init_if_needed,
+        init,
         payer = creator,
         associated_token::mint = mint,
         associated_token::authority = bonding_curve,
     )]
     bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
 
-    // #[account(
-    //     init,
-    //     payer = creator,
-    //     seeds = [BondingCurveFeeVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-    //     bump,
-    //     space = 8 + BondingCurveFeeVault::INIT_SPACE
-    // )]
-    // bonding_curve_fee_vault: Box<Account<'info, BondingCurveFeeVault>>,
     #[account(
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ContractError::NotInitialized,
@@ -134,6 +126,14 @@ pub struct CreateBondingCurve<'info> {
         bump,
     )]
     global: Box<Account<'info, Global>>,
+
+    #[account(
+        init,
+        payer = creator,
+        associated_token::mint = mint,
+        associated_token::authority = global,
+    )]
+    global_token_account: Box<Account<'info, TokenAccount>>,
 
     ///CHECK: Using seed to validate metadata account
     #[account(
@@ -178,14 +178,20 @@ impl<'info> IntoBondingCurveLockerCtx<'info> for CreateBondingCurve<'info> {
 impl CreateBondingCurve<'_> {
     pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
         let clock = Clock::get()?;
-        msg!("allocation: {:#?}", params.allocation);
+        msg!(
+            "CreateBondingCurve::validate: allocation: {:#?}",
+            params.allocation
+        );
         // todo complete validation for params,allocations and start time
         require!(
             AllocationData::from(params.allocation).is_valid(),
             ContractError::InvalidAllocation
         );
 
-        msg!("not_allc");
+        msg!(
+            "CreateBondingCurve::validate: start_time: {:#?}",
+            params.start_time
+        );
 
         // validate start time
         if let Some(start_time) = params.start_time {
@@ -207,7 +213,7 @@ impl CreateBondingCurve<'_> {
         );
         match bc.get_max_attainable_sol() {
             Some(max_sol) => {
-                msg!("max:{}, thresh:{}", max_sol, params.sol_launch_threshold);
+                msg!("max:{}, threshold:{}", max_sol, params.sol_launch_threshold);
                 require!(
                     params.sol_launch_threshold <= max_sol,
                     ContractError::SOLLaunchThresholdTooHigh
@@ -314,6 +320,13 @@ impl CreateBondingCurve<'_> {
         let bonding_curve = self.bonding_curve.as_ref();
         let mint_info = self.mint.to_account_info();
         let mint_authority_info = self.bonding_curve.to_account_info();
+
+        // validate allocations again
+        require!(
+            bonding_curve.allocation.is_valid(),
+            ContractError::InvalidAllocation
+        );
+
         if bonding_curve.creator_vested_supply > 0 {
             // mint creator share to creator_vault_token_account
             mint_to(
@@ -366,8 +379,7 @@ impl CreateBondingCurve<'_> {
                 amount,
             )?;
             self.brand_vault.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
-            self.brand_vault.lifetime_brandkit_supply =
-                bonding_curve.lifetime_brandkit_supply;
+            self.brand_vault.lifetime_brandkit_supply = bonding_curve.lifetime_brandkit_supply;
             self.brand_vault.initial_vested_supply = amount;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
         }
@@ -388,7 +400,7 @@ impl CreateBondingCurve<'_> {
             self.platform_vault.initial_vested_supply = bonding_curve.platform_supply;
             msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
         }
-        // mint tokens to bonding_curve_token_account
+        // mint CURVE tokens to bonding_curve_token_account
         mint_to(
             CpiContext::new_with_signer(
                 self.token_program.to_account_info(),
@@ -402,6 +414,21 @@ impl CreateBondingCurve<'_> {
             bonding_curve.bonding_supply,
         )?;
         msg!("CreateBondingCurve::mint_allocations:bonding_curve.bonding_supply minted");
+
+        // mint RAYDIUM POOL tokens to global_token_account
+        mint_to(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                MintTo {
+                    authority: mint_authority_info.clone(),
+                    to: self.global_token_account.to_account_info(),
+                    mint: mint_info.clone(),
+                },
+                mint_auth_signer_seeds,
+            ),
+            bonding_curve.pool_supply,
+        )?;
+        msg!("CreateBondingCurve::mint_allocations:bonding_curve.pool_supply minted");
         msg!("CreateBondingCurve::mint_allocations: done");
         Ok(())
     }

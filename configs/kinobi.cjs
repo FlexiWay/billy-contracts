@@ -66,7 +66,7 @@ kinobi.update(
       lifetimeBrandkit: 10.0,
       platform: 10.0,
       presale: 0,
-      poolReserve: 50.0,
+      curveReserve: 50.0,
     },
   })
 );

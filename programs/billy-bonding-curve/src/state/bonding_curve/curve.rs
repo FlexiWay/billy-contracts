@@ -42,7 +42,8 @@ impl BondingCurve {
 
         let creator_vested_supply = bps_mul(allocation.creator, token_total_supply).unwrap();
         let presale_supply = bps_mul(allocation.presale, token_total_supply).unwrap();
-        let bonding_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
+        let bonding_supply = bps_mul(allocation.curve_reserve, token_total_supply).unwrap();
+        let pool_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
         let cex_supply = bps_mul(allocation.cex, token_total_supply).unwrap();
         let launch_brandkit_supply =
             bps_mul(allocation.launch_brandkit, token_total_supply).unwrap();
@@ -77,9 +78,10 @@ impl BondingCurve {
             real_token_reserves,
             token_total_supply,
 
+            bonding_supply,
+            pool_supply,
             creator_vested_supply,
             presale_supply,
-            bonding_supply,
             cex_supply,
             launch_brandkit_supply,
             lifetime_brandkit_supply,
