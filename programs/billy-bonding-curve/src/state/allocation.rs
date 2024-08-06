@@ -30,7 +30,9 @@ impl Default for AllocationDataParams {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace, Debug, PartialEq)]
+#[zero_copy]
+#[repr(C)]
+#[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Debug, PartialEq)]
 
 pub struct AllocationData {
     // BASIS POINTS

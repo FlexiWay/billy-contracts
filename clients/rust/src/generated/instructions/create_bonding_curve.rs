@@ -5,8 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AllocationDataParams;
-use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -200,8 +198,6 @@ pub struct CreateBondingCurveInstructionArgs {
     pub sol_launch_threshold: u64,
     pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64,
-    pub allocation: AllocationDataParams,
-    pub vesting_terms: Option<VestingTerms>,
 }
 
 /// Instruction builder for `CreateBondingCurve`.
@@ -262,8 +258,6 @@ pub struct CreateBondingCurveBuilder {
     sol_launch_threshold: Option<u64>,
     virtual_token_multiplier_bps: Option<u64>,
     virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationDataParams>,
-    vesting_terms: Option<VestingTerms>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -450,17 +444,6 @@ impl CreateBondingCurveBuilder {
         self.virtual_sol_reserves = Some(virtual_sol_reserves);
         self
     }
-    #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
-        self.allocation = Some(allocation);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn vesting_terms(&mut self, vesting_terms: VestingTerms) -> &mut Self {
-        self.vesting_terms = Some(vesting_terms);
-        self
-    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -547,8 +530,6 @@ impl CreateBondingCurveBuilder {
                 .virtual_sol_reserves
                 .clone()
                 .expect("virtual_sol_reserves is not set"),
-            allocation: self.allocation.clone().expect("allocation is not set"),
-            vesting_terms: self.vesting_terms.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -927,8 +908,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             sol_launch_threshold: None,
             virtual_token_multiplier_bps: None,
             virtual_sol_reserves: None,
-            allocation: None,
-            vesting_terms: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -1141,17 +1120,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self.instruction.virtual_sol_reserves = Some(virtual_sol_reserves);
         self
     }
-    #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
-        self.instruction.allocation = Some(allocation);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn vesting_terms(&mut self, vesting_terms: VestingTerms) -> &mut Self {
-        self.instruction.vesting_terms = Some(vesting_terms);
-        self
-    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -1218,12 +1186,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
                 .virtual_sol_reserves
                 .clone()
                 .expect("virtual_sol_reserves is not set"),
-            allocation: self
-                .instruction
-                .allocation
-                .clone()
-                .expect("allocation is not set"),
-            vesting_terms: self.instruction.vesting_terms.clone(),
         };
         let instruction = CreateBondingCurveCpi {
             __program: self.instruction.__program,
@@ -1357,8 +1319,6 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     sol_launch_threshold: Option<u64>,
     virtual_token_multiplier_bps: Option<u64>,
     virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationDataParams>,
-    vesting_terms: Option<VestingTerms>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

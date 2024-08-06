@@ -9,7 +9,6 @@
 import { Context, Option, OptionOrNullable, Pda, PublicKey, Signer, TransactionBuilder, publicKey, transactionBuilder } from '@metaplex-foundation/umi';
 import { Serializer, array, i64, mapSerializer, option, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { AllocationDataParams, AllocationDataParamsArgs, VestingTerms, VestingTermsArgs, getAllocationDataParamsSerializer, getVestingTermsSerializer } from '../types';
 
 // Accounts.
 export type CreateBondingCurveInstructionAccounts = {
@@ -38,13 +37,13 @@ export type CreateBondingCurveInstructionAccounts = {
 };
 
   // Data.
-  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; virtualTokenMultiplierBps: bigint; virtualSolReserves: bigint; allocation: AllocationDataParams; vestingTerms: Option<VestingTerms>;  };
+  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; virtualTokenMultiplierBps: bigint; virtualSolReserves: bigint;  };
 
-export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; virtualTokenMultiplierBps: number | bigint; virtualSolReserves: number | bigint; allocation: AllocationDataParamsArgs; vestingTerms: OptionOrNullable<VestingTermsArgs>;  };
+export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; virtualTokenMultiplierBps: number | bigint; virtualSolReserves: number | bigint;  };
 
 
   export function getCreateBondingCurveInstructionDataSerializer(): Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData> {
-  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['virtualTokenMultiplierBps', u64()], ['virtualSolReserves', u64()], ['allocation', getAllocationDataParamsSerializer()], ['vestingTerms', option(getVestingTermsSerializer())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
+  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['virtualTokenMultiplierBps', u64()], ['virtualSolReserves', u64()]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
 }
 
 

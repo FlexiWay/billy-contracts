@@ -814,20 +814,6 @@ export type BillyBondingCurve = {
           {
             "name": "virtualSolReserves",
             "type": "u64"
-          },
-          {
-            "name": "allocation",
-            "type": {
-              "defined": "AllocationDataParams"
-            }
-          },
-          {
-            "name": "vestingTerms",
-            "type": {
-              "option": {
-                "defined": "VestingTerms"
-              }
-            }
           }
         ]
       }
@@ -2089,20 +2075,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "virtualSolReserves",
             "type": "u64"
-          },
-          {
-            "name": "allocation",
-            "type": {
-              "defined": "AllocationDataParams"
-            }
-          },
-          {
-            "name": "vestingTerms",
-            "type": {
-              "option": {
-                "defined": "VestingTerms"
-              }
-            }
           }
         ]
       }

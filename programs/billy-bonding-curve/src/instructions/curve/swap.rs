@@ -40,10 +40,10 @@ pub struct Swap<'info> {
     #[account(
         mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        constraint = bonding_curve.complete == false @ ContractError::BondingCurveComplete,
+        constraint = bonding_curve.load()?.complete == false @ ContractError::BondingCurveComplete,
         bump,
     )]
-    bonding_curve: Box<Account<'info, BondingCurve>>,
+    bonding_curve: AccountLoader<'info, BondingCurve>,
 
     #[account(
         mut,
@@ -96,7 +96,7 @@ impl Swap<'_> {
         let clock = Clock::get()?;
 
         require!(
-            self.bonding_curve.is_started(&clock),
+            self.bonding_curve.load()?.is_started(&clock),
             ContractError::CurveNotStarted
         );
         require!(exact_in_amount > &0, ContractError::MinSwap);
@@ -125,62 +125,54 @@ impl Swap<'_> {
         let sol_amount: u64;
         let token_amount: u64;
         let fee_lamports: u64;
-
+        let sell_result: SellResult;
+        let buy_result: BuyResult;
         if base_in {
             // Sell tokens
             require!(
                 ctx.accounts.user_token_account.amount >= exact_in_amount,
                 ContractError::InsufficientUserTokens,
             );
+            {
+                let mut bonding_curve = ctx.accounts.bonding_curve.load_mut()?;
+                sell_result = bonding_curve
+                    .apply_sell(exact_in_amount)
+                    .ok_or(ContractError::SellFailed)?;
 
-            let sell_result = ctx
-                .accounts
-                .bonding_curve
-                .apply_sell(exact_in_amount)
-                .ok_or(ContractError::SellFailed)?;
+                sol_amount = sell_result.sol_amount;
+                token_amount = sell_result.token_amount;
+                fee_lamports = global_state.calculate_fee(sol_amount);
 
-            sol_amount = sell_result.sol_amount;
-            token_amount = sell_result.token_amount;
-            fee_lamports = global_state.calculate_fee(sol_amount);
-
-            msg!("SellResult: {:#?}", sell_result);
-            msg!("Fee: {} SOL", fee_lamports.div(10u64.pow(9))); // lamports to SOL
-            Swap::complete_sell(&ctx, sell_result.clone(), min_out_amount, fee_lamports)?;
-        } else {
-            // Buy tokens
-            let buy_result = ctx
-                .accounts
-                .bonding_curve
-                .apply_buy(exact_in_amount)
-                .ok_or(ContractError::BuyFailed)?;
-
-            sol_amount = buy_result.sol_amount;
-            token_amount = buy_result.token_amount;
-            fee_lamports = global_state.calculate_fee(exact_in_amount);
-            msg!("Fee: {} lamports", fee_lamports);
-
-            msg!("BuyResult: {:#?}", buy_result);
-
-            Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
-
-            let bonding_curve_total_lamports = ctx.accounts.bonding_curve.get_lamports();
-            let min_balance = Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
-            let bonding_curve_pool_lamports = bonding_curve_total_lamports - min_balance;
-
-            // can be completed only after a buy
-            if bonding_curve_pool_lamports >= ctx.accounts.bonding_curve.sol_launch_threshold {
-                // has been completed
-                ctx.accounts.bonding_curve.complete = true;
-                locker.revoke_freeze_authority()?;
+                msg!("SellResult: {:#?}", sell_result);
+                msg!("Fee: {} SOL", fee_lamports.div(10u64.pow(9))); // lamports to SOL
             }
+            Swap::complete_sell(&ctx, sell_result, min_out_amount, fee_lamports)?;
+        } else {
+            {
+                let mut bonding_curve = ctx.accounts.bonding_curve.load_mut()?;
+
+                // Buy tokens
+                buy_result = bonding_curve
+                    .apply_buy(exact_in_amount)
+                    .ok_or(ContractError::BuyFailed)?;
+
+                sol_amount = buy_result.sol_amount;
+                token_amount = buy_result.token_amount;
+                fee_lamports = global_state.calculate_fee(exact_in_amount);
+                msg!("Fee: {} lamports", fee_lamports);
+
+                msg!("BuyResult: {:#?}", buy_result);
+            }
+
+            Swap::complete_buy(&ctx, buy_result, min_out_amount, fee_lamports)?;
         }
 
-        BondingCurve::invariant(
-            &mut ctx
-                .accounts
-                .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve),
-        )?;
-        let bonding_curve = &ctx.accounts.bonding_curve;
+        ctx.accounts
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve)
+            .invariant()?;
+        // BondingCurve::invariant(
+        // )?;
+        let mut bonding_curve = ctx.accounts.bonding_curve.load_mut()?;
         emit_cpi!(TradeEvent {
             mint: *ctx.accounts.mint.to_account_info().key,
             sol_amount: sol_amount,
@@ -194,6 +186,16 @@ impl Swap<'_> {
             real_sol_reserves: bonding_curve.real_sol_reserves,
             real_token_reserves: bonding_curve.real_token_reserves,
         });
+        let bonding_curve_total_lamports = ctx.accounts.bonding_curve.get_lamports();
+        let min_balance = Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
+        let bonding_curve_pool_lamports = bonding_curve_total_lamports - min_balance;
+
+        // can be completed only after a buy
+        if bonding_curve_pool_lamports >= bonding_curve.sol_launch_threshold {
+            // has been completed
+            bonding_curve.complete = true;
+            locker.revoke_freeze_authority()?;
+        }
         if bonding_curve.complete {
             emit_cpi!(CompleteEvent {
                 user: *ctx.accounts.user.to_account_info().key,

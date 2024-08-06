@@ -814,20 +814,6 @@
           {
             "name": "virtualSolReserves",
             "type": "u64"
-          },
-          {
-            "name": "allocation",
-            "type": {
-              "defined": "AllocationDataParams"
-            }
-          },
-          {
-            "name": "vestingTerms",
-            "type": {
-              "option": {
-                "defined": "VestingTerms"
-              }
-            }
           }
         ]
       }

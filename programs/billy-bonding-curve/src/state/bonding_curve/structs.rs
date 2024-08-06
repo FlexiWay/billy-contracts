@@ -3,7 +3,9 @@ use anchor_lang::prelude::*;
 
 use crate::state::allocation::AllocationDataParams;
 
-#[derive(Debug, Clone, AnchorSerialize, InitSpace, AnchorDeserialize)]
+#[zero_copy]
+#[repr(C)]
+#[derive(Debug, AnchorSerialize, InitSpace, AnchorDeserialize)]
 pub struct VestingTerms {
     pub cliff: i64,
     pub duration: i64,
@@ -30,8 +32,9 @@ pub struct SellResult {
     pub sol_amount: u64,
 }
 
-#[account]
-#[derive(InitSpace, Debug, Default)]
+#[account(zero_copy(unsafe))]
+#[repr(C)]
+#[derive(Debug, Default)]
 pub struct BondingCurve {
     pub mint: Pubkey,
 
@@ -71,6 +74,9 @@ pub struct BondingCurve {
 
     pub bump: u8,
 }
+impl Space for BondingCurve {
+    const INIT_SPACE: usize = 376;
+}
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct CreateBondingCurveParams {
     pub name: String,
@@ -84,7 +90,7 @@ pub struct CreateBondingCurveParams {
     pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64, // should this be fixed instead?
 
-    pub allocation: AllocationDataParams,
+                                   // pub allocation: AllocationDataParams,
 
-    pub vesting_terms: Option<VestingTerms>,
+                                   // pub vesting_terms: Option<VestingTerms>,
 }

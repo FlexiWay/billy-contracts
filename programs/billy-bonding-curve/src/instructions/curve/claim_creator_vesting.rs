@@ -1,6 +1,10 @@
 use crate::{
     errors::ContractError,
-    state::{bonding_curve::BondingCurve, global::*, vaults::CreatorVault},
+    state::{
+        bonding_curve::{self, BondingCurve},
+        global::*,
+        vaults::CreatorVault,
+    },
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -12,7 +16,7 @@ use anchor_spl::{
 #[derive(Accounts)]
 pub struct ClaimCreatorVesting<'info> {
     #[account(mut,
-    constraint = creator.key() == bonding_curve.creator.key() @ ContractError::InvalidCreatorAuthority
+    constraint = creator.key() == bonding_curve.load()?.creator.key() @ ContractError::InvalidCreatorAuthority
     )]
     creator: Signer<'info>,
 
@@ -33,7 +37,7 @@ pub struct ClaimCreatorVesting<'info> {
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
-    bonding_curve: Box<Account<'info, BondingCurve>>,
+    bonding_curve: AccountLoader<'info, BondingCurve>,
     #[account(
         init_if_needed,
         payer = creator,
@@ -63,18 +67,19 @@ pub struct ClaimCreatorVesting<'info> {
 impl ClaimCreatorVesting<'_> {
     pub fn validate(&self) -> Result<()> {
         let clock = Clock::get()?;
+        let bonding_curve = self.bonding_curve.load()?;
         require!(
-            self.bonding_curve.is_started(&clock),
+            bonding_curve.is_started(&clock),
             ContractError::CurveNotStarted
         );
 
         let seconds_since_start = clock
             .unix_timestamp
-            .checked_sub(self.bonding_curve.start_time)
+            .checked_sub(bonding_curve.start_time)
             .unwrap();
 
         require!(
-            seconds_since_start > self.bonding_curve.vesting_terms.cliff,
+            seconds_since_start > bonding_curve.vesting_terms.cliff,
             ContractError::CliffNotReached
         );
 
@@ -83,10 +88,10 @@ impl ClaimCreatorVesting<'_> {
     pub fn handler(ctx: Context<ClaimCreatorVesting>) -> Result<()> {
         let clock = Clock::get()?;
         {
-            let acc_info = ctx.accounts.creator_vault.to_account_info().clone();
+            let bonding_curve = ctx.accounts.bonding_curve.load()?;
             let creator_vault = ctx.accounts.creator_vault.load()?;
             let tokens_per_second = (creator_vault.initial_vested_supply as i64)
-                .checked_div(ctx.accounts.bonding_curve.vesting_terms.duration)
+                .checked_div(bonding_curve.vesting_terms.duration)
                 .unwrap() as u64;
 
             msg!(
@@ -107,13 +112,14 @@ impl ClaimCreatorVesting<'_> {
                 start_second = last_distribution + 1;
             } else {
                 msg!("First distribution");
-                start_second = ctx.accounts.bonding_curve.start_time
-                    + ctx.accounts.bonding_curve.vesting_terms.cliff
+                start_second = bonding_curve.start_time + bonding_curve.vesting_terms.cliff
             }
             msg!(
                 "ClaimCreatorVesting::handler: start_second: {}",
                 start_second
             );
+            msg!("now: {}", clock.unix_timestamp);
+            msg!("diff: {}", clock.unix_timestamp - start_second);
             let seconds_since_start_second =
                 clock.unix_timestamp.checked_sub(start_second).unwrap();
             msg!(
@@ -128,7 +134,7 @@ impl ClaimCreatorVesting<'_> {
                 tokens_to_distribute
             );
 
-            let mint_k = ctx.accounts.bonding_curve.mint.key();
+            let mint_k = bonding_curve.mint.key();
             let signer = CreatorVault::get_signer(&ctx.bumps.creator_vault, &mint_k);
             let signer_seeds = &[&signer[..]];
 
@@ -138,7 +144,7 @@ impl ClaimCreatorVesting<'_> {
                     token::Transfer {
                         from: ctx.accounts.creator_vault_token_account.to_account_info(),
                         to: ctx.accounts.user_token_account.to_account_info(),
-                        authority: acc_info,
+                        authority: ctx.accounts.creator_vault.to_account_info(),
                     },
                     signer_seeds,
                 ),
