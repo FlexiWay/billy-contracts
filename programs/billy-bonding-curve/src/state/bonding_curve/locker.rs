@@ -3,38 +3,25 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::spl_token::instruction::AuthorityType;
 use anchor_spl::token::{self, FreezeAccount, Mint, ThawAccount, Token, TokenAccount};
 
-use crate::state::bonding_curve::BondingCurve;
+use crate::state::bonding_curve::curve::BondingCurve;
 
-// #[derive(Accounts)]
+use super::authority::BondingCurveAuthority;
+
 pub struct BondingCurveLockerCtx<'info> {
-    pub bonding_curve_bump: u8,
-    // #[account()]
-    pub mint: Box<Account<'info, Mint>>,
+    pub bonding_curve_authority_bump: u8,
 
-    // // #[account(
-    // //     mut,
-    // //     seeds = [Global::SEED_PREFIX.as_bytes()],
-    // //     bump,
-    // // )]
-    // pub global: Box<Account<'info, Global>>,
-    // #[account(
-    //     mut,
-    //     seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-    //     bump,
-    // )]
-    pub bonding_curve: Box<Account<'info, BondingCurve>>,
-    // #[account(
-    //     mut,
-    //     associated_token::mint = mint,
-    //     associated_token::authority = bonding_curve,
-    // )]
-    pub bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
+    pub mint: Box<Account<'info, Mint>>,
+    pub bonding_curve_authority: Box<Account<'info, BondingCurveAuthority>>,
+    pub bonding_curve_authority_token_account: Box<Account<'info, TokenAccount>>,
+
     pub token_program: Program<'info, Token>,
 }
 impl BondingCurveLockerCtx<'_> {
     fn get_signer<'a>(&self) -> [&[u8]; 3] {
-        let signer: [&[u8]; 3] =
-            BondingCurve::get_signer(&self.bonding_curve_bump, self.mint.to_account_info().key);
+        let signer: [&[u8]; 3] = BondingCurveAuthority::get_signer(
+            &self.bonding_curve_authority_bump,
+            self.mint.to_account_info().key,
+        );
         signer
     }
     pub fn lock_ata<'a>(&self) -> Result<()> {
@@ -42,9 +29,9 @@ impl BondingCurveLockerCtx<'_> {
         let signer_seeds: &[&[&[u8]]; 1] = &[&signer[..]];
 
         let accs = FreezeAccount {
-            account: self.bonding_curve_token_account.to_account_info(),
+            account: self.bonding_curve_authority_token_account.to_account_info(),
             mint: self.mint.to_account_info(),
-            authority: self.bonding_curve.to_account_info(),
+            authority: self.bonding_curve_authority.to_account_info(),
         };
         token::freeze_account(CpiContext::new_with_signer(
             self.token_program.to_account_info(),
@@ -60,9 +47,9 @@ impl BondingCurveLockerCtx<'_> {
         let signer_seeds: &[&[&[u8]]; 1] = &[&signer[..]];
 
         let accs = ThawAccount {
-            account: self.bonding_curve_token_account.to_account_info(),
+            account: self.bonding_curve_authority_token_account.to_account_info(),
             mint: self.mint.to_account_info(),
-            authority: self.bonding_curve.to_account_info(),
+            authority: self.bonding_curve_authority.to_account_info(),
         };
         token::thaw_account(CpiContext::new_with_signer(
             self.token_program.to_account_info(),
@@ -76,7 +63,7 @@ impl BondingCurveLockerCtx<'_> {
 
     pub fn revoke_mint_authority(&self) -> Result<()> {
         let mint_info = self.mint.to_account_info();
-        let mint_authority_info = self.bonding_curve.to_account_info();
+        let mint_authority_info = self.bonding_curve_authority.to_account_info();
         let signer = self.get_signer();
         let signer_seeds: &[&[&[u8]]; 1] = &[&signer[..]];
 
@@ -100,7 +87,7 @@ impl BondingCurveLockerCtx<'_> {
 
     pub fn revoke_freeze_authority(&self) -> Result<()> {
         let mint_info = self.mint.to_account_info();
-        let mint_authority_info = self.bonding_curve.to_account_info();
+        let mint_authority_info = self.bonding_curve_authority.to_account_info();
         let signer = self.get_signer();
         let signer_seeds: &[&[&[u8]]; 1] = &[&signer[..]];
 
@@ -125,6 +112,8 @@ impl BondingCurveLockerCtx<'_> {
 }
 
 pub trait IntoBondingCurveLockerCtx<'info> {
-    fn into_bonding_curve_locker_ctx(&self, bonding_curve_bump: u8)
-        -> BondingCurveLockerCtx<'info>;
+    fn into_bonding_curve_locker_ctx(
+        &self,
+        bonding_curve_authority_bump: u8,
+    ) -> BondingCurveLockerCtx<'info>;
 }

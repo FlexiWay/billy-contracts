@@ -6,22 +6,22 @@ import { CreateBondingCurveInstructionArgs, ProgramStatus,AllocationDataArgs, Al
 
 
 export const TOKEN_DECIMALS = 6;
-export const INIT_ALLOCATIONS_PCS :AllocationDataParamsArgs= {
-    creator:some(500),
-    cex:some(1000),
-    launchBrandkit:some(1000),
-    lifetimeBrandkit:some(1000),
-    platform:some(500),
-    presale:none(),
-    curveReserve:some(3000),
-    poolReserve:some(3000),
+export const INIT_ALLOCATIONS_BPS :AllocationDataParamsArgs= {
+    creator:500n,
+    cex:1000n,
+    launchBrandkit:1000n,
+    lifetimeBrandkit:1000n,
+    platform:500n,
+    presale:0n,
+    curveReserve:3000n,
+    poolReserve:3000n,
 }
 
 export const DECIMALS_MULTIPLIER = 10 ** TOKEN_DECIMALS;
 export const TOKEN_SUPPLY_AMOUNT = 2_000* 1_000_000;
 export const VIRTUAL_TOKEN_MULTIPLIER_BPS = 730// +7.3%
 export const DEFAULT_TOKEN_SUPPLY= TOKEN_SUPPLY_AMOUNT * DECIMALS_MULTIPLIER;
-export const POOL_INITIAL_TOKEN_SUPPLY = DEFAULT_TOKEN_SUPPLY *Number( INIT_ALLOCATIONS_PCS.curveReserve)/100;
+export const POOL_INITIAL_TOKEN_SUPPLY = DEFAULT_TOKEN_SUPPLY *Number( INIT_ALLOCATIONS_BPS.curveReserve)/100;
 
 export const SIMPLE_DEFAULT_BONDING_CURVE_PRESET:CreateBondingCurveInstructionArgs ={
     name: "simpleBondingCurve",
@@ -37,7 +37,7 @@ export const SIMPLE_DEFAULT_BONDING_CURVE_PRESET:CreateBondingCurveInstructionAr
     virtualTokenMultiplierBps : VIRTUAL_TOKEN_MULTIPLIER_BPS,
     virtualSolReserves: 30 * LAMPORTS_PER_SOL,
 
-    allocation: INIT_ALLOCATIONS_PCS,
+    allocation: INIT_ALLOCATIONS_BPS,
 
 }
 

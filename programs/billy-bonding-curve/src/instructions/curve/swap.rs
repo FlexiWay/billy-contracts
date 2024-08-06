@@ -12,7 +12,7 @@ use crate::{
     state::{bonding_curve::*, global::*, vaults::PlatformVault},
 };
 
-use crate::state::bonding_curve::locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx};
+use crate::state::bonding_curve::{authority::*, curve::*, locker::*, structs::*};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct SwapParams {
@@ -37,6 +37,9 @@ pub struct Swap<'info> {
 
     mint: Box<Account<'info, Mint>>,
 
+    #[account(mut, seeds = [BondingCurveAuthority::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()], bump)]
+    bonding_curve_authority: Box<Account<'info, BondingCurveAuthority>>,
+
     #[account(
         mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
@@ -48,15 +51,10 @@ pub struct Swap<'info> {
     #[account(
         mut,
         associated_token::mint = mint,
-        associated_token::authority = bonding_curve,
+        associated_token::authority = bonding_curve_authority,
     )]
-    bonding_curve_token_account: Box<Account<'info, TokenAccount>>,
-    #[account(
-        mut,
-        seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        bump,
-    )]
-    platform_vault: Box<Account<'info, PlatformVault>>,
+    bonding_curve_authority_token_account: Box<Account<'info, TokenAccount>>,
+
     #[account(
         init_if_needed,
         payer = user,
@@ -75,13 +73,15 @@ pub struct Swap<'info> {
 impl<'info> IntoBondingCurveLockerCtx<'info> for Swap<'info> {
     fn into_bonding_curve_locker_ctx(
         &self,
-        bonding_curve_bump: u8,
+        bonding_curve_authority_bump: u8,
     ) -> BondingCurveLockerCtx<'info> {
         BondingCurveLockerCtx {
-            bonding_curve_bump,
+            bonding_curve_authority_bump,
             mint: self.mint.clone(),
-            bonding_curve: self.bonding_curve.clone(),
-            bonding_curve_token_account: self.bonding_curve_token_account.clone(),
+            bonding_curve_authority: self.bonding_curve_authority.clone(),
+            bonding_curve_authority_token_account: self
+                .bonding_curve_authority_token_account
+                .clone(),
             token_program: self.token_program.clone(),
         }
     }
@@ -119,7 +119,7 @@ impl Swap<'_> {
         let global_state = &ctx.accounts.global;
         let locker: &mut BondingCurveLockerCtx = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
         locker.unlock_ata()?;
 
         let sol_amount: u64;
@@ -176,9 +176,10 @@ impl Swap<'_> {
         }
 
         BondingCurve::invariant(
+            &ctx.accounts.bonding_curve,
             &mut ctx
                 .accounts
-                .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve),
+                .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority),
         )?;
         let bonding_curve = &ctx.accounts.bonding_curve;
         emit_cpi!(TradeEvent {
@@ -236,13 +237,16 @@ impl Swap<'_> {
 
         // Transfer tokens to user
         let cpi_accounts = Transfer {
-            from: ctx.accounts.bonding_curve_token_account.to_account_info(),
+            from: ctx
+                .accounts
+                .bonding_curve_authority_token_account
+                .to_account_info(),
             to: ctx.accounts.user_token_account.to_account_info(),
-            authority: bonding_curve.to_account_info(),
+            authority: ctx.accounts.bonding_curve_authority.to_account_info(),
         };
 
-        let signer = BondingCurve::get_signer(
-            &ctx.bumps.bonding_curve,
+        let signer = BondingCurveAuthority::get_signer(
+            &ctx.bumps.bonding_curve_authority,
             ctx.accounts.mint.to_account_info().key,
         );
         let signer_seeds = &[&signer[..]];
@@ -256,7 +260,7 @@ impl Swap<'_> {
         )?;
         let locker = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
         locker.lock_ata()?;
         msg!("Token transfer complete");
 
@@ -281,7 +285,7 @@ impl Swap<'_> {
         // Transfer SOL to fee recipient
         let fee_transfer_instruction = system_instruction::transfer(
             ctx.accounts.user.key,
-            &ctx.accounts.platform_vault.key(),
+            &ctx.accounts.bonding_curve_authority.key(),
             fee_lamports,
         );
 
@@ -289,12 +293,12 @@ impl Swap<'_> {
             &fee_transfer_instruction,
             &[
                 ctx.accounts.user.to_account_info(),
-                ctx.accounts.platform_vault.to_account_info(),
+                ctx.accounts.bonding_curve_authority.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
             &[],
         )?;
-        msg!("Fee transfer to platform_vault complete");
+        msg!("Fee transfer to bonding_curve_authority complete");
 
         Ok(())
     }
@@ -317,7 +321,10 @@ impl Swap<'_> {
         // Transfer tokens to bonding curve
         let cpi_accounts = Transfer {
             from: ctx.accounts.user_token_account.to_account_info(),
-            to: ctx.accounts.bonding_curve_token_account.to_account_info(),
+            to: ctx
+                .accounts
+                .bonding_curve_authority_token_account
+                .to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         };
 
@@ -327,7 +334,7 @@ impl Swap<'_> {
         )?;
         let locker = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
         locker.lock_ata()?;
 
         msg!("Token to bonding curve transfer complete");
@@ -349,10 +356,10 @@ impl Swap<'_> {
             .sub_lamports(fee_lamports)
             .unwrap();
         ctx.accounts
-            .platform_vault
+            .bonding_curve_authority
             .add_lamports(fee_lamports)
             .unwrap();
-        msg!("Fee to platform_vault transfer complete");
+        msg!("Fee to bonding_curve_authority transfer complete");
         Ok(())
     }
 }

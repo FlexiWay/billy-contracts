@@ -1,17 +1,17 @@
 #[cfg(test)]
 mod tests {
-    use anchor_lang::prelude::{Clock, Pubkey};
-    use once_cell::sync::Lazy;
-    use structs::{BondingCurve, CreateBondingCurveParams};
-
     use crate::{
         state::{allocation::AllocationDataParams, bonding_curve::*},
         util::BASIS_POINTS_DIVISOR,
     };
+    use anchor_lang::prelude::{Clock, Pubkey};
+    use curve::BondingCurve;
+    use once_cell::sync::Lazy;
     use std::{
         ops::Mul,
         time::{SystemTime, UNIX_EPOCH},
     };
+    use structs::CreateBondingCurveParams;
     static START_TIME: Lazy<i64> = Lazy::new(|| {
         SystemTime::now()
             .duration_since(UNIX_EPOCH)

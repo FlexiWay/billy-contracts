@@ -5,7 +5,7 @@ import {
   } from "@metaplex-foundation/mpl-token-metadata";
 import { fromWeb3JsPublicKey } from "@metaplex-foundation/umi-web3js-adapters";
 import { SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
-import { createBondingCurve, CreateBondingCurveInstructionDataArgs, fetchBondingCurve, findBondingCurvePda, findBrandVaultPda, findCreatorVaultPda, findPlatformVaultPda, findPresaleVaultPda, swap, SwapInstructionArgs } from "../generated";
+import { createBondingCurve, CreateBondingCurveInstructionDataArgs, fetchBondingCurve, findBondingCurveAuthorityPda, findBondingCurvePda, findBrandVaultPda, findCreatorVaultPda, findPlatformVaultPda, findPresaleVaultPda, swap, SwapInstructionArgs } from "../generated";
 import { BillySDK } from "./billy";
 import { claimCreatorVesting } from '../generated/instructions/claimCreatorVesting';
 
@@ -18,7 +18,9 @@ export class CurveSDK{
     globalTokenAccount:Pda;
 
     bondingCurvePda:Pda;
-    bondingCurveTokenAccount:Pda;
+    bondingCurveAuthorityPda:Pda;
+
+    bondingCurveAuthorityTokenAccount:Pda;
 
     mintMetaPda:Pda;
 
@@ -50,7 +52,8 @@ export class CurveSDK{
             minOutAmount: params.minOutAmount,
             mint: this.mint,
             bondingCurve: this.bondingCurvePda[0],
-            bondingCurveTokenAccount: this.bondingCurveTokenAccount[0],
+            bondingCurveAuthority: this.bondingCurveAuthorityPda[0],
+            bondingCurveAuthorityTokenAccount: this.bondingCurveAuthorityTokenAccount[0],
             userTokenAccount: this.userTokenAccount[0],
             platformVault: this.platformVaultPda[0],
             clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
@@ -66,27 +69,29 @@ export class CurveSDK{
         }
         const txBuilder = createBondingCurve(this.umi, {
             global: this.Billy.globalPda[0],
-            globalTokenAccount: this.globalTokenAccount[0],
+            // globalTokenAccount: this.globalTokenAccount[0],
 
             creator:this.umi.identity,
             mint: createSignerFromKeypair(this.umi, mintKp),
 
             bondingCurve: this.bondingCurvePda[0],
-            bondingCurveTokenAccount: this.bondingCurveTokenAccount[0],
+            bondingCurveAuthority: this.bondingCurveAuthorityPda[0],
 
-            creatorVault: this.creatorVaultPda[0],
-            creatorVaultTokenAccount: this.creatorVaultTokenAccount[0],
+            bondingCurveAuthorityTokenAccount: this.bondingCurveAuthorityTokenAccount[0],
 
-            presaleVault: this.presaleVaultPda[0],
-            presaleVaultTokenAccount: this.presaleVaultTokenAccount[0],
+            // creatorVault: this.creatorVaultPda[0],
+            // creatorVaultTokenAccount: this.creatorVaultTokenAccount[0],
+
+            // presaleVault: this.presaleVaultPda[0],
+            // presaleVaultTokenAccount: this.presaleVaultTokenAccount[0],
 
             // selected brand authority or creator
             brandAuthority: brandAuthority || this.umi.identity.publicKey,
 
-            brandVault: this.brandVaultPda[0],
-            brandVaultTokenAccount: this.brandVaultTokenAccount[0],
-            platformVault: this.platformVaultPda[0],
-            platformVaultTokenAccount: this.platformVaultTokenAccount[0],
+            // brandVault: this.brandVaultPda[0],
+            // brandVaultTokenAccount: this.brandVaultTokenAccount[0],
+            // platformVault: this.platformVaultPda[0],
+            // platformVaultTokenAccount: this.platformVaultTokenAccount[0],
 
 
             metadata: this.mintMetaPda[0],
@@ -116,9 +121,12 @@ export class CurveSDK{
         this.bondingCurvePda = findBondingCurvePda(this.umi, {
             mint: this.mint,
         });
-        this.bondingCurveTokenAccount = findAssociatedTokenPda(this.umi, {
+        this.bondingCurveAuthorityPda = findBondingCurveAuthorityPda(this.umi, {
             mint: this.mint,
-            owner: this.bondingCurvePda[0],
+        });
+        this.bondingCurveAuthorityTokenAccount = findAssociatedTokenPda(this.umi, {
+            mint: this.mint,
+            owner: this.bondingCurveAuthorityPda[0],
         });
         this.mintMetaPda = findMetadataPda(this.umi, {
             mint: this.mint,

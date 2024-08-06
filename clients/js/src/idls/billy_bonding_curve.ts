@@ -104,47 +104,12 @@ export type BillyBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "creatorVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "presaleVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "presaleVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "brandVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "brandVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVaultTokenAccount",
+          "name": "bondingCurveAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -154,18 +119,13 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAuthorityTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "global",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "globalTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -242,17 +202,17 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "bondingCurveAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVault",
+          "name": "bondingCurveAuthorityTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -430,6 +390,18 @@ export type BillyBondingCurve = {
     }
   ],
   "accounts": [
+    {
+      "name": "bondingCurveAuthority",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "bondingCurve",
       "type": {
@@ -681,51 +653,35 @@ export type BillyBondingCurve = {
         "fields": [
           {
             "name": "creator",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "cex",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "launchBrandkit",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "lifetimeBrandkit",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "platform",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "presale",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "curveReserve",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "poolReserve",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           }
         ]
       }
@@ -1389,47 +1345,12 @@ export const IDL: BillyBondingCurve = {
           "isSigner": true
         },
         {
-          "name": "creatorVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "creatorVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "presaleVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "presaleVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "brandAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "brandVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "brandVaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVaultTokenAccount",
+          "name": "bondingCurveAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -1439,18 +1360,13 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAuthorityTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "global",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "globalTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -1527,17 +1443,17 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
+          "name": "bondingCurveAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "platformVault",
+          "name": "bondingCurveAuthorityTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1715,6 +1631,18 @@ export const IDL: BillyBondingCurve = {
     }
   ],
   "accounts": [
+    {
+      "name": "bondingCurveAuthority",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "bondingCurve",
       "type": {
@@ -1966,51 +1894,35 @@ export const IDL: BillyBondingCurve = {
         "fields": [
           {
             "name": "creator",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "cex",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "launchBrandkit",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "lifetimeBrandkit",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "platform",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "presale",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "curveReserve",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           },
           {
             "name": "poolReserve",
-            "type": {
-              "option": "u64"
-            }
+            "type": "u64"
           }
         ]
       }

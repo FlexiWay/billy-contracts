@@ -262,7 +262,7 @@ const labelKeypairs = async (umi) => {
   amman.addr.addLabel("simpleMintBondingCurve", curveSdk.bondingCurvePda[0]);
   amman.addr.addLabel(
     "simpleMintBondingCurveTknAcc",
-    curveSdk.bondingCurveTokenAccount[0]
+    curveSdk.bondingCurveAuthorityTokenAccount[0]
   );
   amman.addr.addLabel("metadata", curveSdk.mintMetaPda[0]);
 
@@ -371,7 +371,10 @@ describe("billy-bonding", () => {
 
     console.log("globalPda[0]", curveSdk.Billy.globalPda[0]);
     console.log("bondingCurvePda[0]", curveSdk.bondingCurvePda[0]);
-    console.log("bondingCurveTknAcc[0]", curveSdk.bondingCurveTokenAccount[0]);
+    console.log(
+      "bondingCurveTknAcc[0]",
+      curveSdk.bondingCurveAuthorityTokenAccount[0]
+    );
     console.log("metadataPda[0]", curveSdk.mintMetaPda[0]);
 
     const txBuilder = curveSdk.createBondingCurve(

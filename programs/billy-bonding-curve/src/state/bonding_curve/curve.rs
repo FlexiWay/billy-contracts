@@ -5,7 +5,48 @@ use crate::state::bonding_curve::*;
 use crate::util::{bps_mul, bps_mul_raw};
 use anchor_lang::prelude::*;
 use std::fmt::{self};
-use structs::BondingCurve;
+
+#[account]
+#[derive(InitSpace, Debug, Default)]
+pub struct BondingCurve {
+    pub mint: Pubkey,
+
+    pub creator: Pubkey,
+    pub platform_authority: Pubkey,
+    pub brand_authority: Pubkey,
+
+    pub virtual_token_multiplier_bps: u64,
+
+    pub virtual_sol_reserves: u64,
+
+    // using u128 to avoid overflow
+    pub virtual_token_reserves: u128,
+    pub initial_virtual_token_reserves: u128,
+
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+
+    pub token_total_supply: u64,
+
+    pub creator_vested_supply: u64,
+    pub presale_supply: u64,
+    pub bonding_supply: u64,
+    pub pool_supply: u64,
+    pub cex_supply: u64,
+    pub launch_brandkit_supply: u64,
+    pub lifetime_brandkit_supply: u64,
+    pub platform_supply: u64,
+
+    pub sol_launch_threshold: u64,
+    pub start_time: i64,
+    pub complete: bool,
+
+    pub vesting_terms: VestingTerms,
+
+    pub allocation: AllocationData,
+
+    pub bump: u8,
+}
 
 impl BondingCurve {
     pub const SEED_PREFIX: &'static str = "bonding-curve";
@@ -374,10 +415,12 @@ impl BondingCurve {
         msg!("{:#?}", self);
     }
 
-    pub fn invariant<'info>(ctx: &mut BondingCurveLockerCtx<'info>) -> Result<()> {
-        let bonding_curve = &mut ctx.bonding_curve;
-        let tkn_account = &mut ctx.bonding_curve_token_account;
-        if tkn_account.owner != bonding_curve.key() {
+    pub fn invariant<'info>(
+        bonding_curve: &Box<Account<'info, BondingCurve>>,
+        ctx: &mut BondingCurveLockerCtx<'info>,
+    ) -> Result<()> {
+        let tkn_account = &mut ctx.bonding_curve_authority_token_account;
+        if tkn_account.owner != ctx.bonding_curve_authority.key() {
             msg!("Invariant failed: invalid token acc supplied");
             return Err(ContractError::BondingCurveInvariant.into());
         }

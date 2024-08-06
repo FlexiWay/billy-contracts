@@ -15,9 +15,9 @@ export type SwapInstructionAccounts = {
     user: Signer;
     global: PublicKey | Pda;
     mint: PublicKey | Pda;
+    bondingCurveAuthority: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
-    bondingCurveTokenAccount: PublicKey | Pda;
-    platformVault: PublicKey | Pda;
+    bondingCurveAuthorityTokenAccount: PublicKey | Pda;
     userTokenAccount: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
@@ -57,9 +57,9 @@ export function swap(
           user: { index: 0, isWritable: true as boolean, value: input.user ?? null },
           global: { index: 1, isWritable: false as boolean, value: input.global ?? null },
           mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
-          bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
-          bondingCurveTokenAccount: { index: 4, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          platformVault: { index: 5, isWritable: true as boolean, value: input.platformVault ?? null },
+          bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
+          bondingCurve: { index: 4, isWritable: true as boolean, value: input.bondingCurve ?? null },
+          bondingCurveAuthorityTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveAuthorityTokenAccount ?? null },
           userTokenAccount: { index: 6, isWritable: true as boolean, value: input.userTokenAccount ?? null },
           systemProgram: { index: 7, isWritable: false as boolean, value: input.systemProgram ?? null },
           tokenProgram: { index: 8, isWritable: false as boolean, value: input.tokenProgram ?? null },

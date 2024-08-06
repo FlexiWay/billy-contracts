@@ -6,17 +6,16 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
-import { Serializer, option, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 
 
-export type AllocationDataParams = { creator: Option<bigint>; cex: Option<bigint>; launchBrandkit: Option<bigint>; lifetimeBrandkit: Option<bigint>; platform: Option<bigint>; presale: Option<bigint>; curveReserve: Option<bigint>; poolReserve: Option<bigint>;  };
+export type AllocationDataParams = { creator: bigint; cex: bigint; launchBrandkit: bigint; lifetimeBrandkit: bigint; platform: bigint; presale: bigint; curveReserve: bigint; poolReserve: bigint;  };
 
-export type AllocationDataParamsArgs = { creator: OptionOrNullable<number | bigint>; cex: OptionOrNullable<number | bigint>; launchBrandkit: OptionOrNullable<number | bigint>; lifetimeBrandkit: OptionOrNullable<number | bigint>; platform: OptionOrNullable<number | bigint>; presale: OptionOrNullable<number | bigint>; curveReserve: OptionOrNullable<number | bigint>; poolReserve: OptionOrNullable<number | bigint>;  };
+export type AllocationDataParamsArgs = { creator: number | bigint; cex: number | bigint; launchBrandkit: number | bigint; lifetimeBrandkit: number | bigint; platform: number | bigint; presale: number | bigint; curveReserve: number | bigint; poolReserve: number | bigint;  };
 
 
 export function getAllocationDataParamsSerializer(): Serializer<AllocationDataParamsArgs, AllocationDataParams> {
-  return struct<AllocationDataParams>([['creator', option(u64())], ['cex', option(u64())], ['launchBrandkit', option(u64())], ['lifetimeBrandkit', option(u64())], ['platform', option(u64())], ['presale', option(u64())], ['curveReserve', option(u64())], ['poolReserve', option(u64())]], { description: 'AllocationDataParams' }) as Serializer<AllocationDataParamsArgs, AllocationDataParams>;
+  return struct<AllocationDataParams>([['creator', u64()], ['cex', u64()], ['launchBrandkit', u64()], ['lifetimeBrandkit', u64()], ['platform', u64()], ['presale', u64()], ['curveReserve', u64()], ['poolReserve', u64()]], { description: 'AllocationDataParams' }) as Serializer<AllocationDataParamsArgs, AllocationDataParams>;
 }
 
 
