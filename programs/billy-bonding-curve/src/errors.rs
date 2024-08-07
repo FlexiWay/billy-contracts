@@ -17,10 +17,20 @@ pub enum ContractError {
     #[msg("Not in Running State")]
     ProgramNotRunning,
 
+    #[msg("Bonding Curve Inactive")]
+    BondingCurveInactive,
+    #[msg("Bonding Curve Not Inactive")]
+    BondingCurveNotInactive,
+
     #[msg("Bonding Curve Complete")]
     BondingCurveComplete,
     #[msg("Bonding Curve Not Complete")]
     BondingCurveNotComplete,
+
+    #[msg("Bonding Curve Active")]
+    BondingCurveActive,
+    #[msg("Bonding Curve Not Active")]
+    BondingCurveNotActive,
 
     #[msg("Insufficient User Tokens")]
     InsufficientUserTokens,

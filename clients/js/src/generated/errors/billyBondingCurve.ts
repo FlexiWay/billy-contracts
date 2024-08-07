@@ -116,225 +116,251 @@ export class BondingCurveNotCompleteError extends ProgramError {
 codeToErrorMap.set(0x1777, BondingCurveNotCompleteError);
 nameToErrorMap.set('BondingCurveNotComplete', BondingCurveNotCompleteError);
 
+/** BondingCurveActive: Bonding Curve Active */
+export class BondingCurveActiveError extends ProgramError {
+  override readonly name: string = 'BondingCurveActive';
+
+  readonly code: number = 0x1778; // 6008
+  
+  constructor(program: Program, cause?: Error) {
+    super('Bonding Curve Active', program, cause);
+  }
+}
+codeToErrorMap.set(0x1778, BondingCurveActiveError);
+nameToErrorMap.set('BondingCurveActive', BondingCurveActiveError);
+
+/** BondingCurveNotActive: Bonding Curve Not Active */
+export class BondingCurveNotActiveError extends ProgramError {
+  override readonly name: string = 'BondingCurveNotActive';
+
+  readonly code: number = 0x1779; // 6009
+  
+  constructor(program: Program, cause?: Error) {
+    super('Bonding Curve Not Active', program, cause);
+  }
+}
+codeToErrorMap.set(0x1779, BondingCurveNotActiveError);
+nameToErrorMap.set('BondingCurveNotActive', BondingCurveNotActiveError);
+
 /** InsufficientUserTokens: Insufficient User Tokens */
 export class InsufficientUserTokensError extends ProgramError {
   override readonly name: string = 'InsufficientUserTokens';
 
-  readonly code: number = 0x1778; // 6008
+  readonly code: number = 0x177a; // 6010
   
   constructor(program: Program, cause?: Error) {
     super('Insufficient User Tokens', program, cause);
   }
 }
-codeToErrorMap.set(0x1778, InsufficientUserTokensError);
+codeToErrorMap.set(0x177a, InsufficientUserTokensError);
 nameToErrorMap.set('InsufficientUserTokens', InsufficientUserTokensError);
 
 /** InsufficientCurveTokens: Insufficient Curve Tokens */
 export class InsufficientCurveTokensError extends ProgramError {
   override readonly name: string = 'InsufficientCurveTokens';
 
-  readonly code: number = 0x1779; // 6009
+  readonly code: number = 0x177b; // 6011
   
   constructor(program: Program, cause?: Error) {
     super('Insufficient Curve Tokens', program, cause);
   }
 }
-codeToErrorMap.set(0x1779, InsufficientCurveTokensError);
+codeToErrorMap.set(0x177b, InsufficientCurveTokensError);
 nameToErrorMap.set('InsufficientCurveTokens', InsufficientCurveTokensError);
 
 /** InsufficientUserSOL: Insufficient user SOL */
 export class InsufficientUserSOLError extends ProgramError {
   override readonly name: string = 'InsufficientUserSOL';
 
-  readonly code: number = 0x177a; // 6010
+  readonly code: number = 0x177c; // 6012
   
   constructor(program: Program, cause?: Error) {
     super('Insufficient user SOL', program, cause);
   }
 }
-codeToErrorMap.set(0x177a, InsufficientUserSOLError);
+codeToErrorMap.set(0x177c, InsufficientUserSOLError);
 nameToErrorMap.set('InsufficientUserSOL', InsufficientUserSOLError);
 
 /** SlippageExceeded: Slippage Exceeded */
 export class SlippageExceededError extends ProgramError {
   override readonly name: string = 'SlippageExceeded';
 
-  readonly code: number = 0x177b; // 6011
+  readonly code: number = 0x177d; // 6013
   
   constructor(program: Program, cause?: Error) {
     super('Slippage Exceeded', program, cause);
   }
 }
-codeToErrorMap.set(0x177b, SlippageExceededError);
+codeToErrorMap.set(0x177d, SlippageExceededError);
 nameToErrorMap.set('SlippageExceeded', SlippageExceededError);
 
 /** MinSwap: Swap exactInAmount is 0 */
 export class MinSwapError extends ProgramError {
   override readonly name: string = 'MinSwap';
 
-  readonly code: number = 0x177c; // 6012
+  readonly code: number = 0x177e; // 6014
   
   constructor(program: Program, cause?: Error) {
     super('Swap exactInAmount is 0', program, cause);
   }
 }
-codeToErrorMap.set(0x177c, MinSwapError);
+codeToErrorMap.set(0x177e, MinSwapError);
 nameToErrorMap.set('MinSwap', MinSwapError);
 
 /** BuyFailed: Buy Failed */
 export class BuyFailedError extends ProgramError {
   override readonly name: string = 'BuyFailed';
 
-  readonly code: number = 0x177d; // 6013
+  readonly code: number = 0x177f; // 6015
   
   constructor(program: Program, cause?: Error) {
     super('Buy Failed', program, cause);
   }
 }
-codeToErrorMap.set(0x177d, BuyFailedError);
+codeToErrorMap.set(0x177f, BuyFailedError);
 nameToErrorMap.set('BuyFailed', BuyFailedError);
 
 /** SellFailed: Sell Failed */
 export class SellFailedError extends ProgramError {
   override readonly name: string = 'SellFailed';
 
-  readonly code: number = 0x177e; // 6014
+  readonly code: number = 0x1780; // 6016
   
   constructor(program: Program, cause?: Error) {
     super('Sell Failed', program, cause);
   }
 }
-codeToErrorMap.set(0x177e, SellFailedError);
+codeToErrorMap.set(0x1780, SellFailedError);
 nameToErrorMap.set('SellFailed', SellFailedError);
 
 /** BondingCurveInvariant: Bonding Curve Invariant Failed */
 export class BondingCurveInvariantError extends ProgramError {
   override readonly name: string = 'BondingCurveInvariant';
 
-  readonly code: number = 0x177f; // 6015
+  readonly code: number = 0x1781; // 6017
   
   constructor(program: Program, cause?: Error) {
     super('Bonding Curve Invariant Failed', program, cause);
   }
 }
-codeToErrorMap.set(0x177f, BondingCurveInvariantError);
+codeToErrorMap.set(0x1781, BondingCurveInvariantError);
 nameToErrorMap.set('BondingCurveInvariant', BondingCurveInvariantError);
 
 /** CurveNotStarted: Curve Not Started */
 export class CurveNotStartedError extends ProgramError {
   override readonly name: string = 'CurveNotStarted';
 
-  readonly code: number = 0x1780; // 6016
+  readonly code: number = 0x1782; // 6018
   
   constructor(program: Program, cause?: Error) {
     super('Curve Not Started', program, cause);
   }
 }
-codeToErrorMap.set(0x1780, CurveNotStartedError);
+codeToErrorMap.set(0x1782, CurveNotStartedError);
 nameToErrorMap.set('CurveNotStarted', CurveNotStartedError);
 
 /** InvalidAllocation: Invalid Allocation Data supplied, basis points must add up to 10000 */
 export class InvalidAllocationError extends ProgramError {
   override readonly name: string = 'InvalidAllocation';
 
-  readonly code: number = 0x1781; // 6017
+  readonly code: number = 0x1783; // 6019
   
   constructor(program: Program, cause?: Error) {
     super('Invalid Allocation Data supplied, basis points must add up to 10000', program, cause);
   }
 }
-codeToErrorMap.set(0x1781, InvalidAllocationError);
+codeToErrorMap.set(0x1783, InvalidAllocationError);
 nameToErrorMap.set('InvalidAllocation', InvalidAllocationError);
 
 /** InvalidStartTime: Start time is in the past */
 export class InvalidStartTimeError extends ProgramError {
   override readonly name: string = 'InvalidStartTime';
 
-  readonly code: number = 0x1782; // 6018
+  readonly code: number = 0x1784; // 6020
   
   constructor(program: Program, cause?: Error) {
     super('Start time is in the past', program, cause);
   }
 }
-codeToErrorMap.set(0x1782, InvalidStartTimeError);
+codeToErrorMap.set(0x1784, InvalidStartTimeError);
 nameToErrorMap.set('InvalidStartTime', InvalidStartTimeError);
 
 /** SOLLaunchThresholdTooHigh: SOL Launch threshold not attainable even if all tokens are sold */
 export class SOLLaunchThresholdTooHighError extends ProgramError {
   override readonly name: string = 'SOLLaunchThresholdTooHigh';
 
-  readonly code: number = 0x1783; // 6019
+  readonly code: number = 0x1785; // 6021
   
   constructor(program: Program, cause?: Error) {
     super('SOL Launch threshold not attainable even if all tokens are sold', program, cause);
   }
 }
-codeToErrorMap.set(0x1783, SOLLaunchThresholdTooHighError);
+codeToErrorMap.set(0x1785, SOLLaunchThresholdTooHighError);
 nameToErrorMap.set('SOLLaunchThresholdTooHigh', SOLLaunchThresholdTooHighError);
 
 /** NoMaxAttainableSOL: Cannot compute max_attainable_sol */
 export class NoMaxAttainableSOLError extends ProgramError {
   override readonly name: string = 'NoMaxAttainableSOL';
 
-  readonly code: number = 0x1784; // 6020
+  readonly code: number = 0x1786; // 6022
   
   constructor(program: Program, cause?: Error) {
     super('Cannot compute max_attainable_sol', program, cause);
   }
 }
-codeToErrorMap.set(0x1784, NoMaxAttainableSOLError);
+codeToErrorMap.set(0x1786, NoMaxAttainableSOLError);
 nameToErrorMap.set('NoMaxAttainableSOL', NoMaxAttainableSOLError);
 
 /** InvalidCreatorAuthority: Invalid Creator Authority */
 export class InvalidCreatorAuthorityError extends ProgramError {
   override readonly name: string = 'InvalidCreatorAuthority';
 
-  readonly code: number = 0x1785; // 6021
+  readonly code: number = 0x1787; // 6023
   
   constructor(program: Program, cause?: Error) {
     super('Invalid Creator Authority', program, cause);
   }
 }
-codeToErrorMap.set(0x1785, InvalidCreatorAuthorityError);
+codeToErrorMap.set(0x1787, InvalidCreatorAuthorityError);
 nameToErrorMap.set('InvalidCreatorAuthority', InvalidCreatorAuthorityError);
 
 /** CliffNotReached: Cliff not yet reached */
 export class CliffNotReachedError extends ProgramError {
   override readonly name: string = 'CliffNotReached';
 
-  readonly code: number = 0x1786; // 6022
+  readonly code: number = 0x1788; // 6024
   
   constructor(program: Program, cause?: Error) {
     super('Cliff not yet reached', program, cause);
   }
 }
-codeToErrorMap.set(0x1786, CliffNotReachedError);
+codeToErrorMap.set(0x1788, CliffNotReachedError);
 nameToErrorMap.set('CliffNotReached', CliffNotReachedError);
 
 /** VestingPeriodNotOver: Vesting period not yet over */
 export class VestingPeriodNotOverError extends ProgramError {
   override readonly name: string = 'VestingPeriodNotOver';
 
-  readonly code: number = 0x1787; // 6023
+  readonly code: number = 0x1789; // 6025
   
   constructor(program: Program, cause?: Error) {
     super('Vesting period not yet over', program, cause);
   }
 }
-codeToErrorMap.set(0x1787, VestingPeriodNotOverError);
+codeToErrorMap.set(0x1789, VestingPeriodNotOverError);
 nameToErrorMap.set('VestingPeriodNotOver', VestingPeriodNotOverError);
 
 /** NoFeesToWithdraw: Not enough fees to withdraw */
 export class NoFeesToWithdrawError extends ProgramError {
   override readonly name: string = 'NoFeesToWithdraw';
 
-  readonly code: number = 0x1788; // 6024
+  readonly code: number = 0x178a; // 6026
   
   constructor(program: Program, cause?: Error) {
     super('Not enough fees to withdraw', program, cause);
   }
 }
-codeToErrorMap.set(0x1788, NoFeesToWithdrawError);
+codeToErrorMap.set(0x178a, NoFeesToWithdrawError);
 nameToErrorMap.set('NoFeesToWithdraw', NoFeesToWithdrawError);
 
 /**

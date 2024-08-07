@@ -7,6 +7,7 @@
 
 pub(crate) mod r#allocation_data;
 pub(crate) mod r#allocation_data_params;
+pub(crate) mod r#bonding_curve_status;
 pub(crate) mod r#global_authority_input;
 pub(crate) mod r#global_settings_input;
 pub(crate) mod r#program_status;
@@ -14,6 +15,7 @@ pub(crate) mod r#vesting_terms;
 
 pub use self::r#allocation_data::*;
 pub use self::r#allocation_data_params::*;
+pub use self::r#bonding_curve_status::*;
 pub use self::r#global_authority_input::*;
 pub use self::r#global_settings_input::*;
 pub use self::r#program_status::*;

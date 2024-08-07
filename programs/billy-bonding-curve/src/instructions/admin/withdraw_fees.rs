@@ -1,10 +1,23 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 
-use crate::state::vaults::PlatformVault;
-use crate::{errors::ContractError, events::WithdrawEvent};
+use crate::errors::ContractError;
 
 use crate::state::global::*;
+use crate::state::vaults::PlatformVault;
+
+#[event]
+pub struct WithdrawEvent {
+    pub withdraw_authority: Pubkey,
+    pub mint: Pubkey,
+    pub fee_vault: Pubkey,
+
+    pub withdrawn: u64,
+    pub total_withdrawn: u64,
+
+    pub previous_withdraw_time: i64,
+    pub new_withdraw_time: i64,
+}
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -23,14 +36,13 @@ pub struct WithdrawFees<'info> {
 
     #[account()]
     mint: Box<Account<'info, Mint>>,
-
+    // TODO
     #[account(
         mut,
         seeds = [PlatformVault::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
         bump,
     )]
     platform_vault: Box<Account<'info, PlatformVault>>,
-
     system_program: Program<'info, System>,
 
     token_program: Program<'info, Token>,

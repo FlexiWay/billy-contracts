@@ -18,7 +18,7 @@ export type CreateBondingCurveInstructionAccounts = {
     brandAuthority: PublicKey | Pda;
     bondingCurveAuthority: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
-    bondingCurveAuthorityTokenAccount: PublicKey | Pda;
+    bondingCurveTokenAccount: PublicKey | Pda;
     global: PublicKey | Pda;
     metadata: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
@@ -43,11 +43,11 @@ export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: stri
 
 
 
-  
+
   // Args.
       export type CreateBondingCurveInstructionArgs =           CreateBondingCurveInstructionDataArgs
       ;
-  
+
 // Instruction.
 export function createBondingCurve(
   context: Pick<Context, "programs">,
@@ -63,7 +63,7 @@ export function createBondingCurve(
           brandAuthority: { index: 2, isWritable: false as boolean, value: input.brandAuthority ?? null },
           bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
           bondingCurve: { index: 4, isWritable: true as boolean, value: input.bondingCurve ?? null },
-          bondingCurveAuthorityTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveAuthorityTokenAccount ?? null },
+          bondingCurveTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
           global: { index: 6, isWritable: false as boolean, value: input.global ?? null },
           metadata: { index: 7, isWritable: true as boolean, value: input.metadata ?? null },
           systemProgram: { index: 8, isWritable: false as boolean, value: input.systemProgram ?? null },
@@ -78,7 +78,7 @@ export function createBondingCurve(
 
       // Arguments.
     const resolvedArgs: CreateBondingCurveInstructionArgs = { ...input };
-  
+
     // Default values.
   if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
@@ -95,19 +95,19 @@ resolvedAccounts.tokenMetadataProgram.isWritable = false
       if (!resolvedAccounts.rent.value) {
         resolvedAccounts.rent.value = publicKey('SysvarRent111111111111111111111111111111111');
       }
-      
+
   // Accounts in order.
       const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
-  
-  
+
+
   // Keys and Signers.
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
       const data = getCreateBondingCurveInstructionDataSerializer().serialize(resolvedArgs as CreateBondingCurveInstructionDataArgs);
-  
+
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;
-  
+
   return transactionBuilder([{ instruction: { keys, programId, data }, signers, bytesCreatedOnChain }]);
 }

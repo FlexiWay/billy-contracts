@@ -17,7 +17,7 @@ export type SwapInstructionAccounts = {
     mint: PublicKey | Pda;
     bondingCurveAuthority: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
-    bondingCurveAuthorityTokenAccount: PublicKey | Pda;
+    bondingCurveTokenAccount: PublicKey | Pda;
     userTokenAccount: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
@@ -39,11 +39,11 @@ export type SwapInstructionDataArgs = { baseIn: boolean; exactInAmount: number |
 
 
 
-  
+
   // Args.
       export type SwapInstructionArgs =           SwapInstructionDataArgs
       ;
-  
+
 // Instruction.
 export function swap(
   context: Pick<Context, "programs">,
@@ -59,7 +59,7 @@ export function swap(
           mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
           bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
           bondingCurve: { index: 4, isWritable: true as boolean, value: input.bondingCurve ?? null },
-          bondingCurveAuthorityTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveAuthorityTokenAccount ?? null },
+          bondingCurveTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
           userTokenAccount: { index: 6, isWritable: true as boolean, value: input.userTokenAccount ?? null },
           systemProgram: { index: 7, isWritable: false as boolean, value: input.systemProgram ?? null },
           tokenProgram: { index: 8, isWritable: false as boolean, value: input.tokenProgram ?? null },
@@ -71,7 +71,7 @@ export function swap(
 
       // Arguments.
     const resolvedArgs: SwapInstructionArgs = { ...input };
-  
+
     // Default values.
   if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
@@ -81,19 +81,19 @@ resolvedAccounts.systemProgram.isWritable = false
         resolvedAccounts.tokenProgram.value = context.programs.getPublicKey('splToken', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 resolvedAccounts.tokenProgram.isWritable = false
       }
-      
+
   // Accounts in order.
       const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
-  
-  
+
+
   // Keys and Signers.
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
       const data = getSwapInstructionDataSerializer().serialize(resolvedArgs as SwapInstructionDataArgs);
-  
+
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;
-  
+
   return transactionBuilder([{ instruction: { keys, programId, data }, signers, bytesCreatedOnChain }]);
 }

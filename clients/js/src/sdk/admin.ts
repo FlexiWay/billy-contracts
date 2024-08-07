@@ -2,7 +2,7 @@ import { SPL_SYSTEM_PROGRAM_ID } from "@metaplex-foundation/mpl-toolbox";
 import { none, OptionOrNullable, PublicKey, Umi } from "@metaplex-foundation/umi";
 import { fromWeb3JsPublicKey } from "@metaplex-foundation/umi-web3js-adapters";
 import { SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
-import { findPlatformVaultPda, GlobalSettingsInputArgs, ProgramStatus, withdrawFees } from "../generated";
+import { findBondingCurveAuthorityPda, findPlatformVaultPda, GlobalSettingsInputArgs, ProgramStatus, withdrawFees } from "../generated";
 import { setParams, SetParamsInstructionAccounts } from '../generated/instructions/setParams';
 import { initialize, } from '../generated/instructions/initialize';
 import { BillySDK } from "./billy";
@@ -34,7 +34,7 @@ export class AdminSDK{
             global: this.Billy.globalPda[0],
             authority: this.umi.identity,
             mint,
-            platformVault: findPlatformVaultPda(this.Billy.umi, {mint})[0],
+            bondingCurveAuthority: findBondingCurveAuthorityPda(this.Billy.umi, {mint})[0],
             clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
             ...this.Billy.evtAuthAccs,
           });

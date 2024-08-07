@@ -19,12 +19,10 @@ pub struct PlatformVault {
     pub discriminator: [u8; 8],
     pub initial_vested_supply: u64,
     pub last_distribution: i64,
-    pub last_fee_withdrawal: i64,
-    pub fees_withdrawn: u64,
 }
 
 impl PlatformVault {
-    pub const LEN: usize = 40;
+    pub const LEN: usize = 24;
 
     /// Prefix values used to generate a PDA for this account.
     ///

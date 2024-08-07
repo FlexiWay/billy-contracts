@@ -119,7 +119,7 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -212,7 +212,7 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -356,7 +356,7 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformVault",
+          "name": "bondingCurveAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -398,6 +398,14 @@ export type BillyBondingCurve = {
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": "i64"
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }
@@ -416,12 +424,18 @@ export type BillyBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "platformAuthority",
+            "name": "cexAuthority",
             "type": "publicKey"
           },
           {
             "name": "brandAuthority",
             "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "BondingCurveStatus"
+            }
           },
           {
             "name": "virtualTokenMultiplierBps",
@@ -490,10 +504,6 @@ export type BillyBondingCurve = {
           {
             "name": "startTime",
             "type": "i64"
-          },
-          {
-            "name": "complete",
-            "type": "bool"
           },
           {
             "name": "vestingTerms",
@@ -592,14 +602,6 @@ export type BillyBondingCurve = {
           {
             "name": "lastDistribution",
             "type": "i64"
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": "i64"
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
           }
         ]
       }
@@ -848,6 +850,29 @@ export type BillyBondingCurve = {
                 "defined": "ProgramStatus"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BondingCurveStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Prepared"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Complete"
+          },
+          {
+            "name": "Launched"
           }
         ]
       }
@@ -1153,86 +1178,96 @@ export type BillyBondingCurve = {
     },
     {
       "code": 6008,
+      "name": "BondingCurveActive",
+      "msg": "Bonding Curve Active"
+    },
+    {
+      "code": 6009,
+      "name": "BondingCurveNotActive",
+      "msg": "Bonding Curve Not Active"
+    },
+    {
+      "code": 6010,
       "name": "InsufficientUserTokens",
       "msg": "Insufficient User Tokens"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "InsufficientCurveTokens",
       "msg": "Insufficient Curve Tokens"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InsufficientUserSOL",
       "msg": "Insufficient user SOL"
     },
     {
-      "code": 6011,
+      "code": 6013,
       "name": "SlippageExceeded",
       "msg": "Slippage Exceeded"
     },
     {
-      "code": 6012,
+      "code": 6014,
       "name": "MinSwap",
       "msg": "Swap exactInAmount is 0"
     },
     {
-      "code": 6013,
+      "code": 6015,
       "name": "BuyFailed",
       "msg": "Buy Failed"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "SellFailed",
       "msg": "Sell Failed"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "BondingCurveInvariant",
       "msg": "Bonding Curve Invariant Failed"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "InvalidAllocation",
       "msg": "Invalid Allocation Data supplied, basis points must add up to 10000"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "CliffNotReached",
       "msg": "Cliff not yet reached"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "NoFeesToWithdraw",
       "msg": "Not enough fees to withdraw"
     }
@@ -1360,7 +1395,7 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1453,7 +1488,7 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1597,7 +1632,7 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "platformVault",
+          "name": "bondingCurveAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -1639,6 +1674,14 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": "i64"
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }
@@ -1657,12 +1700,18 @@ export const IDL: BillyBondingCurve = {
             "type": "publicKey"
           },
           {
-            "name": "platformAuthority",
+            "name": "cexAuthority",
             "type": "publicKey"
           },
           {
             "name": "brandAuthority",
             "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "BondingCurveStatus"
+            }
           },
           {
             "name": "virtualTokenMultiplierBps",
@@ -1731,10 +1780,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "startTime",
             "type": "i64"
-          },
-          {
-            "name": "complete",
-            "type": "bool"
           },
           {
             "name": "vestingTerms",
@@ -1833,14 +1878,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "lastDistribution",
             "type": "i64"
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": "i64"
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
           }
         ]
       }
@@ -2089,6 +2126,29 @@ export const IDL: BillyBondingCurve = {
                 "defined": "ProgramStatus"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BondingCurveStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Prepared"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Complete"
+          },
+          {
+            "name": "Launched"
           }
         ]
       }
@@ -2394,86 +2454,96 @@ export const IDL: BillyBondingCurve = {
     },
     {
       "code": 6008,
+      "name": "BondingCurveActive",
+      "msg": "Bonding Curve Active"
+    },
+    {
+      "code": 6009,
+      "name": "BondingCurveNotActive",
+      "msg": "Bonding Curve Not Active"
+    },
+    {
+      "code": 6010,
       "name": "InsufficientUserTokens",
       "msg": "Insufficient User Tokens"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "InsufficientCurveTokens",
       "msg": "Insufficient Curve Tokens"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InsufficientUserSOL",
       "msg": "Insufficient user SOL"
     },
     {
-      "code": 6011,
+      "code": 6013,
       "name": "SlippageExceeded",
       "msg": "Slippage Exceeded"
     },
     {
-      "code": 6012,
+      "code": 6014,
       "name": "MinSwap",
       "msg": "Swap exactInAmount is 0"
     },
     {
-      "code": 6013,
+      "code": 6015,
       "name": "BuyFailed",
       "msg": "Buy Failed"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "SellFailed",
       "msg": "Sell Failed"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "BondingCurveInvariant",
       "msg": "Bonding Curve Invariant Failed"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "InvalidAllocation",
       "msg": "Invalid Allocation Data supplied, basis points must add up to 10000"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "CliffNotReached",
       "msg": "Cliff not yet reached"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "NoFeesToWithdraw",
       "msg": "Not enough fees to withdraw"
     }

@@ -20,7 +20,7 @@ export class CurveSDK{
     bondingCurvePda:Pda;
     bondingCurveAuthorityPda:Pda;
 
-    bondingCurveAuthorityTokenAccount:Pda;
+    bondingCurveTokenAccount:Pda;
 
     mintMetaPda:Pda;
 
@@ -53,7 +53,7 @@ export class CurveSDK{
             mint: this.mint,
             bondingCurve: this.bondingCurvePda[0],
             bondingCurveAuthority: this.bondingCurveAuthorityPda[0],
-            bondingCurveAuthorityTokenAccount: this.bondingCurveAuthorityTokenAccount[0],
+            bondingCurveTokenAccount: this.bondingCurveTokenAccount[0],
             userTokenAccount: this.userTokenAccount[0],
             platformVault: this.platformVaultPda[0],
             clock: fromWeb3JsPublicKey(SYSVAR_CLOCK_PUBKEY),
@@ -77,7 +77,7 @@ export class CurveSDK{
             bondingCurve: this.bondingCurvePda[0],
             bondingCurveAuthority: this.bondingCurveAuthorityPda[0],
 
-            bondingCurveAuthorityTokenAccount: this.bondingCurveAuthorityTokenAccount[0],
+            bondingCurveTokenAccount: this.bondingCurveTokenAccount[0],
 
             // creatorVault: this.creatorVaultPda[0],
             // creatorVaultTokenAccount: this.creatorVaultTokenAccount[0],
@@ -124,7 +124,7 @@ export class CurveSDK{
         this.bondingCurveAuthorityPda = findBondingCurveAuthorityPda(this.umi, {
             mint: this.mint,
         });
-        this.bondingCurveAuthorityTokenAccount = findAssociatedTokenPda(this.umi, {
+        this.bondingCurveTokenAccount = findAssociatedTokenPda(this.umi, {
             mint: this.mint,
             owner: this.bondingCurveAuthorityPda[0],
         });

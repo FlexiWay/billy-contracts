@@ -1,10 +1,6 @@
 use crate::{
     errors::ContractError,
-    state::{
-        bonding_curve::{authority::*, curve::*},
-        global::*,
-        vaults::CreatorVault,
-    },
+    state::{bonding_curve::curve::*, global::*, vaults::CreatorVault},
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{

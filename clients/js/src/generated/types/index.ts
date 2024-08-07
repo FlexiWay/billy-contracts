@@ -8,6 +8,7 @@
 
 export * from './allocationData';
 export * from './allocationDataParams';
+export * from './bondingCurveStatus';
 export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';

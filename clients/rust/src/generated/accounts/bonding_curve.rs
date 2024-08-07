@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::AllocationData;
+use crate::generated::types::BondingCurveStatus;
 use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -33,12 +34,13 @@ pub struct BondingCurve {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    pub platform_authority: Pubkey,
+    pub cex_authority: Pubkey,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub brand_authority: Pubkey,
+    pub status: BondingCurveStatus,
     pub virtual_token_multiplier_bps: u64,
     pub virtual_sol_reserves: u64,
     pub virtual_token_reserves: u128,
@@ -56,7 +58,6 @@ pub struct BondingCurve {
     pub platform_supply: u64,
     pub sol_launch_threshold: u64,
     pub start_time: i64,
-    pub complete: bool,
     pub vesting_terms: VestingTerms,
     pub allocation: AllocationData,
     pub bump: u8,

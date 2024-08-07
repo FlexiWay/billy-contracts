@@ -18,10 +18,12 @@ use solana_program::pubkey::Pubkey;
 pub struct BondingCurveAuthority {
     pub discriminator: [u8; 8],
     pub bump: u8,
+    pub last_fee_withdrawal: i64,
+    pub fees_withdrawn: u64,
 }
 
 impl BondingCurveAuthority {
-    pub const LEN: usize = 9;
+    pub const LEN: usize = 25;
 
     /// Prefix values used to generate a PDA for this account.
     ///

@@ -7,18 +7,18 @@
  */
 
 import { Account, Context, Pda, PublicKey, RpcAccount, RpcGetAccountOptions, RpcGetAccountsOptions, assertAccountExists, deserializeAccount, gpaBuilder, publicKey as toPublicKey } from '@metaplex-foundation/umi';
-import { Serializer, array, mapSerializer, publicKey as publicKeySerializer, string, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, array, i64, mapSerializer, publicKey as publicKeySerializer, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 
   
   export type BondingCurveAuthority = Account<BondingCurveAuthorityAccountData>;
 
-  export type BondingCurveAuthorityAccountData = { discriminator: Array<number>; bump: number;  };
+  export type BondingCurveAuthorityAccountData = { discriminator: Array<number>; bump: number; lastFeeWithdrawal: bigint; feesWithdrawn: bigint;  };
 
-export type BondingCurveAuthorityAccountDataArgs = { bump: number;  };
+export type BondingCurveAuthorityAccountDataArgs = { bump: number; lastFeeWithdrawal: number | bigint; feesWithdrawn: number | bigint;  };
 
 
   export function getBondingCurveAuthorityAccountDataSerializer(): Serializer<BondingCurveAuthorityAccountDataArgs, BondingCurveAuthorityAccountData> {
-  return mapSerializer<BondingCurveAuthorityAccountDataArgs, any, BondingCurveAuthorityAccountData>(struct<BondingCurveAuthorityAccountData>([['discriminator', array(u8(), { size: 8 })], ['bump', u8()]], { description: 'BondingCurveAuthorityAccountData' }), (value) => ({ ...value, discriminator: [195, 159, 228, 9, 136, 58, 81, 248] }) ) as Serializer<BondingCurveAuthorityAccountDataArgs, BondingCurveAuthorityAccountData>;
+  return mapSerializer<BondingCurveAuthorityAccountDataArgs, any, BondingCurveAuthorityAccountData>(struct<BondingCurveAuthorityAccountData>([['discriminator', array(u8(), { size: 8 })], ['bump', u8()], ['lastFeeWithdrawal', i64()], ['feesWithdrawn', u64()]], { description: 'BondingCurveAuthorityAccountData' }), (value) => ({ ...value, discriminator: [195, 159, 228, 9, 136, 58, 81, 248] }) ) as Serializer<BondingCurveAuthorityAccountDataArgs, BondingCurveAuthorityAccountData>;
 }
 
 
@@ -73,13 +73,13 @@ export async function safeFetchAllBondingCurveAuthority(
 export function getBondingCurveAuthorityGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey('billyBondingCurve', '71odFTZ59cG8yyBtEZrnJdBYaepzri2A12hEc16vK6WP');
   return gpaBuilder(context, programId)
-    .registerFields<{ 'discriminator': Array<number>, 'bump': number }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'bump': [8, u8()] })
+    .registerFields<{ 'discriminator': Array<number>, 'bump': number, 'lastFeeWithdrawal': number | bigint, 'feesWithdrawn': number | bigint }>({ 'discriminator': [0, array(u8(), { size: 8 })], 'bump': [8, u8()], 'lastFeeWithdrawal': [9, i64()], 'feesWithdrawn': [17, u64()] })
     .deserializeUsing<BondingCurveAuthority>((account) => deserializeBondingCurveAuthority(account))      .whereField('discriminator', [195, 159, 228, 9, 136, 58, 81, 248])
     ;
 }
 
 export function getBondingCurveAuthoritySize(): number {
-  return 9;
+  return 25;
 }
 
 export function findBondingCurveAuthorityPda(

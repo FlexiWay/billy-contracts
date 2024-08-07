@@ -18,7 +18,7 @@ pub struct WithdrawFees {
 
     pub mint: solana_program::pubkey::Pubkey,
 
-    pub platform_vault: solana_program::pubkey::Pubkey,
+    pub bonding_curve: solana_program::pubkey::Pubkey,
 
     pub system_program: solana_program::pubkey::Pubkey,
 
@@ -53,7 +53,7 @@ impl WithdrawFees {
             self.mint, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.platform_vault,
+            self.bonding_curve,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -107,7 +107,7 @@ impl WithdrawFeesInstructionData {
 ///   0. `[writable, signer]` authority
 ///   1. `[]` global
 ///   2. `[]` mint
-///   3. `[writable]` platform_vault
+///   3. `[writable]` bonding_curve
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
 ///   6. `[]` clock
@@ -118,7 +118,7 @@ pub struct WithdrawFeesBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
     mint: Option<solana_program::pubkey::Pubkey>,
-    platform_vault: Option<solana_program::pubkey::Pubkey>,
+    bonding_curve: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     token_program: Option<solana_program::pubkey::Pubkey>,
     clock: Option<solana_program::pubkey::Pubkey>,
@@ -147,8 +147,11 @@ impl WithdrawFeesBuilder {
         self
     }
     #[inline(always)]
-    pub fn platform_vault(&mut self, platform_vault: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.platform_vault = Some(platform_vault);
+    pub fn bonding_curve(
+        &mut self,
+        bonding_curve: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.bonding_curve = Some(bonding_curve);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -205,7 +208,9 @@ impl WithdrawFeesBuilder {
             authority: self.authority.expect("authority is not set"),
             global: self.global.expect("global is not set"),
             mint: self.mint.expect("mint is not set"),
-            platform_vault: self.platform_vault.expect("platform_vault is not set"),
+            bonding_curve: self
+                .bonding_curve
+                .expect("bonding_curve is not set"),
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
@@ -229,7 +234,7 @@ pub struct WithdrawFeesCpiAccounts<'a, 'b> {
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -253,7 +258,7 @@ pub struct WithdrawFeesCpi<'a, 'b> {
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -276,7 +281,7 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             authority: accounts.authority,
             global: accounts.global,
             mint: accounts.mint,
-            platform_vault: accounts.platform_vault,
+            bonding_curve: accounts.bonding_curve,
             system_program: accounts.system_program,
             token_program: accounts.token_program,
             clock: accounts.clock,
@@ -331,7 +336,7 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.platform_vault.key,
+            *self.bonding_curve.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -373,7 +378,7 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
         account_infos.push(self.authority.clone());
         account_infos.push(self.global.clone());
         account_infos.push(self.mint.clone());
-        account_infos.push(self.platform_vault.clone());
+        account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.system_program.clone());
         account_infos.push(self.token_program.clone());
         account_infos.push(self.clock.clone());
@@ -398,7 +403,7 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
 ///   0. `[writable, signer]` authority
 ///   1. `[]` global
 ///   2. `[]` mint
-///   3. `[writable]` platform_vault
+///   3. `[writable]` bonding_curve
 ///   4. `[]` system_program
 ///   5. `[]` token_program
 ///   6. `[]` clock
@@ -415,7 +420,7 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
             authority: None,
             global: None,
             mint: None,
-            platform_vault: None,
+            bonding_curve: None,
             system_program: None,
             token_program: None,
             clock: None,
@@ -447,11 +452,11 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn platform_vault(
+    pub fn bonding_curve(
         &mut self,
-        platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+        bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.platform_vault = Some(platform_vault);
+        self.instruction.bonding_curve = Some(bonding_curve);
         self
     }
     #[inline(always)]
@@ -541,10 +546,10 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
 
             mint: self.instruction.mint.expect("mint is not set"),
 
-            platform_vault: self
+            bonding_curve: self
                 .instruction
-                .platform_vault
-                .expect("platform_vault is not set"),
+                .bonding_curve
+                .expect("bonding_curve is not set"),
 
             system_program: self
                 .instruction
@@ -577,7 +582,7 @@ struct WithdrawFeesCpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    platform_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     clock: Option<&'b solana_program::account_info::AccountInfo<'a>>,

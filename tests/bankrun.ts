@@ -49,6 +49,8 @@ import {
   claimCreatorVesting,
   fetchCreatorVault,
   BillySDK,
+  findBondingCurveAuthorityPda,
+  BondingCurveStatus,
 } from "../clients/js/src";
 import {
   fromWeb3JsKeypair,
@@ -262,7 +264,7 @@ const labelKeypairs = async (umi) => {
   amman.addr.addLabel("simpleMintBondingCurve", curveSdk.bondingCurvePda[0]);
   amman.addr.addLabel(
     "simpleMintBondingCurveTknAcc",
-    curveSdk.bondingCurveAuthorityTokenAccount[0]
+    curveSdk.bondingCurveTokenAccount[0]
   );
   amman.addr.addLabel("metadata", curveSdk.mintMetaPda[0]);
 
@@ -371,10 +373,7 @@ describe("billy-bonding", () => {
 
     console.log("globalPda[0]", curveSdk.Billy.globalPda[0]);
     console.log("bondingCurvePda[0]", curveSdk.bondingCurvePda[0]);
-    console.log(
-      "bondingCurveTknAcc[0]",
-      curveSdk.bondingCurveAuthorityTokenAccount[0]
-    );
+    console.log("bondingCurveTknAcc[0]", curveSdk.bondingCurveTokenAccount[0]);
     console.log("metadataPda[0]", curveSdk.mintMetaPda[0]);
 
     const txBuilder = curveSdk.createBondingCurve(
@@ -389,7 +388,7 @@ describe("billy-bonding", () => {
     console.log("bondingCurveData", bondingCurveData);
     assertBondingCurve(bondingCurveData, {
       ...SIMPLE_DEFAULT_BONDING_CURVE_PRESET,
-      complete: false,
+      status: BondingCurveStatus.Active,
     });
   });
 
@@ -532,12 +531,12 @@ describe("billy-bonding", () => {
 
   it("withdraw_fees using withdraw_authority", async () => {
     // manually fetching here just to assert the amounts
-    const platformVault = await findPlatformVaultPda(umi, {
+    const bcAuth = await findBondingCurveAuthorityPda(umi, {
       mint: simpleMintKp.publicKey,
     });
-    const feeBalanceInt_total = await getBalance(umi, platformVault[0]);
+    const feeBalanceInt_total = await getBalance(umi, bcAuth[0]);
     console.log("feeBalanceInt_total", feeBalanceInt_total);
-    const startingBalance = PLATFORM_DISTRIBUTOR_STARTING_BALANCE_INT;
+    const startingBalance = 1064880;
     const accruedFees = Number(feeBalanceInt_total) - startingBalance;
     assert(accruedFees > 0);
     const withdrawAuthBalance = await getBalance(
@@ -569,7 +568,7 @@ describe("billy-bonding", () => {
       withdrawAuthority: withdrawAuthority.publicKey,
     });
 
-    const feeBalancePost = await getBalance(umi, platformVault[0]);
+    const feeBalancePost = await getBalance(umi, bcAuth[0]);
     const feeBalancePost_int = Number(feeBalancePost);
     console.log("feeBalancePost_int", feeBalancePost_int);
     console.log("startingBalance", startingBalance);

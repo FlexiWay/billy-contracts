@@ -6,7 +6,7 @@
 //!
 
 pub(crate) mod r#bonding_curve;
-pub(crate) mod r#bonding_curve_authority;
+pub(crate) mod r#bonding_curve;
 pub(crate) mod r#brand_vault;
 pub(crate) mod r#creator_vault;
 pub(crate) mod r#global;
@@ -14,7 +14,7 @@ pub(crate) mod r#platform_vault;
 pub(crate) mod r#presale_vault;
 
 pub use self::r#bonding_curve::*;
-pub use self::r#bonding_curve_authority::*;
+pub use self::r#bonding_curve::*;
 pub use self::r#brand_vault::*;
 pub use self::r#creator_vault::*;
 pub use self::r#global::*;

@@ -1,7 +1,4 @@
-use crate::{
-    events::{GlobalUpdateEvent, IntoEvent},
-    util::bps_mul,
-};
+use crate::util::bps_mul;
 use anchor_lang::prelude::*;
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct GlobalAuthorityInput {
@@ -15,6 +12,15 @@ pub enum ProgramStatus {
     SwapOnly,
     SwapOnlyNoLaunch,
     Paused,
+}
+
+#[event]
+pub struct GlobalUpdateEvent {
+    pub global_authority: Pubkey,
+    pub withdraw_authority: Pubkey,
+    pub trade_fee_bps: u64,
+    pub launch_fee_lamports: u64,
+    pub created_mint_decimals: u8,
 }
 
 #[account]
@@ -76,10 +82,7 @@ impl Global {
             self.withdraw_authority = withdraw_authority;
         }
     }
-}
-
-impl IntoEvent<GlobalUpdateEvent> for Global {
-    fn into_event(&self) -> GlobalUpdateEvent {
+    pub fn into_event(&self) -> GlobalUpdateEvent {
         GlobalUpdateEvent {
             global_authority: self.global_authority,
             withdraw_authority: self.withdraw_authority,

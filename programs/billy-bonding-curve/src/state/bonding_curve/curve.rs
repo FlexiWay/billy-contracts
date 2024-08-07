@@ -6,14 +6,26 @@ use crate::util::{bps_mul, bps_mul_raw};
 use anchor_lang::prelude::*;
 use std::fmt::{self};
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq, Default)]
+pub enum BondingCurveStatus {
+    #[default]
+    Inactive,
+    Prepared,
+    Active,
+    Complete,
+    Launched,
+}
+
 #[account]
 #[derive(InitSpace, Debug, Default)]
 pub struct BondingCurve {
     pub mint: Pubkey,
 
     pub creator: Pubkey,
-    pub platform_authority: Pubkey,
+    pub cex_authority: Pubkey,
     pub brand_authority: Pubkey,
+
+    pub status: BondingCurveStatus,
 
     pub virtual_token_multiplier_bps: u64,
 
@@ -39,7 +51,6 @@ pub struct BondingCurve {
 
     pub sol_launch_threshold: u64,
     pub start_time: i64,
-    pub complete: bool,
 
     pub vesting_terms: VestingTerms,
 
@@ -59,8 +70,7 @@ impl BondingCurve {
         ]
     }
 
-    pub fn update_from_params(
-        &mut self,
+    pub fn create_from_params(
         mint: Pubkey,
         creator: Pubkey,
         brand_authority: Pubkey,
@@ -68,7 +78,7 @@ impl BondingCurve {
         params: &CreateBondingCurveParams,
         clock: &Clock,
         bump: u8,
-    ) -> &mut Self {
+    ) -> Self {
         let start_time = if let Some(start_time) = params.start_time {
             start_time
         } else {
@@ -101,15 +111,14 @@ impl BondingCurve {
         let real_sol_reserves = 0;
         let sol_launch_threshold = params.sol_launch_threshold;
         let creator = creator;
-        let complete = false;
 
         let vesting_terms = params.vesting_terms.clone().unwrap_or_default();
 
-        self.clone_from(&BondingCurve {
+        BondingCurve {
             mint,
             creator,
             brand_authority,
-            platform_authority,
+            cex_authority: platform_authority,
 
             initial_virtual_token_reserves,
             virtual_token_multiplier_bps: virtual_token_multiplier,
@@ -130,13 +139,12 @@ impl BondingCurve {
 
             sol_launch_threshold,
             start_time,
-            complete,
+            status: BondingCurveStatus::default(),
             allocation,
 
             bump,
             vesting_terms,
-        });
-        self
+        }
     }
 
     pub fn get_max_attainable_sol(&self) -> Option<u64> {
@@ -174,6 +182,7 @@ impl BondingCurve {
 
         // TODO CALCULATE PRESALE SOL VALUE
     }
+
     pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
         msg!("get_buy_price: tokens: {}", tokens);
         if tokens == 0 || tokens > self.virtual_token_reserves as u64 {
@@ -419,8 +428,8 @@ impl BondingCurve {
         bonding_curve: &Box<Account<'info, BondingCurve>>,
         ctx: &mut BondingCurveLockerCtx<'info>,
     ) -> Result<()> {
-        let tkn_account = &mut ctx.bonding_curve_authority_token_account;
-        if tkn_account.owner != ctx.bonding_curve_authority.key() {
+        let tkn_account = &mut ctx.bonding_curve_account;
+        if tkn_account.owner != ctx.bonding_curve.key() {
             msg!("Invariant failed: invalid token acc supplied");
             return Err(ContractError::BondingCurveInvariant.into());
         }
@@ -463,13 +472,34 @@ impl BondingCurve {
         }
 
         // Ensure the bonding curve is complete only if real token reserves are zero
-        if bonding_curve.complete && bonding_curve.real_token_reserves != 0 {
+        if bonding_curve.status == BondingCurveStatus::Complete
+            && bonding_curve.real_token_reserves != 0
+        {
             msg!("Invariant failed: bonding curve marked as complete but real_token_reserves != 0");
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
-        if !bonding_curve.complete && !tkn_account.is_frozen() {
-            msg!("Active BondingCurve TokenAccount must always be frozen at the end");
+        // ensure its complete only is blanace is over threshold
+        let bonding_curve_balance = bonding_curve.get_lamports();
+        let min_lamports = Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
+        let bonding_curve_lamports = bonding_curve_balance - min_lamports;
+        if bonding_curve.status == BondingCurveStatus::Complete
+            && bonding_curve_lamports < bonding_curve.sol_launch_threshold
+        {
+            msg!("bonding_curve_balance: {}", bonding_curve_balance);
+            msg!("min_lamports: {}", min_lamports);
+            msg!("bonding curve lamports: {}", bonding_curve_lamports);
+            msg!(
+                "sol_launch_threshold: {}",
+                bonding_curve.sol_launch_threshold
+            );
+
+            msg!("Invariant failed: bonding curve marked as complete but balance is less than sol_launch_threshold");
+            return Err(ContractError::BondingCurveInvariant.into());
+        }
+
+        if bonding_curve.status != BondingCurveStatus::Launched && !tkn_account.is_frozen() {
+            msg!("Not Launched BondingCurve TokenAccount must always be frozen at the end");
             return Err(ContractError::BondingCurveInvariant.into());
         }
         Ok(())
@@ -479,12 +509,12 @@ impl fmt::Display for BondingCurve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "BondingCurve {{ creator: {:?}, initial_virtual_token_reserves: {:?}, virtual_sol_reserves: {:?}, virtual_token_reserves: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, complete: {:?}, allocation: \n{:?} \n}}",
+            "BondingCurve {{ creator: {:?}, initial_virtual_token_reserves: {:?}, virtual_sol_reserves: {:?}, virtual_token_reserves: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, status: {:?}, allocation: \n{:?} \n}}",
             self.creator,
             self.initial_virtual_token_reserves,
             self.virtual_sol_reserves, self.virtual_token_reserves, self.real_sol_reserves,
             self.real_token_reserves, self.token_total_supply, self.presale_supply,
-            self.bonding_supply, self.sol_launch_threshold, self.start_time, self.complete,
+            self.bonding_supply, self.sol_launch_threshold, self.start_time, self.status,
             self.allocation
         )
     }

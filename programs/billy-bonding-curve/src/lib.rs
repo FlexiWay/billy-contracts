@@ -1,12 +1,16 @@
 use anchor_lang::prelude::*;
 pub mod errors;
-pub mod events;
 pub mod instructions;
 pub mod state;
 pub mod util;
 use instructions::claim_creator_vesting::*;
 use instructions::{
-    create_bonding_curve::*, initialize::*, set_params::*, swap::*, withdraw_fees::*,
+    config::{initialize::*, set_curve_authority::*},
+    create_bonding_curve::*,
+    initialize::*,
+    set_params::*,
+    swap::*,
+    withdraw_fees::*,
 };
 use state::bonding_curve::CreateBondingCurveParams;
 use state::global::*;
@@ -22,6 +26,16 @@ pub mod billy_bonding_curve {
     }
     pub fn set_params(ctx: Context<SetParams>, params: GlobalSettingsInput) -> Result<()> {
         SetParams::handler(ctx, params)
+    }
+
+    pub fn curve_config_initialize(
+        ctx: Context<CurveInitialize>,
+        params: CurveInitializeParams,
+    ) -> Result<()> {
+        CurveInitialize::handler(ctx, params)
+    }
+    pub fn curve_config_update_authority(ctx: Context<CurveSetAuthority>) -> Result<()> {
+        CurveSetAuthority::handler(ctx)
     }
 
     #[access_control(ctx.accounts.validate(&params))]

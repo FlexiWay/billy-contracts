@@ -8,11 +8,36 @@ use anchor_spl::{
 
 use crate::{
     errors::ContractError,
-    events::*,
     state::{bonding_curve::*, global::*, vaults::PlatformVault},
 };
 
-use crate::state::bonding_curve::{authority::*, curve::*, locker::*, structs::*};
+use crate::state::bonding_curve::{curve::*, locker::*, structs::*};
+
+#[event]
+pub struct TradeEvent {
+    pub mint: Pubkey,
+    pub sol_amount: u64,
+    pub token_amount: u64,
+    pub fee_lamports: u64,
+    pub is_buy: bool,
+    pub user: Pubkey,
+    pub timestamp: i64,
+    pub virtual_sol_reserves: u64,
+    pub virtual_token_reserves: u128,
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+}
+
+#[event]
+pub struct CompleteEvent {
+    pub user: Pubkey,
+    pub mint: Pubkey,
+    pub virtual_sol_reserves: u64,
+    pub virtual_token_reserves: u128,
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+    pub timestamp: i64,
+}
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct SwapParams {
@@ -29,6 +54,7 @@ pub struct Swap<'info> {
     user: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [Global::SEED_PREFIX.as_bytes()],
         constraint = global.initialized == true @ ContractError::NotInitialized,
         bump,
@@ -37,13 +63,10 @@ pub struct Swap<'info> {
 
     mint: Box<Account<'info, Mint>>,
 
-    #[account(mut, seeds = [BondingCurveAuthority::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()], bump)]
-    bonding_curve_authority: Box<Account<'info, BondingCurveAuthority>>,
-
     #[account(
         mut,
         seeds = [BondingCurve::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()],
-        constraint = bonding_curve.complete == false @ ContractError::BondingCurveComplete,
+        constraint = bonding_curve.status == BondingCurveStatus::Active @ ContractError::BondingCurveNotActive,
         bump,
     )]
     bonding_curve: Box<Account<'info, BondingCurve>>,
@@ -51,9 +74,9 @@ pub struct Swap<'info> {
     #[account(
         mut,
         associated_token::mint = mint,
-        associated_token::authority = bonding_curve_authority,
+        associated_token::authority = bonding_curve,
     )]
-    bonding_curve_authority_token_account: Box<Account<'info, TokenAccount>>,
+    bonding_curve_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init_if_needed,
@@ -73,15 +96,13 @@ pub struct Swap<'info> {
 impl<'info> IntoBondingCurveLockerCtx<'info> for Swap<'info> {
     fn into_bonding_curve_locker_ctx(
         &self,
-        bonding_curve_authority_bump: u8,
+        bonding_curve_bump: u8,
     ) -> BondingCurveLockerCtx<'info> {
         BondingCurveLockerCtx {
-            bonding_curve_authority_bump,
+            bonding_curve_bump,
             mint: self.mint.clone(),
-            bonding_curve_authority: self.bonding_curve_authority.clone(),
-            bonding_curve_authority_token_account: self
-                .bonding_curve_authority_token_account
-                .clone(),
+            bonding_curve: self.bonding_curve.clone(),
+            bonding_curve_account: self.bonding_curve_account.clone(),
             token_program: self.token_program.clone(),
         }
     }
@@ -119,7 +140,7 @@ impl Swap<'_> {
         let global_state = &ctx.accounts.global;
         let locker: &mut BondingCurveLockerCtx = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
         locker.unlock_ata()?;
 
         let sol_amount: u64;
@@ -160,18 +181,17 @@ impl Swap<'_> {
             msg!("Fee: {} lamports", fee_lamports);
 
             msg!("BuyResult: {:#?}", buy_result);
-
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
 
             let bonding_curve_total_lamports = ctx.accounts.bonding_curve.get_lamports();
             let min_balance = Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
             let bonding_curve_pool_lamports = bonding_curve_total_lamports - min_balance;
-
-            // can be completed only after a buy
-            if bonding_curve_pool_lamports >= ctx.accounts.bonding_curve.sol_launch_threshold {
-                // has been completed
-                ctx.accounts.bonding_curve.complete = true;
+            let new_pool_lamports = bonding_curve_pool_lamports + sol_amount;
+            if new_pool_lamports >= ctx.accounts.bonding_curve.sol_launch_threshold {
+                msg!("pool completed");
+                ctx.accounts.bonding_curve.status = BondingCurveStatus::Complete;
                 locker.revoke_freeze_authority()?;
+                todo!("complete checks");
             }
         }
 
@@ -179,7 +199,7 @@ impl Swap<'_> {
             &ctx.accounts.bonding_curve,
             &mut ctx
                 .accounts
-                .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority),
+                .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve),
         )?;
         let bonding_curve = &ctx.accounts.bonding_curve;
         emit_cpi!(TradeEvent {
@@ -195,7 +215,7 @@ impl Swap<'_> {
             real_sol_reserves: bonding_curve.real_sol_reserves,
             real_token_reserves: bonding_curve.real_token_reserves,
         });
-        if bonding_curve.complete {
+        if bonding_curve.status == BondingCurveStatus::Complete {
             emit_cpi!(CompleteEvent {
                 user: *ctx.accounts.user.to_account_info().key,
                 mint: *ctx.accounts.mint.to_account_info().key,
@@ -237,16 +257,13 @@ impl Swap<'_> {
 
         // Transfer tokens to user
         let cpi_accounts = Transfer {
-            from: ctx
-                .accounts
-                .bonding_curve_authority_token_account
-                .to_account_info(),
+            from: ctx.accounts.bonding_curve_account.to_account_info(),
             to: ctx.accounts.user_token_account.to_account_info(),
-            authority: ctx.accounts.bonding_curve_authority.to_account_info(),
+            authority: ctx.accounts.bonding_curve.to_account_info(),
         };
 
-        let signer = BondingCurveAuthority::get_signer(
-            &ctx.bumps.bonding_curve_authority,
+        let signer = BondingCurve::get_signer(
+            &ctx.bumps.bonding_curve,
             ctx.accounts.mint.to_account_info().key,
         );
         let signer_seeds = &[&signer[..]];
@@ -260,7 +277,7 @@ impl Swap<'_> {
         )?;
         let locker = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
         locker.lock_ata()?;
         msg!("Token transfer complete");
 
@@ -285,7 +302,7 @@ impl Swap<'_> {
         // Transfer SOL to fee recipient
         let fee_transfer_instruction = system_instruction::transfer(
             ctx.accounts.user.key,
-            &ctx.accounts.bonding_curve_authority.key(),
+            &ctx.accounts.bonding_curve.key(),
             fee_lamports,
         );
 
@@ -293,12 +310,12 @@ impl Swap<'_> {
             &fee_transfer_instruction,
             &[
                 ctx.accounts.user.to_account_info(),
-                ctx.accounts.bonding_curve_authority.to_account_info(),
+                ctx.accounts.global.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
             &[],
         )?;
-        msg!("Fee transfer to bonding_curve_authority complete");
+        msg!("Fee transfer to global complete");
 
         Ok(())
     }
@@ -321,10 +338,7 @@ impl Swap<'_> {
         // Transfer tokens to bonding curve
         let cpi_accounts = Transfer {
             from: ctx.accounts.user_token_account.to_account_info(),
-            to: ctx
-                .accounts
-                .bonding_curve_authority_token_account
-                .to_account_info(),
+            to: ctx.accounts.bonding_curve_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         };
 
@@ -334,7 +348,7 @@ impl Swap<'_> {
         )?;
         let locker = &mut ctx
             .accounts
-            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve_authority);
+            .into_bonding_curve_locker_ctx(ctx.bumps.bonding_curve);
         locker.lock_ata()?;
 
         msg!("Token to bonding curve transfer complete");
@@ -355,11 +369,8 @@ impl Swap<'_> {
             .bonding_curve
             .sub_lamports(fee_lamports)
             .unwrap();
-        ctx.accounts
-            .bonding_curve_authority
-            .add_lamports(fee_lamports)
-            .unwrap();
-        msg!("Fee to bonding_curve_authority transfer complete");
+        ctx.accounts.global.add_lamports(fee_lamports).unwrap();
+        msg!("Fee to global transfer complete");
         Ok(())
     }
 }

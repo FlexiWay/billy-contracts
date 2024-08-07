@@ -154,7 +154,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -242,7 +242,7 @@ export type LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1426,7 +1426,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1514,7 +1514,7 @@ export const IDL: LmaofunBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthorityTokenAccount",
+          "name": "bondingCurveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
