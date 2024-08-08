@@ -157,8 +157,6 @@ pub struct CreateBondingCurveInstructionArgs {
     pub start_time: Option<i64>,
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
-    pub virtual_token_multiplier_bps: u64,
-    pub virtual_sol_reserves: u64,
     pub allocation: AllocationDataParams,
     pub vesting_terms: Option<VestingTerms>,
     pub curve_segments: Vec<CurveSegmentDef>,
@@ -206,8 +204,6 @@ pub struct CreateBondingCurveBuilder {
     start_time: Option<i64>,
     token_total_supply: Option<u64>,
     sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier_bps: Option<u64>,
-    virtual_sol_reserves: Option<u64>,
     allocation: Option<AllocationDataParams>,
     vesting_terms: Option<VestingTerms>,
     curve_segments: Option<Vec<CurveSegmentDef>>,
@@ -344,16 +340,6 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
-        self.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
-        self.virtual_sol_reserves = Some(virtual_sol_reserves);
-        self
-    }
-    #[inline(always)]
     pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
         self.allocation = Some(allocation);
         self
@@ -432,14 +418,6 @@ impl CreateBondingCurveBuilder {
                 .sol_launch_threshold
                 .clone()
                 .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier_bps: self
-                .virtual_token_multiplier_bps
-                .clone()
-                .expect("virtual_token_multiplier_bps is not set"),
-            virtual_sol_reserves: self
-                .virtual_sol_reserves
-                .clone()
-                .expect("virtual_sol_reserves is not set"),
             allocation: self.allocation.clone().expect("allocation is not set"),
             vesting_terms: self.vesting_terms.clone(),
             curve_segments: self
@@ -738,8 +716,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             start_time: None,
             token_total_supply: None,
             sol_launch_threshold: None,
-            virtual_token_multiplier_bps: None,
-            virtual_sol_reserves: None,
             allocation: None,
             vesting_terms: None,
             curve_segments: None,
@@ -890,16 +866,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
-        self.instruction.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
-        self.instruction.virtual_sol_reserves = Some(virtual_sol_reserves);
-        self
-    }
-    #[inline(always)]
     pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
         self.instruction.allocation = Some(allocation);
         self
@@ -971,16 +937,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
                 .sol_launch_threshold
                 .clone()
                 .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier_bps: self
-                .instruction
-                .virtual_token_multiplier_bps
-                .clone()
-                .expect("virtual_token_multiplier_bps is not set"),
-            virtual_sol_reserves: self
-                .instruction
-                .virtual_sol_reserves
-                .clone()
-                .expect("virtual_sol_reserves is not set"),
             allocation: self
                 .instruction
                 .allocation
@@ -1081,8 +1037,6 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     start_time: Option<i64>,
     token_total_supply: Option<u64>,
     sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier_bps: Option<u64>,
-    virtual_sol_reserves: Option<u64>,
     allocation: Option<AllocationDataParams>,
     vesting_terms: Option<VestingTerms>,
     curve_segments: Option<Vec<CurveSegmentDef>>,

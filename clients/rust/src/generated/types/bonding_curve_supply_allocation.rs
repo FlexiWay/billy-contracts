@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::SegmentType;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -15,8 +14,13 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CurveSegment {
-    pub segment_type: SegmentType,
-    pub start_supply: u64,
-    pub end_supply: u64,
+pub struct BondingCurveSupplyAllocation {
+    pub creator_vested_supply: u64,
+    pub presale_supply: u64,
+    pub bonding_supply: u64,
+    pub pool_supply: u64,
+    pub cex_supply: u64,
+    pub launch_brandkit_supply: u64,
+    pub lifetime_brandkit_supply: u64,
+    pub platform_supply: u64,
 }

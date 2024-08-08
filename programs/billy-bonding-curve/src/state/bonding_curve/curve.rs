@@ -1,7 +1,7 @@
 use crate::errors::ContractError;
-use crate::state::allocation::AllocationData;
 use crate::state::bonding_curve::*;
-use crate::util::{bps_mul, bps_mul_raw};
+use crate::util::bps_mul;
+use allocation::AllocationData;
 use anchor_lang::prelude::*;
 use segment::*;
 use std::fmt::{self};
@@ -16,17 +16,8 @@ pub enum BondingCurveStatus {
     Launched,
 }
 
-#[account]
-#[derive(InitSpace, Debug, Default)]
-pub struct BondingCurve {
-    pub mint: Pubkey,
-    pub creator: Pubkey,
-    pub cex_authority: Pubkey,
-    pub brand_authority: Pubkey,
-    pub status: BondingCurveStatus,
-    pub real_sol_reserves: u64,
-    pub real_token_reserves: u64,
-    pub token_total_supply: u64,
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq, Default)]
+pub struct BondingCurveSupplyAllocation {
     pub creator_vested_supply: u64,
     pub presale_supply: u64,
     pub bonding_supply: u64,
@@ -35,10 +26,53 @@ pub struct BondingCurve {
     pub launch_brandkit_supply: u64,
     pub lifetime_brandkit_supply: u64,
     pub platform_supply: u64,
+}
+impl BondingCurveSupplyAllocation {
+    pub fn new_from_allocation(allocation: &AllocationData, token_total_supply: u64) -> Self {
+        let creator_vested_supply = bps_mul(allocation.creator, token_total_supply).unwrap();
+        let presale_supply = bps_mul(allocation.presale, token_total_supply).unwrap();
+        let bonding_supply = bps_mul(allocation.curve_reserve, token_total_supply).unwrap();
+        let pool_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
+        let cex_supply = bps_mul(allocation.cex, token_total_supply).unwrap();
+        let launch_brandkit_supply =
+            bps_mul(allocation.launch_brandkit, token_total_supply).unwrap();
+        let lifetime_brandkit_supply =
+            bps_mul(allocation.lifetime_brandkit, token_total_supply).unwrap();
+        let platform_supply = bps_mul(allocation.platform, token_total_supply).unwrap();
+        BondingCurveSupplyAllocation {
+            creator_vested_supply,
+            presale_supply,
+            bonding_supply,
+            pool_supply,
+            cex_supply,
+            launch_brandkit_supply,
+            lifetime_brandkit_supply,
+            platform_supply,
+        }
+    }
+}
+
+#[account]
+#[derive(InitSpace, Debug, Default)]
+pub struct BondingCurve {
+    pub mint: Pubkey,
+    pub creator: Pubkey,
+    pub cex_authority: Pubkey,
+    pub brand_authority: Pubkey,
+    pub status: BondingCurveStatus,
+
+    pub real_sol_reserves: u64,
+    pub real_token_reserves: u64,
+
+    pub token_total_supply: u64,
+
     pub sol_launch_threshold: u64,
+
     pub start_time: i64,
     pub vesting_terms: VestingTerms,
+
     pub allocation: AllocationData,
+    pub supply_allocation: BondingCurveSupplyAllocation,
     #[max_len(16)]
     pub curve_segments: Vec<CurveSegment>,
     // pub current_segment: u8,
@@ -67,20 +101,13 @@ impl BondingCurve {
     ) -> Self {
         let start_time = params.start_time.unwrap_or(clock.unix_timestamp);
         let token_total_supply = params.token_total_supply;
+
         let allocation: AllocationData = params.allocation.into();
 
-        let creator_vested_supply = bps_mul(allocation.creator, token_total_supply).unwrap();
-        let presale_supply = bps_mul(allocation.presale, token_total_supply).unwrap();
-        let bonding_supply = bps_mul(allocation.curve_reserve, token_total_supply).unwrap();
-        let pool_supply = bps_mul(allocation.pool_reserve, token_total_supply).unwrap();
-        let cex_supply = bps_mul(allocation.cex, token_total_supply).unwrap();
-        let launch_brandkit_supply =
-            bps_mul(allocation.launch_brandkit, token_total_supply).unwrap();
-        let lifetime_brandkit_supply =
-            bps_mul(allocation.lifetime_brandkit, token_total_supply).unwrap();
-        let platform_supply = bps_mul(allocation.platform, token_total_supply).unwrap();
+        let supply_allocation =
+            BondingCurveSupplyAllocation::new_from_allocation(&allocation, token_total_supply);
 
-        let real_token_reserves = bonding_supply;
+        let real_token_reserves = supply_allocation.bonding_supply;
 
         let real_sol_reserves = 0;
         let sol_launch_threshold = params.sol_launch_threshold;
@@ -100,19 +127,13 @@ impl BondingCurve {
             real_sol_reserves,
             real_token_reserves,
             token_total_supply,
-            bonding_supply,
-            pool_supply,
-            creator_vested_supply,
-            presale_supply,
-            cex_supply,
-            launch_brandkit_supply,
-            lifetime_brandkit_supply,
-            platform_supply,
+            supply_allocation,
             sol_launch_threshold,
             start_time,
             allocation,
-            curve_segments: params.curve_segments.into_segment_data(bonding_supply),
-            // current_segment: 0,
+            curve_segments: params
+                .curve_segments
+                .into_segment_data(supply_allocation.bonding_supply),
             bump,
             vesting_terms,
         }
@@ -124,316 +145,6 @@ impl BondingCurve {
             return Some(self.real_sol_reserves);
         }
         self.get_buy_price(tokens_available)
-    }
-
-    pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
-        if tokens == 0 || tokens > self.real_token_reserves {
-            return None;
-        }
-
-        let mut remaining_tokens = tokens;
-        let mut total_price = 0u64;
-        let mut current_supply = self.real_token_reserves;
-
-        for segment in &self.curve_segments {
-            if current_supply >= segment.end_supply {
-                continue;
-            }
-
-            let segment_tokens = (segment.end_supply - current_supply).min(remaining_tokens);
-            let segment_price =
-                self.calculate_segment_price(segment, current_supply, segment_tokens)?;
-
-            total_price = total_price.checked_add(segment_price)?;
-            remaining_tokens = remaining_tokens.checked_sub(segment_tokens)?;
-            current_supply = current_supply.checked_add(segment_tokens)?;
-
-            if remaining_tokens == 0 {
-                break;
-            }
-        }
-
-        Some(total_price)
-    }
-
-    fn calculate_segment_price(
-        &self,
-        segment: &CurveSegment,
-        start_supply: u64,
-        tokens: u64,
-    ) -> Option<u64> {
-        match segment.curve_type {
-            CurveType::Constant => Some(segment.params[0].checked_mul(tokens)?),
-            CurveType::Linear => {
-                let slope = segment.params[0];
-                let intercept = segment.params[1];
-                Some(
-                    ((start_supply as u128)
-                        .checked_mul(slope as u128)?
-                        .checked_add(intercept as u128)?
-                        .checked_add(
-                            (tokens as u128)
-                                .checked_mul(slope as u128)?
-                                .checked_div(2)?,
-                        )?
-                        .checked_mul(tokens as u128)?)
-                    .checked_div(10000)? as u64,
-                )
-            }
-            CurveType::Exponential => {
-                let base = segment.params[0];
-                let exponent = segment.params[1];
-                let scale = segment.params[2];
-                println!("calculate_segment_price:base: {}", base);
-                println!("calculate_segment_price:exponent: {}", exponent);
-                println!("calculate_segment_price:scale: {}", scale);
-                println!("calculate_segment_price:tokens: {}", tokens);
-                Some(
-                    ((base as u128)
-                        .pow(exponent as u32)
-                        .checked_mul(tokens as u128)?
-                        .checked_div(scale as u128)?) as u64,
-                )
-            }
-        }
-    }
-
-    pub fn apply_buy(&mut self, sol_amount: u64) -> Option<BuyResult> {
-        let tokens_to_send = self.get_tokens_for_buy_sol(sol_amount)?;
-        println!("apply_buy:tokens_received: {}", tokens_to_send);
-
-        println!("1");
-        self.real_token_reserves = self.real_token_reserves.checked_sub(tokens_to_send)?;
-        println!("2");
-
-        self.real_sol_reserves = self.real_sol_reserves.checked_add(sol_amount)?;
-        println!("4");
-
-        Some(BuyResult {
-            token_amount: tokens_to_send,
-            sol_amount,
-        })
-    }
-
-    pub fn get_sell_price(&self, tokens: u64) -> Option<u64> {
-        if tokens == 0 {
-            return None;
-        }
-
-        let mut remaining_tokens = tokens;
-        let mut total_price = 0u64;
-        let mut current_supply = self.real_token_reserves;
-
-        for segment in self.curve_segments.iter().rev() {
-            if current_supply <= segment.start_supply {
-                continue;
-            }
-
-            let segment_tokens = (current_supply - segment.start_supply).min(remaining_tokens);
-            let segment_price = self.calculate_segment_price(
-                segment,
-                current_supply - segment_tokens,
-                segment_tokens,
-            )?;
-
-            total_price = total_price.checked_add(segment_price)?;
-            remaining_tokens = remaining_tokens.checked_sub(segment_tokens)?;
-            current_supply = current_supply.checked_sub(segment_tokens)?;
-
-            if remaining_tokens == 0 {
-                break;
-            }
-        }
-        if total_price > self.real_sol_reserves {
-            Some(self.real_sol_reserves)
-        } else {
-            Some(total_price)
-        }
-    }
-
-    pub fn apply_sell(&mut self, token_amount: u64) -> Option<SellResult> {
-        let sol_amount = self.get_sell_price(token_amount)?;
-
-        self.real_token_reserves = self.real_token_reserves.checked_add(token_amount)?;
-        self.real_sol_reserves = self.real_sol_reserves.checked_sub(sol_amount)?;
-
-        Some(SellResult {
-            token_amount,
-            sol_amount,
-        })
-    }
-
-    pub fn get_tokens_for_buy_sol(&self, sol_amount: u64) -> Option<u64> {
-        if sol_amount == 0 {
-            return None;
-        }
-
-        let mut remaining_sol = sol_amount;
-        let mut total_tokens = 0u64;
-        let mut current_supply = self.real_token_reserves;
-
-        println!("get_t_bs:remaining_sol: {}", remaining_sol);
-        println!("get_t_bs:total_tokens: {}", total_tokens);
-        println!("get_t_bs:current_supply: {}", current_supply);
-
-        for segment in &self.curve_segments {
-            println!("get_t_bs:segment: {:?}", segment);
-            if current_supply > segment.end_supply {
-                continue;
-            }
-
-            let segment_sol = self.calculate_segment_price(
-                segment,
-                current_supply,
-                current_supply - segment.start_supply,
-            )?;
-            println!("get_t_bs:segment_sol: {}", segment_sol);
-            let segment_tokens = if segment_sol <= remaining_sol {
-                remaining_sol = remaining_sol.checked_sub(segment_sol)?;
-                segment.end_supply - current_supply
-            } else {
-                self.calculate_tokens_for_buy_segment(segment, current_supply, remaining_sol)?
-            };
-            println!("get_t_bs:segment_tokens: {}", segment_tokens);
-
-            total_tokens = total_tokens.checked_add(segment_tokens)?;
-            current_supply = current_supply.checked_add(segment_tokens)?;
-
-            if remaining_sol == 0 {
-                break;
-            }
-        }
-
-        Some(total_tokens)
-    }
-
-    fn calculate_tokens_for_buy_segment(
-        &self,
-        segment: &CurveSegment,
-        start_supply: u64,
-        sol_amount: u64,
-    ) -> Option<u64> {
-        match segment.curve_type {
-            CurveType::Constant => Some(sol_amount.checked_div(segment.params[0])?),
-            CurveType::Linear => {
-                let slope = segment.params[0];
-                let intercept = segment.params[1];
-                Some(
-                    ((sol_amount as u128)
-                        .checked_mul(20000)?
-                        .checked_div(slope as u128)?
-                        .checked_sub(intercept as u128)?
-                        .checked_sub(start_supply as u128 * 2)?
-                        .checked_add(1)?
-                        .pow(1 / 2)
-                        .checked_sub(1)?
-                        .checked_div(2)?) as u64,
-                )
-            }
-            CurveType::Exponential => {
-                let base = segment.params[0];
-                let exponent = segment.params[1];
-                let scale = segment.params[2];
-
-                if base == 0 || exponent == 0 || scale == 0 {
-                    return None;
-                }
-
-                let scaled_sol = (sol_amount as u128).checked_mul(scale as u128)?;
-                println!("calculate_tokens_for_buy_segment:base: {}", base);
-                println!("calculate_tokens_for_buy_segment:exponent: {}", exponent);
-                println!("calculate_tokens_for_buy_segment:scale: {}", scale);
-                println!(
-                    "calculate_tokens_for_buy_segment:sol_amount: {}",
-                    sol_amount
-                );
-                println!(
-                    "calculate_tokens_for_buy_segment:scaled_sol: {}",
-                    scaled_sol
-                );
-                let powered: u128 = base.checked_pow(exponent as u32)?.into();
-                println!("calculate_tokens_for_buy_segment:powered: {}", powered);
-                let tokens = powered.checked_div(scaled_sol)?;
-                println!("calculate_tokens_for_buy_segment:tokens: {}", tokens);
-                let tokens_u64: u64 = tokens.try_into().ok()?;
-                Some(tokens_u64)
-            }
-        }
-    }
-
-    pub fn get_tokens_for_sell_sol(&self, sol_amount: u64) -> Option<u64> {
-        if sol_amount == 0 || sol_amount > self.real_sol_reserves {
-            return None;
-        }
-
-        let mut remaining_sol = sol_amount;
-        let mut total_tokens = 0u64;
-        let mut current_supply = self.real_token_reserves;
-
-        for segment in self.curve_segments.iter().rev() {
-            if current_supply <= segment.start_supply {
-                continue;
-            }
-
-            let segment_sol = self.calculate_segment_price(
-                segment,
-                segment.start_supply,
-                current_supply - segment.start_supply,
-            )?;
-            let segment_tokens = if segment_sol <= remaining_sol {
-                remaining_sol = remaining_sol.checked_sub(segment_sol)?;
-                current_supply - segment.start_supply
-            } else {
-                self.calculate_tokens_for_sell_segment(segment, current_supply, remaining_sol)?
-            };
-
-            total_tokens = total_tokens.checked_add(segment_tokens)?;
-            current_supply = current_supply.checked_sub(segment_tokens)?;
-
-            if remaining_sol == 0 {
-                break;
-            }
-        }
-
-        Some(total_tokens)
-    }
-
-    fn calculate_tokens_for_sell_segment(
-        &self,
-        segment: &CurveSegment,
-        end_supply: u64,
-        sol_amount: u64,
-    ) -> Option<u64> {
-        match segment.curve_type {
-            CurveType::Constant => Some(sol_amount.checked_div(segment.params[0])?),
-            CurveType::Linear => {
-                let slope = segment.params[0];
-                let intercept = segment.params[1];
-                Some(
-                    ((sol_amount as u128)
-                        .checked_mul(20000)?
-                        .checked_div(slope as u128)?
-                        .checked_add(intercept as u128)?
-                        .checked_add(end_supply as u128 * 2)?
-                        .checked_add(1)?
-                        .pow(1 / 2)
-                        .checked_sub(1)?
-                        .checked_div(2)?) as u64,
-                )
-            }
-            CurveType::Exponential => {
-                let base = segment.params[0];
-                let exponent = segment.params[1];
-                let scale = segment.params[2];
-                Some(
-                    ((sol_amount as u128)
-                        .checked_mul(scale as u128)?
-                        .pow(1 / 2)
-                        .checked_div((base as u128).pow(exponent as u32 / 2))?)
-                        as u64,
-                )
-            }
-        }
     }
 
     pub fn is_started(&self, clock: &Clock) -> bool {
@@ -524,18 +235,379 @@ impl BondingCurve {
         }
         Ok(())
     }
+
+    pub fn apply_buy(&mut self, sol_amount: u64) -> Option<BuyResult> {
+        let tokens_to_send = self.get_tokens_for_buy_sol(sol_amount)?;
+        self.real_token_reserves = self.real_token_reserves.checked_sub(tokens_to_send)?;
+        self.real_sol_reserves = self.real_sol_reserves.checked_add(sol_amount)?;
+
+        Some(BuyResult {
+            token_amount: tokens_to_send,
+            sol_amount,
+        })
+    }
+
+    pub fn apply_sell(&mut self, token_amount: u64) -> Option<SellResult> {
+        let new_reserves = self.real_token_reserves.checked_add(token_amount)?;
+        if new_reserves > self.supply_allocation.bonding_supply {
+            return None;
+        }
+        let sol_amount = self.get_sell_price(token_amount)?;
+
+        self.real_token_reserves = new_reserves;
+        self.real_sol_reserves = self.real_sol_reserves.checked_sub(sol_amount)?;
+
+        Some(SellResult {
+            token_amount,
+            sol_amount,
+        })
+    }
+
+    pub fn get_buy_price(&self, tokens: u64) -> Option<u64> {
+        if tokens == 0 || tokens > self.real_token_reserves {
+            return None;
+        }
+
+        let mut remaining_tokens = tokens;
+        let mut total_price = 0u64;
+        let mut current_supply = self.real_token_reserves;
+        println!("segments: {:?}", self.curve_segments);
+        for segment in self.curve_segments.iter().rev() {
+            if current_supply > segment.end_supply {
+                continue;
+            }
+            println!("current_supply: {}", current_supply);
+            let segment_tokens = (current_supply - segment.start_supply).min(remaining_tokens);
+            println!("segment_tokens: {}", segment_tokens);
+            let segment_price = calculate_segment_price(segment, current_supply, segment_tokens)?;
+            println!("segment_price: {}", segment_price);
+            total_price = total_price.checked_add(segment_price)?;
+            println!("total_price: {}", total_price);
+            remaining_tokens = remaining_tokens.checked_sub(segment_tokens)?;
+            current_supply = current_supply.checked_add(segment_tokens)?;
+            println!("remaining_tokens: {}", remaining_tokens);
+            println!("current_supply: {}", current_supply);
+            if remaining_tokens == 0 {
+                break;
+            }
+        }
+        println!("total_price: {}", total_price);
+
+        Some(total_price)
+    }
+
+    pub fn get_sell_price(&self, tokens: u64) -> Option<u64> {
+        if tokens == 0 {
+            return None;
+        }
+
+        let mut remaining_tokens = tokens;
+        let mut total_price = 0u64;
+        let mut current_supply = self.real_token_reserves;
+
+        for segment in self.curve_segments.iter().rev() {
+            if current_supply <= segment.start_supply {
+                continue;
+            }
+
+            let segment_tokens = (current_supply - segment.start_supply).min(remaining_tokens);
+            let segment_price =
+                calculate_segment_price(segment, current_supply - segment_tokens, segment_tokens)?;
+
+            total_price = total_price.checked_add(segment_price)?;
+            remaining_tokens = remaining_tokens.checked_sub(segment_tokens)?;
+            current_supply = current_supply.checked_sub(segment_tokens)?;
+
+            if remaining_tokens == 0 {
+                break;
+            }
+        }
+
+        if total_price > self.real_sol_reserves {
+            Some(self.real_sol_reserves)
+        } else {
+            Some(total_price)
+        }
+    }
+
+    pub fn get_tokens_for_buy_sol(&self, sol_amount: u64) -> Option<u64> {
+        if sol_amount == 0 {
+            return None;
+        }
+
+        let mut remaining_sol = sol_amount;
+        let mut total_tokens = 0u64;
+        let mut current_supply = self.real_token_reserves;
+
+        for segment in self.curve_segments.iter().rev() {
+            println!(
+                "get_tokens_for_buy_sol:segment:remaining_sol: {}",
+                remaining_sol
+            );
+            if current_supply > segment.end_supply {
+                continue;
+            }
+
+            let segment_sol = calculate_segment_price(
+                segment,
+                current_supply,
+                current_supply - segment.start_supply,
+            )?;
+            println!("get_tokens_for_buy_sol:segment_sol: {}", segment_sol);
+            let segment_tokens = if segment_sol <= remaining_sol {
+                remaining_sol = remaining_sol.checked_sub(segment_sol)?;
+                current_supply - segment.start_supply
+            } else {
+                calculate_tokens_for_buy_segment(segment, current_supply, remaining_sol)?
+            };
+            println!("get_tokens_for_buy_sol:segment_tokens: {}", segment_tokens);
+
+            total_tokens = total_tokens.checked_add(segment_tokens)?;
+            current_supply = current_supply.checked_add(segment_tokens)?;
+
+            if remaining_sol == 0 {
+                break;
+            }
+        }
+        println!("get_tokens_for_buy_sol:total_tokens: {}", total_tokens);
+        Some(total_tokens)
+    }
+
+    pub fn get_tokens_for_sell_sol(&self, sol_amount: u64) -> Option<u64> {
+        if sol_amount == 0 || sol_amount > self.real_sol_reserves {
+            return None;
+        }
+
+        let mut remaining_sol = sol_amount;
+        let mut total_tokens = 0u64;
+        let mut current_supply = self.real_token_reserves;
+
+        for segment in self.curve_segments.iter().rev() {
+            if current_supply <= segment.start_supply {
+                continue;
+            }
+
+            let segment_sol = calculate_segment_price(
+                segment,
+                segment.start_supply,
+                current_supply - segment.start_supply,
+            )?;
+            let segment_tokens = if segment_sol <= remaining_sol {
+                remaining_sol = remaining_sol.checked_sub(segment_sol)?;
+                current_supply - segment.start_supply
+            } else {
+                calculate_tokens_for_sell_segment(segment, current_supply, remaining_sol)?
+            };
+
+            total_tokens = total_tokens.checked_add(segment_tokens)?;
+            current_supply = current_supply.checked_sub(segment_tokens)?;
+
+            if remaining_sol == 0 {
+                break;
+            }
+        }
+
+        Some(total_tokens)
+    }
 }
 
 impl fmt::Display for BondingCurve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "BondingCurve {{ creator: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, status: {:?}, allocation: \n{:?} \n}}",
+            "BondingCurve {{ creator: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, supply_allocation: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, status: {:?}, allocation: \n{:?} \n}}",
             self.creator,
             self.real_sol_reserves,
-            self.real_token_reserves, self.token_total_supply, self.presale_supply,
-            self.bonding_supply, self.sol_launch_threshold, self.start_time, self.status,
+            self.real_token_reserves, self.token_total_supply, self.supply_allocation, self.sol_launch_threshold, self.start_time, self.status,
             self.allocation
         )
     }
+}
+
+fn calculate_linear_price(
+    slope: f64,
+    intercept: f64,
+    tokens: u64,
+    start_supply: u64,
+) -> Option<u64> {
+    println!(
+        "slope: {}, intercept: {}, tokens: {}, start_supply: {}",
+        slope, intercept, tokens, start_supply
+    );
+
+    let part1 = start_supply as u128;
+    println!("part1 (start_supply as u128): {}", part1);
+
+    let part2 = part1.checked_mul(slope as u128)?;
+    println!("part2 (start_supply * slope): {}", part2);
+
+    let part3 = part2.checked_add(intercept as u128)?;
+    println!("part3 (part2 + intercept): {}", part3);
+
+    let part4 = (tokens as u128).checked_mul(slope as u128)?;
+    println!("part4 (tokens * slope): {}", part4);
+
+    let part5 = part4.checked_div(2)?;
+    println!("part5 (part4 / 2): {}", part5);
+
+    let part6 = part3.checked_add(part5)?;
+    println!("part6 (part3 + part5): {}", part6);
+
+    let part7 = part6.checked_mul(tokens as u128)?;
+    println!("part7 (part6 * tokens): {}", part7);
+
+    let result = part7.checked_div(10000)? as u64;
+    println!("result: {}", result);
+
+    Some(result)
+}
+
+fn calculate_exponential_price(base: f64, exponent: f64, scale: f64, tokens: u64) -> Option<u64> {
+    println!(
+        "base: {}, exponent: {}, scale: {}, tokens: {}",
+        base, exponent, scale, tokens
+    );
+
+    let powed = base.powf(exponent);
+    println!("powed (base^exponent): {}", powed);
+
+    let tokens_price = powed * tokens as f64;
+    println!("tokens_price (powed * tokens): {}", tokens_price);
+
+    let scaled = tokens_price / scale;
+    println!("scaled (tokens_price / scale): {}", scaled);
+
+    let result = scaled.floor() as u64;
+    println!("result: {}", result);
+
+    Some(result)
+}
+
+pub fn calculate_segment_price(
+    segment: &CurveSegment,
+    start_supply: u64,
+    tokens: u64,
+) -> Option<u64> {
+    println!(
+        "SegmentType: {:?}, start_supply: {}, tokens: {}",
+        segment.segment_type, start_supply, tokens
+    );
+
+    match segment.segment_type {
+        SegmentType::Constant(price) => {
+            println!("Constant price: {}", price);
+            Some(price * tokens)
+        }
+        SegmentType::Linear(slope, intercept) => {
+            calculate_linear_price(slope, intercept, tokens, start_supply)
+        }
+        SegmentType::Exponential(base, exponent, scale) => {
+            calculate_exponential_price(base, exponent, scale, tokens)
+        }
+    }
+}
+
+pub fn calculate_tokens_for_segment(
+    segment: &CurveSegment,
+    start_supply: u64,
+    sol_amount: u64,
+    is_buy: bool,
+) -> Option<u64> {
+    println!(
+        "SegmentType: {:?}, start_supply: {}, sol_amount: {}, is_buy: {}",
+        segment.segment_type, start_supply, sol_amount, is_buy
+    );
+
+    match segment.segment_type {
+        SegmentType::Constant(price) => {
+            println!("Constant price: {}", price);
+            Some(sol_amount / price)
+        }
+        SegmentType::Linear(slope, intercept) => {
+            let a = if is_buy { 20000 } else { 20000 };
+            println!("a: {}", a);
+
+            let part1 = sol_amount as u128;
+            println!("part1 (amount as u128): {}", part1);
+
+            let part2 = part1.checked_mul(a)?;
+            println!("part2 (part1 * a): {}", part2);
+
+            let part3 = part2.checked_div(slope as u128)?;
+            println!("part3 (part2 / slope): {}", part3);
+
+            let part4 = part3.checked_sub(intercept as u128)?;
+            println!("part4 (part3 - intercept): {}", part4);
+
+            let part5 = part4.checked_sub(start_supply as u128 * 2)?;
+            println!("part5 (part4 - start_supply * 2): {}", part5);
+
+            let part6 = part5.checked_add(1)?;
+            println!("part6 (part5 + 1): {}", part6);
+
+            let part7 = part6.pow(1 / 2);
+            println!("part7 (part6^0.5): {}", part7);
+
+            let part8 = part7.checked_sub(1)?;
+            println!("part8 (part7 - 1): {}", part8);
+
+            let result = part8.checked_div(2)? as u64;
+            println!("result: {}", result);
+
+            Some(result)
+        }
+        SegmentType::Exponential(base, exponent, scale) => {
+            if is_buy {
+                // Solve the equation: sol_amount = base^exponent * tokens / scale
+                // Rearranging to solve for tokens:
+                // tokens = sol_amount * scale / (base^exponent)
+                let powered = base.powf(exponent);
+                println!("powered (base^exponent): {}", powered);
+
+                let tokens = (sol_amount as f64) * scale / powered;
+                let floored = tokens.floor() as u64;
+                println!("tokens: {}", tokens);
+                println!("floored: {}", floored);
+
+                return Some(floored);
+            } else {
+                // Solve the equation: sol_amount = base^exponent * tokens / scale
+                // Rearranging to solve for tokens:
+                // tokens = sol_amount * scale / (base^exponent)
+                let powered = base.powf(exponent);
+                println!("powered (base^exponent): {}", powered);
+
+                let tokens = (sol_amount as f64) * scale / powered;
+                let floored = tokens.floor() as u64;
+                println!("tokens: {}", tokens);
+                println!("floored: {}", floored);
+
+                return Some(floored);
+            };
+        }
+    }
+}
+
+pub fn calculate_tokens_for_buy_segment(
+    segment: &CurveSegment,
+    start_supply: u64,
+    sol_amount: u64,
+) -> Option<u64> {
+    println!(
+        "Buy segment, start_supply: {}, sol_amount: {}",
+        start_supply, sol_amount
+    );
+    calculate_tokens_for_segment(segment, start_supply, sol_amount, true)
+}
+
+pub fn calculate_tokens_for_sell_segment(
+    segment: &CurveSegment,
+    end_supply: u64,
+    sol_amount: u64,
+) -> Option<u64> {
+    println!(
+        "Sell segment, end_supply: {}, sol_amount: {}",
+        end_supply, sol_amount
+    );
+    calculate_tokens_for_segment(segment, end_supply, sol_amount, false)
 }

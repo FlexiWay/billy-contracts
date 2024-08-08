@@ -532,22 +532,6 @@ export type BillyBondingCurve = {
             }
           },
           {
-            "name": "virtualTokenMultiplierBps",
-            "type": "u64"
-          },
-          {
-            "name": "virtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "virtualTokenReserves",
-            "type": "u128"
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": "u128"
-          },
-          {
             "name": "realSolReserves",
             "type": "u64"
           },
@@ -557,38 +541,6 @@ export type BillyBondingCurve = {
           },
           {
             "name": "tokenTotalSupply",
-            "type": "u64"
-          },
-          {
-            "name": "creatorVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "presaleSupply",
-            "type": "u64"
-          },
-          {
-            "name": "bondingSupply",
-            "type": "u64"
-          },
-          {
-            "name": "poolSupply",
-            "type": "u64"
-          },
-          {
-            "name": "cexSupply",
-            "type": "u64"
-          },
-          {
-            "name": "launchBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lifetimeBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "platformSupply",
             "type": "u64"
           },
           {
@@ -609,6 +561,12 @@ export type BillyBondingCurve = {
             "name": "allocation",
             "type": {
               "defined": "AllocationData"
+            }
+          },
+          {
+            "name": "supplyAllocation",
+            "type": {
+              "defined": "BondingCurveSupplyAllocation"
             }
           },
           {
@@ -859,14 +817,54 @@ export type BillyBondingCurve = {
       }
     },
     {
+      "name": "BondingCurveSupplyAllocation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creatorVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "presaleSupply",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "poolSupply",
+            "type": "u64"
+          },
+          {
+            "name": "cexSupply",
+            "type": "u64"
+          },
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "platformSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "CurveSegmentDef",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "curveType",
+            "name": "segmentType",
             "type": {
-              "defined": "CurveType"
+              "defined": "SegmentTypeDef"
             }
           },
           {
@@ -876,15 +874,6 @@ export type BillyBondingCurve = {
           {
             "name": "endSupplyBps",
             "type": "u64"
-          },
-          {
-            "name": "params",
-            "type": {
-              "array": [
-                "u64",
-                3
-              ]
-            }
           }
         ]
       }
@@ -895,9 +884,9 @@ export type BillyBondingCurve = {
         "kind": "struct",
         "fields": [
           {
-            "name": "curveType",
+            "name": "segmentType",
             "type": {
-              "defined": "CurveType"
+              "defined": "SegmentType"
             }
           },
           {
@@ -907,15 +896,6 @@ export type BillyBondingCurve = {
           {
             "name": "endSupply",
             "type": "u64"
-          },
-          {
-            "name": "params",
-            "type": {
-              "array": [
-                "u64",
-                3
-              ]
-            }
           }
         ]
       }
@@ -965,14 +945,6 @@ export type BillyBondingCurve = {
           },
           {
             "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
-            "name": "virtualTokenMultiplierBps",
-            "type": "u64"
-          },
-          {
-            "name": "virtualSolReserves",
             "type": "u64"
           },
           {
@@ -1078,18 +1050,59 @@ export type BillyBondingCurve = {
       }
     },
     {
-      "name": "CurveType",
+      "name": "SegmentType",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Constant"
+            "name": "Constant",
+            "fields": [
+              "u64"
+            ]
           },
           {
-            "name": "Linear"
+            "name": "Linear",
+            "fields": [
+              "f64",
+              "f64"
+            ]
           },
           {
-            "name": "Exponential"
+            "name": "Exponential",
+            "fields": [
+              "f64",
+              "f64",
+              "f64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "SegmentTypeDef",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Constant",
+            "fields": [
+              "u64"
+            ]
+          },
+          {
+            "name": "Linear",
+            "fields": [
+              "u64",
+              "u64"
+            ]
+          },
+          {
+            "name": "Exponential",
+            "fields": [
+              "u64",
+              "u64",
+              "u64"
+            ]
           }
         ]
       }
@@ -1270,16 +1283,6 @@ export type BillyBondingCurve = {
           "index": false
         },
         {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "realSolReserves",
           "type": "u64",
           "index": false
@@ -1340,16 +1343,6 @@ export type BillyBondingCurve = {
           "index": false
         },
         {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "realSolReserves",
           "type": "u64",
           "index": false
@@ -1372,16 +1365,6 @@ export type BillyBondingCurve = {
         {
           "name": "mint",
           "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
           "index": false
         },
         {
@@ -2115,22 +2098,6 @@ export const IDL: BillyBondingCurve = {
             }
           },
           {
-            "name": "virtualTokenMultiplierBps",
-            "type": "u64"
-          },
-          {
-            "name": "virtualSolReserves",
-            "type": "u64"
-          },
-          {
-            "name": "virtualTokenReserves",
-            "type": "u128"
-          },
-          {
-            "name": "initialVirtualTokenReserves",
-            "type": "u128"
-          },
-          {
             "name": "realSolReserves",
             "type": "u64"
           },
@@ -2140,38 +2107,6 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "tokenTotalSupply",
-            "type": "u64"
-          },
-          {
-            "name": "creatorVestedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "presaleSupply",
-            "type": "u64"
-          },
-          {
-            "name": "bondingSupply",
-            "type": "u64"
-          },
-          {
-            "name": "poolSupply",
-            "type": "u64"
-          },
-          {
-            "name": "cexSupply",
-            "type": "u64"
-          },
-          {
-            "name": "launchBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "lifetimeBrandkitSupply",
-            "type": "u64"
-          },
-          {
-            "name": "platformSupply",
             "type": "u64"
           },
           {
@@ -2192,6 +2127,12 @@ export const IDL: BillyBondingCurve = {
             "name": "allocation",
             "type": {
               "defined": "AllocationData"
+            }
+          },
+          {
+            "name": "supplyAllocation",
+            "type": {
+              "defined": "BondingCurveSupplyAllocation"
             }
           },
           {
@@ -2442,14 +2383,54 @@ export const IDL: BillyBondingCurve = {
       }
     },
     {
+      "name": "BondingCurveSupplyAllocation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creatorVestedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "presaleSupply",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "poolSupply",
+            "type": "u64"
+          },
+          {
+            "name": "cexSupply",
+            "type": "u64"
+          },
+          {
+            "name": "launchBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "lifetimeBrandkitSupply",
+            "type": "u64"
+          },
+          {
+            "name": "platformSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "CurveSegmentDef",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "curveType",
+            "name": "segmentType",
             "type": {
-              "defined": "CurveType"
+              "defined": "SegmentTypeDef"
             }
           },
           {
@@ -2459,15 +2440,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "endSupplyBps",
             "type": "u64"
-          },
-          {
-            "name": "params",
-            "type": {
-              "array": [
-                "u64",
-                3
-              ]
-            }
           }
         ]
       }
@@ -2478,9 +2450,9 @@ export const IDL: BillyBondingCurve = {
         "kind": "struct",
         "fields": [
           {
-            "name": "curveType",
+            "name": "segmentType",
             "type": {
-              "defined": "CurveType"
+              "defined": "SegmentType"
             }
           },
           {
@@ -2490,15 +2462,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "endSupply",
             "type": "u64"
-          },
-          {
-            "name": "params",
-            "type": {
-              "array": [
-                "u64",
-                3
-              ]
-            }
           }
         ]
       }
@@ -2548,14 +2511,6 @@ export const IDL: BillyBondingCurve = {
           },
           {
             "name": "solLaunchThreshold",
-            "type": "u64"
-          },
-          {
-            "name": "virtualTokenMultiplierBps",
-            "type": "u64"
-          },
-          {
-            "name": "virtualSolReserves",
             "type": "u64"
           },
           {
@@ -2661,18 +2616,59 @@ export const IDL: BillyBondingCurve = {
       }
     },
     {
-      "name": "CurveType",
+      "name": "SegmentType",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Constant"
+            "name": "Constant",
+            "fields": [
+              "u64"
+            ]
           },
           {
-            "name": "Linear"
+            "name": "Linear",
+            "fields": [
+              "f64",
+              "f64"
+            ]
           },
           {
-            "name": "Exponential"
+            "name": "Exponential",
+            "fields": [
+              "f64",
+              "f64",
+              "f64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "SegmentTypeDef",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Constant",
+            "fields": [
+              "u64"
+            ]
+          },
+          {
+            "name": "Linear",
+            "fields": [
+              "u64",
+              "u64"
+            ]
+          },
+          {
+            "name": "Exponential",
+            "fields": [
+              "u64",
+              "u64",
+              "u64"
+            ]
           }
         ]
       }
@@ -2853,16 +2849,6 @@ export const IDL: BillyBondingCurve = {
           "index": false
         },
         {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "realSolReserves",
           "type": "u64",
           "index": false
@@ -2923,16 +2909,6 @@ export const IDL: BillyBondingCurve = {
           "index": false
         },
         {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "realSolReserves",
           "type": "u64",
           "index": false
@@ -2955,16 +2931,6 @@ export const IDL: BillyBondingCurve = {
         {
           "name": "mint",
           "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "virtualSolReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "virtualTokenReserves",
-          "type": "u128",
           "index": false
         },
         {

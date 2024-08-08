@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::allocation::AllocationDataParams;
+use super::allocation::AllocationDataParams;
 
 use super::segment::*;
 
@@ -41,9 +41,8 @@ pub struct CreateBondingCurveParams {
     pub token_total_supply: u64,
     pub sol_launch_threshold: u64,
 
-    pub virtual_token_multiplier_bps: u64,
-    pub virtual_sol_reserves: u64, // should this be fixed instead?
-
+    // pub virtual_token_multiplier_bps: u64,
+    // pub virtual_sol_reserves: u64, // should this be fixed instead?
     pub allocation: AllocationDataParams,
 
     pub vesting_terms: Option<VestingTerms>,

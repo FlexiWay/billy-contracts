@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
     use super::super::*;
-    use crate::{
-        state::{allocation::AllocationDataParams, bonding_curve::*},
-        util::BASIS_POINTS_DIVISOR,
-    };
+    use crate::util::BASIS_POINTS_DIVISOR;
+    use allocation::*;
     use anchor_lang::prelude::{msg, Clock, Pubkey};
     use curve::BondingCurve;
     use once_cell::sync::Lazy;
@@ -27,14 +25,9 @@ mod tests {
 
     static SIMPLE_SEGMENTS: Lazy<Vec<CurveSegmentDef>> = Lazy::new(|| {
         vec![CurveSegmentDef {
-            curve_type: CurveType::Exponential,
+            segment_type: SegmentTypeDef::Exponential(20000, 24000, 5000),
             start_supply_bps: 0,
             end_supply_bps: BASIS_POINTS_DIVISOR,
-            params: [
-                10_000_000, // 0.01 SOL
-                2,          // quadratic growth
-                100_000_000,
-            ],
         }]
     });
     #[test]
@@ -53,9 +46,8 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
+            // virtual_token_multiplier_bps: 730,
+            // virtual_sol_reserves: 600,
             allocation,
             vesting_terms: None,
         };
@@ -71,7 +63,7 @@ mod tests {
 
         println!("buy_result: {:#?}", curve);
         println!("{:?} \n", buy_result);
-        assert_eq!(buy_result.token_amount, 494); // Adjusted based on available tokens
+        assert_eq!(buy_result.token_amount, 189); // Adjusted based on available tokens
         assert_eq!(buy_result.sol_amount, 2000);
         assert_eq!(
             curve.real_token_reserves,
@@ -94,9 +86,9 @@ mod tests {
 
         // Attempt to sell more tokens than available in reserves
         let sell_result = curve.apply_sell(2000);
-        assert!(sell_result.is_none());
         println!("{} \n", curve);
         println!("{:?} \n", sell_result);
+        assert!(sell_result.is_none());
     }
 
     #[test]
@@ -115,9 +107,6 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
             allocation,
             vesting_terms: None,
         };
@@ -127,14 +116,14 @@ mod tests {
         curve.apply_buy(5000).unwrap();
 
         // let curve_initial = curve.clone();
-        let result = curve.apply_sell(20).unwrap();
+        let result = curve.apply_sell(160).unwrap();
         println!("{:?} \n", result);
-        assert_eq!(result.token_amount, 20);
-        assert_eq!(result.sol_amount, 1619);
-        assert_eq!(curve.real_token_reserves, 46);
+        assert_eq!(result.token_amount, 160);
+        assert_eq!(result.sol_amount, 1688);
+        assert_eq!(curve.real_token_reserves, 1187);
         // assert_eq!(curve.virtual_token_reserves, 89);
         // assert_eq!(curve.virtual_sol_reserves, 3981);
-        assert_eq!(curve.real_sol_reserves, 3381);
+        assert_eq!(curve.real_sol_reserves, 3312);
     }
 
     #[test]
@@ -153,26 +142,28 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
+            // virtual_token_multiplier_bps: 730,
+            // virtual_sol_reserves: 600,
             allocation,
             vesting_terms: None,
         };
         let mut curve =
             BondingCurve::create_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         // first apply buy
-        curve.apply_buy(3000).unwrap();
+        let res = curve.apply_buy(3000).unwrap();
 
         // let curve_initial = curve.clone();
         // Edge case: zero tokens
         assert_eq!(curve.get_sell_price(0), None);
 
-        // Normal case
-        assert_eq!(curve.get_sell_price(60), Some(1998));
+        // Normal case -- some tokens are sold
+        assert_eq!(curve.get_sell_price(res.token_amount - 100), Some(1942));
+
+        // Normal case -- all tokens are sold, curve keeps spread as profit
+        assert!(curve.get_sell_price(res.token_amount).unwrap() < res.sol_amount);
 
         // Should not exceed real sol reserves
-        assert_eq!(curve.get_sell_price(5000), None);
+        assert!(curve.get_sell_price(5000) <= Some(curve.real_sol_reserves));
     }
 
     #[test]
@@ -191,9 +182,8 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
+            // virtual_token_multiplier_bps: 730,
+            // virtual_sol_reserves: 600,
             allocation,
             vesting_terms: None,
         };
@@ -201,12 +191,12 @@ mod tests {
             BondingCurve::create_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
         let curve_initial = curve.clone();
 
-        let purchase_amount = 100;
+        let purchase_amount = 1000;
 
         let result = curve.apply_buy(purchase_amount).unwrap();
         println!("{:?} \n", result);
         assert_eq!(result.sol_amount, purchase_amount);
-        assert_eq!(result.token_amount, 91);
+        assert_eq!(result.token_amount, 94);
         // assert_eq!(
         //     curve.virtual_token_reserves,
         //     curve_initial.virtual_token_reserves - result.token_amount as u128
@@ -235,9 +225,8 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
+            // virtual_token_multiplier_bps: 730,
+            // virtual_sol_reserves: 600,
             allocation,
             vesting_terms: None,
         };
@@ -247,7 +236,7 @@ mod tests {
         assert_eq!(curve.get_buy_price(0), None);
 
         // Normal case
-        assert_eq!(curve.get_buy_price(100), Some(111));
+        assert_eq!(curve.get_buy_price(500), Some(5278));
 
         // Edge case: very large token amount
         assert_eq!(curve.get_buy_price(2000), None);
@@ -269,29 +258,25 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
             allocation,
             vesting_terms: None,
         };
         let curve =
             BondingCurve::create_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
-        // let _curve_initial = curve.clone();
 
         // Test case 1: Normal case
-        assert_eq!(curve.get_tokens_for_buy_sol(100), Some(91));
+        assert_eq!(curve.get_tokens_for_buy_sol(1000), Some(94));
 
         // Test case 2: Edge case - zero SOL
         assert_eq!(curve.get_tokens_for_buy_sol(0), None);
 
         // Test case 4: Large SOL amount (but within limits)
-        assert_eq!(curve.get_tokens_for_buy_sol(3000), Some(535));
+        assert_eq!(curve.get_tokens_for_buy_sol(3000), Some(284));
 
         // Test case 5: SOL amount that would exceed real token reserves
         assert_eq!(
             curve.get_tokens_for_buy_sol(900000),
-            Some(curve.bonding_supply)
+            Some(curve.supply_allocation.bonding_supply)
         );
     }
 
@@ -311,9 +296,8 @@ mod tests {
             token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-            virtual_token_multiplier_bps: 730,
-            virtual_sol_reserves: 600,
-
+            // virtual_token_multiplier_bps: 730,
+            // virtual_sol_reserves: 600,
             allocation,
             vesting_terms: None,
         };
@@ -324,7 +308,7 @@ mod tests {
         curve.apply_buy(1000).unwrap();
 
         // Test case 1: Normal case
-        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(600));
+        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(9));
 
         // Test case 2: Edge case - zero SOL
         assert_eq!(curve.get_tokens_for_sell_sol(0), None);
@@ -333,7 +317,7 @@ mod tests {
         assert_eq!(curve.get_tokens_for_sell_sol(1001), None);
 
         // Test case 4: Large SOL amount (but within limits)
-        assert_eq!(curve.get_tokens_for_sell_sol(500), Some(75));
+        assert_eq!(curve.get_tokens_for_sell_sol(500), Some(47));
     }
 
     // FUZZ TESTS
@@ -344,10 +328,8 @@ mod tests {
 
         #[test]
         fn fuzz_test_default_alloc_simple_curve_apply_buy(
-            virtual_sol_reserves in 1..u64::MAX,
             token_total_supply in 1..u64::MAX,
             sol_amount in 1..u64::MAX,
-            virtual_token_multiplier_bps in 1..BASIS_POINTS_DIVISOR,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
@@ -366,8 +348,8 @@ mod tests {
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                virtual_token_multiplier_bps,
-                virtual_sol_reserves,
+                // virtual_token_multiplier_bps,
+                // virtual_sol_reserves,
 
                 allocation,
                 vesting_terms:None,
@@ -382,12 +364,10 @@ mod tests {
 
         #[test]
         fn fuzz_test_default_alloc_simple_curve_apply_sell(
-            virtual_sol_reserves in 1..u64::MAX,
             token_total_supply in 1..u64::MAX,
 
             token_amount in 1..u64::MAX,
             buy_sol_amount in 1..u64::MAX,
-            virtual_token_multiplier_bps in 1..BASIS_POINTS_DIVISOR,
             // virtual_token_reserves in 1..u64::MAX,
             // real_sol_reserves in 1..u64::MAX,
             // initial_virtual_token_reserves in 1..u64::MAX,
@@ -406,8 +386,8 @@ mod tests {
                 token_total_supply,
                 sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                virtual_token_multiplier_bps,
-                virtual_sol_reserves,
+                // virtual_token_multiplier_bps,
+                // virtual_sol_reserves,
 
                 allocation,
                 vesting_terms:None,

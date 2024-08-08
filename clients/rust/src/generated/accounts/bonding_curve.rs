@@ -7,6 +7,7 @@
 
 use crate::generated::types::AllocationData;
 use crate::generated::types::BondingCurveStatus;
+use crate::generated::types::BondingCurveSupplyAllocation;
 use crate::generated::types::CurveSegment;
 use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
@@ -42,25 +43,14 @@ pub struct BondingCurve {
     )]
     pub brand_authority: Pubkey,
     pub status: BondingCurveStatus,
-    pub virtual_token_multiplier_bps: u64,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u128,
-    pub initial_virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
-    pub creator_vested_supply: u64,
-    pub presale_supply: u64,
-    pub bonding_supply: u64,
-    pub pool_supply: u64,
-    pub cex_supply: u64,
-    pub launch_brandkit_supply: u64,
-    pub lifetime_brandkit_supply: u64,
-    pub platform_supply: u64,
     pub sol_launch_threshold: u64,
     pub start_time: i64,
     pub vesting_terms: VestingTerms,
     pub allocation: AllocationData,
+    pub supply_allocation: BondingCurveSupplyAllocation,
     pub curve_segments: Vec<CurveSegment>,
     pub bump: u8,
 }

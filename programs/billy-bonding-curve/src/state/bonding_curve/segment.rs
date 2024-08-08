@@ -5,26 +5,32 @@ use anchor_lang::prelude::*;
 use std::vec::Vec;
 
 #[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
-pub enum CurveType {
-    Constant,
-    Linear,
-    Exponential,
+pub enum SegmentType {
+    Constant(u64),
+    Linear(f64, f64),
+    Exponential(f64, f64, f64),
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
+pub enum SegmentTypeDef {
+    Constant(u64),
+    Linear(u64, u64),
+    Exponential(u64, u64, u64),
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
 pub struct CurveSegmentDef {
-    pub curve_type: CurveType,
+    pub segment_type: SegmentTypeDef,
+    //input takes bps, cant serialize f64
     pub start_supply_bps: u64,
     pub end_supply_bps: u64,
-    pub params: [u64; 3], // Parameters for the curve (meaning depends on curve type)
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
 pub struct CurveSegment {
-    pub curve_type: CurveType,
+    pub segment_type: SegmentType,
     pub start_supply: u64,
     pub end_supply: u64,
-    pub params: [u64; 3], // Parameters for the curve (meaning depends on curve type)
 }
 
 pub trait CurveSegmentInput {
@@ -64,10 +70,22 @@ impl CurveSegmentInput for Vec<CurveSegmentDef> {
             let start_supply = bps_mul(segment.start_supply_bps, bonding_supply).unwrap();
             let end_supply = bps_mul(segment.end_supply_bps, bonding_supply).unwrap();
             segments.push(CurveSegment {
-                curve_type: segment.curve_type.clone(),
+                segment_type: match segment.segment_type {
+                    SegmentTypeDef::Constant(bps) => SegmentType::Constant(bps),
+                    SegmentTypeDef::Linear(slope_bps, intercept_bps) => SegmentType::Linear(
+                        slope_bps as f64 / BASIS_POINTS_DIVISOR as f64,
+                        intercept_bps as f64 / BASIS_POINTS_DIVISOR as f64,
+                    ),
+                    SegmentTypeDef::Exponential(base_bps, exponent_bps, scale_bps) => {
+                        SegmentType::Exponential(
+                            base_bps as f64 / BASIS_POINTS_DIVISOR as f64,
+                            exponent_bps as f64 / BASIS_POINTS_DIVISOR as f64,
+                            scale_bps as f64 / BASIS_POINTS_DIVISOR as f64,
+                        )
+                    }
+                },
                 start_supply,
                 end_supply,
-                params: segment.params,
             });
         }
         segments

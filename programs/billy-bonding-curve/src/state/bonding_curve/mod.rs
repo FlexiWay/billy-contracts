@@ -1,8 +1,10 @@
 pub mod curve;
 pub mod tests;
+pub use allocation::*;
 pub use locker::*;
 pub use segment::*;
 pub use structs::*;
+pub mod allocation;
 pub mod locker;
 pub mod segment;
 pub mod structs;

@@ -6,17 +6,17 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, array, struct, u64 } from '@metaplex-foundation/umi/serializers';
-import { CurveType, CurveTypeArgs, getCurveTypeSerializer } from '.';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { SegmentType, SegmentTypeArgs, getSegmentTypeSerializer } from '.';
 
 
-export type CurveSegment = { curveType: CurveType; startSupply: bigint; endSupply: bigint; params: Array<bigint>;  };
+export type CurveSegment = { segmentType: SegmentType; startSupply: bigint; endSupply: bigint;  };
 
-export type CurveSegmentArgs = { curveType: CurveTypeArgs; startSupply: number | bigint; endSupply: number | bigint; params: Array<number | bigint>;  };
+export type CurveSegmentArgs = { segmentType: SegmentTypeArgs; startSupply: number | bigint; endSupply: number | bigint;  };
 
 
 export function getCurveSegmentSerializer(): Serializer<CurveSegmentArgs, CurveSegment> {
-  return struct<CurveSegment>([['curveType', getCurveTypeSerializer()], ['startSupply', u64()], ['endSupply', u64()], ['params', array(u64(), { size: 3 })]], { description: 'CurveSegment' }) as Serializer<CurveSegmentArgs, CurveSegment>;
+  return struct<CurveSegment>([['segmentType', getSegmentTypeSerializer()], ['startSupply', u64()], ['endSupply', u64()]], { description: 'CurveSegment' }) as Serializer<CurveSegmentArgs, CurveSegment>;
 }
 
 

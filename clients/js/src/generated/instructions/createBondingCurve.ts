@@ -31,13 +31,13 @@ export type CreateBondingCurveInstructionAccounts = {
 };
 
   // Data.
-  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; virtualTokenMultiplierBps: bigint; virtualSolReserves: bigint; allocation: AllocationDataParams; vestingTerms: Option<VestingTerms>; curveSegments: Array<CurveSegmentDef>;  };
+  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; allocation: AllocationDataParams; vestingTerms: Option<VestingTerms>; curveSegments: Array<CurveSegmentDef>;  };
 
-export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; virtualTokenMultiplierBps: number | bigint; virtualSolReserves: number | bigint; allocation: AllocationDataParamsArgs; vestingTerms: OptionOrNullable<VestingTermsArgs>; curveSegments: Array<CurveSegmentDefArgs>;  };
+export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; allocation: AllocationDataParamsArgs; vestingTerms: OptionOrNullable<VestingTermsArgs>; curveSegments: Array<CurveSegmentDefArgs>;  };
 
 
   export function getCreateBondingCurveInstructionDataSerializer(): Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData> {
-  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['virtualTokenMultiplierBps', u64()], ['virtualSolReserves', u64()], ['allocation', getAllocationDataParamsSerializer()], ['vestingTerms', option(getVestingTermsSerializer())], ['curveSegments', array(getCurveSegmentDefSerializer())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
+  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['allocation', getAllocationDataParamsSerializer()], ['vestingTerms', option(getVestingTermsSerializer())], ['curveSegments', array(getCurveSegmentDefSerializer())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
 }
 
 

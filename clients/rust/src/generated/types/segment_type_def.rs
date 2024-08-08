@@ -9,14 +9,13 @@
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
-use num_derive::FromPrimitive;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Hash, FromPrimitive)]
-pub enum CurveType {
-    Constant,
-    Linear,
-    Exponential,
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum SegmentTypeDef {
+    Constant(u64),
+    Linear(u64, u64),
+    Exponential(u64, u64, u64),
 }

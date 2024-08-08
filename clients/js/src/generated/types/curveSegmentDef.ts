@@ -6,17 +6,17 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, array, struct, u64 } from '@metaplex-foundation/umi/serializers';
-import { CurveType, CurveTypeArgs, getCurveTypeSerializer } from '.';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { SegmentTypeDef, SegmentTypeDefArgs, getSegmentTypeDefSerializer } from '.';
 
 
-export type CurveSegmentDef = { curveType: CurveType; startSupplyBps: bigint; endSupplyBps: bigint; params: Array<bigint>;  };
+export type CurveSegmentDef = { segmentType: SegmentTypeDef; startSupplyBps: bigint; endSupplyBps: bigint;  };
 
-export type CurveSegmentDefArgs = { curveType: CurveTypeArgs; startSupplyBps: number | bigint; endSupplyBps: number | bigint; params: Array<number | bigint>;  };
+export type CurveSegmentDefArgs = { segmentType: SegmentTypeDefArgs; startSupplyBps: number | bigint; endSupplyBps: number | bigint;  };
 
 
 export function getCurveSegmentDefSerializer(): Serializer<CurveSegmentDefArgs, CurveSegmentDef> {
-  return struct<CurveSegmentDef>([['curveType', getCurveTypeSerializer()], ['startSupplyBps', u64()], ['endSupplyBps', u64()], ['params', array(u64(), { size: 3 })]], { description: 'CurveSegmentDef' }) as Serializer<CurveSegmentDefArgs, CurveSegmentDef>;
+  return struct<CurveSegmentDef>([['segmentType', getSegmentTypeDefSerializer()], ['startSupplyBps', u64()], ['endSupplyBps', u64()]], { description: 'CurveSegmentDef' }) as Serializer<CurveSegmentDefArgs, CurveSegmentDef>;
 }
 
 

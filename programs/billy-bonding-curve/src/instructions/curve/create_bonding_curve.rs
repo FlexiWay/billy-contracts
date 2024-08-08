@@ -10,7 +10,6 @@ use anchor_spl::{
 };
 
 use crate::state::{
-    allocation::AllocationData,
     bonding_curve::*,
     global::*,
     vaults::{BrandVault, CreatorVault, PlatformVault, PresaleVault},
@@ -348,7 +347,7 @@ impl CreateBondingCurve<'_> {
             ContractError::InvalidAllocation
         );
 
-        if bonding_curve.creator_vested_supply > 0 {
+        if bonding_curve.supply_allocation.creator_vested_supply > 0 {
             // mint creator share to creator_vault_token_account
             // mint_to(
             //     CpiContext::new_with_signer(
@@ -360,13 +359,13 @@ impl CreateBondingCurve<'_> {
             //         },
             //         mint_auth_signer_seeds,
             //     ),
-            //     bonding_curve.creator_vested_supply,
+            //     bonding_curve.supply_allocation.creator_vested_supply,
             // )?;
-            // self.creator_vault.initial_vested_supply = bonding_curve.creator_vested_supply;
-            msg!("CreateBondingCurve::mint_allocations:bonding_curve.creator_vested_supply minted");
+            // self.creator_vault.initial_vested_supply = bonding_curve.supply_allocation.creator_vested_supply;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.creator_vested_supply minted");
         }
 
-        if bonding_curve.presale_supply > 0 {
+        if bonding_curve.supply_allocation.presale_supply > 0 {
             // mint presale share to presale_vault_token_account
             // mint_to(
             //     CpiContext::new_with_signer(
@@ -378,15 +377,17 @@ impl CreateBondingCurve<'_> {
             //         },
             //         mint_auth_signer_seeds,
             //     ),
-            //     bonding_curve.presale_supply,
+            //     bonding_curve.supply_allocation.presale_supply,
             // )?;
-            // self.presale_vault.initial_vested_supply = bonding_curve.presale_supply;
-            msg!("CreateBondingCurve::mint_allocations:bonding_curve.presale_supply minted");
+            // self.presale_vault.initial_vested_supply = bonding_curve.supply_allocation.presale_supply;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.presale_supply minted");
         }
-        if bonding_curve.launch_brandkit_supply > 0 || bonding_curve.lifetime_brandkit_supply > 0 {
+        if bonding_curve.supply_allocation.launch_brandkit_supply > 0
+            || bonding_curve.supply_allocation.lifetime_brandkit_supply > 0
+        {
             // mint brandkit share to brand_vault_token_account
-            let amount =
-                bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply;
+            let amount = bonding_curve.supply_allocation.launch_brandkit_supply
+                + bonding_curve.supply_allocation.lifetime_brandkit_supply;
             // mint_to(
             //     CpiContext::new_with_signer(
             //         self.token_program.to_account_info(),
@@ -399,12 +400,12 @@ impl CreateBondingCurve<'_> {
             //     ),
             //     amount,
             // )?;
-            // self.brand_vault.launch_brandkit_supply = bonding_curve.launch_brandkit_supply;
-            // self.brand_vault.lifetime_brandkit_supply = bonding_curve.lifetime_brandkit_supply;
+            // self.brand_vault.launch_brandkit_supply = bonding_curve.supply_allocation.launch_brandkit_supply;
+            // self.brand_vault.lifetime_brandkit_supply = bonding_curve.supply_allocation.lifetime_brandkit_supply;
             // self.brand_vault.initial_vested_supply = amount;
-            msg!("CreateBondingCurve::mint_allocations:bonding_curve.launch_brandkit_supply + bonding_curve.lifetime_brandkit_supply minted");
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.launch_brandkit_supply + bonding_curve.supply_allocation.lifetime_brandkit_supply minted");
         }
-        if bonding_curve.platform_supply > 0 {
+        if bonding_curve.supply_allocation.platform_supply > 0 {
             // mint platform share to platform_vault_token_account
             // mint_to(
             //     CpiContext::new_with_signer(
@@ -416,10 +417,10 @@ impl CreateBondingCurve<'_> {
             //         },
             //         mint_auth_signer_seeds,
             //     ),
-            //     bonding_curve.platform_supply,
+            //     bonding_curve.supply_allocation.platform_supply,
             // )?;
-            // self.platform_vault.initial_vested_supply = bonding_curve.platform_supply;
-            msg!("CreateBondingCurve::mint_allocations:bonding_curve.platform_supply minted");
+            // self.platform_vault.initial_vested_supply = bonding_curve.supply_allocation.platform_supply;
+            msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.platform_supply minted");
         }
         // mint CURVE tokens to bonding_curve_account
         mint_to(
@@ -432,9 +433,9 @@ impl CreateBondingCurve<'_> {
                 },
                 mint_auth_signer_seeds,
             ),
-            bonding_curve.bonding_supply,
+            bonding_curve.supply_allocation.bonding_supply,
         )?;
-        msg!("CreateBondingCurve::mint_allocations:bonding_curve.bonding_supply minted");
+        msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.bonding_supply minted");
 
         // mint RAYDIUM POOL tokens to global_token_account
         // mint_to(
@@ -447,9 +448,9 @@ impl CreateBondingCurve<'_> {
         //         },
         //         mint_auth_signer_seeds,
         //     ),
-        //     bonding_curve.pool_supply,
+        //     bonding_curve.supply_allocation.pool_supply,
         // )?;
-        msg!("CreateBondingCurve::mint_allocations:bonding_curve.pool_supply minted");
+        msg!("CreateBondingCurve::mint_allocations:bonding_curve.supply_allocation.pool_supply minted");
         msg!("CreateBondingCurve::mint_allocations: done");
         Ok(())
     }
