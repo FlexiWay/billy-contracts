@@ -19,7 +19,6 @@ use crate::state::{
 use crate::errors::ContractError;
 
 use crate::state::bonding_curve::{
-    authority::*,
     curve::*,
     locker::{BondingCurveLockerCtx, IntoBondingCurveLockerCtx},
     structs::*,
@@ -119,11 +118,10 @@ pub struct CreateBondingCurve<'info> {
     //     associated_token::authority = platform_vault,
     // )]
     // platform_vault_token_account: Box<Account<'info, TokenAccount>>,
-    #[account(init,
-        space = 8 + BondingCurveAuthority::INIT_SPACE,
-        payer = creator, seeds = [BondingCurveAuthority::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()], bump)]
-    bonding_curve: Box<Account<'info, BondingCurveAuthority>>,
-
+    // #[account(init,
+    //     space = 8 + BondingCurveAuthority::INIT_SPACE,
+    //     payer = creator, seeds = [BondingCurveAuthority::SEED_PREFIX.as_bytes(), mint.to_account_info().key.as_ref()], bump)]
+    // bonding_curve: Box<Account<'info, BondingCurveAuthority>>,
     #[account(
         init,
         payer = creator,
@@ -265,8 +263,7 @@ impl CreateBondingCurve<'_> {
         msg!("CreateBondingCurve::update_from_params: created bonding_curve");
 
         let mint_k = ctx.accounts.mint.key();
-        let mint_authority_signer =
-            BondingCurveAuthority::get_signer(&ctx.bumps.bonding_curve, &mint_k);
+        let mint_authority_signer = BondingCurve::get_signer(&ctx.bumps.bonding_curve, &mint_k);
         let mint_auth_signer_seeds = &[&mint_authority_signer[..]];
 
         ctx.accounts

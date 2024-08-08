@@ -7,7 +7,6 @@
  */
 
 export * from './bondingCurve';
-export * from './bondingCurveAuthority';
 export * from './brandVault';
 export * from './creatorVault';
 export * from './global';

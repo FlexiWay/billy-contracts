@@ -9,16 +9,15 @@
 import { Context, Option, OptionOrNullable, Pda, PublicKey, Signer, TransactionBuilder, publicKey, transactionBuilder } from '@metaplex-foundation/umi';
 import { Serializer, array, i64, mapSerializer, option, string, struct, u64, u8 } from '@metaplex-foundation/umi/serializers';
 import { ResolvedAccount, ResolvedAccountsWithIndices, getAccountMetasAndSigners } from '../shared';
-import { AllocationDataParams, AllocationDataParamsArgs, VestingTerms, VestingTermsArgs, getAllocationDataParamsSerializer, getVestingTermsSerializer } from '../types';
+import { AllocationDataParams, AllocationDataParamsArgs, CurveSegmentDef, CurveSegmentDefArgs, VestingTerms, VestingTermsArgs, getAllocationDataParamsSerializer, getCurveSegmentDefSerializer, getVestingTermsSerializer } from '../types';
 
 // Accounts.
 export type CreateBondingCurveInstructionAccounts = {
     mint: Signer;
     creator: Signer;
     brandAuthority: PublicKey | Pda;
-    bondingCurveAuthority: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
-    bondingCurveTokenAccount: PublicKey | Pda;
+    bondingCurveAccount: PublicKey | Pda;
     global: PublicKey | Pda;
     metadata: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
@@ -32,22 +31,22 @@ export type CreateBondingCurveInstructionAccounts = {
 };
 
   // Data.
-  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; virtualTokenMultiplierBps: bigint; virtualSolReserves: bigint; allocation: AllocationDataParams; vestingTerms: Option<VestingTerms>;  };
+  export type CreateBondingCurveInstructionData = { discriminator: Array<number>; name: string; symbol: string; uri: string; startTime: Option<bigint>; tokenTotalSupply: bigint; solLaunchThreshold: bigint; virtualTokenMultiplierBps: bigint; virtualSolReserves: bigint; allocation: AllocationDataParams; vestingTerms: Option<VestingTerms>; curveSegments: Array<CurveSegmentDef>;  };
 
-export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; virtualTokenMultiplierBps: number | bigint; virtualSolReserves: number | bigint; allocation: AllocationDataParamsArgs; vestingTerms: OptionOrNullable<VestingTermsArgs>;  };
+export type CreateBondingCurveInstructionDataArgs = { name: string; symbol: string; uri: string; startTime: OptionOrNullable<number | bigint>; tokenTotalSupply: number | bigint; solLaunchThreshold: number | bigint; virtualTokenMultiplierBps: number | bigint; virtualSolReserves: number | bigint; allocation: AllocationDataParamsArgs; vestingTerms: OptionOrNullable<VestingTermsArgs>; curveSegments: Array<CurveSegmentDefArgs>;  };
 
 
   export function getCreateBondingCurveInstructionDataSerializer(): Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData> {
-  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['virtualTokenMultiplierBps', u64()], ['virtualSolReserves', u64()], ['allocation', getAllocationDataParamsSerializer()], ['vestingTerms', option(getVestingTermsSerializer())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
+  return mapSerializer<CreateBondingCurveInstructionDataArgs, any, CreateBondingCurveInstructionData>(struct<CreateBondingCurveInstructionData>([['discriminator', array(u8(), { size: 8 })], ['name', string()], ['symbol', string()], ['uri', string()], ['startTime', option(i64())], ['tokenTotalSupply', u64()], ['solLaunchThreshold', u64()], ['virtualTokenMultiplierBps', u64()], ['virtualSolReserves', u64()], ['allocation', getAllocationDataParamsSerializer()], ['vestingTerms', option(getVestingTermsSerializer())], ['curveSegments', array(getCurveSegmentDefSerializer())]], { description: 'CreateBondingCurveInstructionData' }), (value) => ({ ...value, discriminator: [94, 139, 158, 50, 69, 95, 8, 45] }) ) as Serializer<CreateBondingCurveInstructionDataArgs, CreateBondingCurveInstructionData>;
 }
 
 
 
-
+  
   // Args.
       export type CreateBondingCurveInstructionArgs =           CreateBondingCurveInstructionDataArgs
       ;
-
+  
 // Instruction.
 export function createBondingCurve(
   context: Pick<Context, "programs">,
@@ -61,24 +60,23 @@ export function createBondingCurve(
           mint: { index: 0, isWritable: true as boolean, value: input.mint ?? null },
           creator: { index: 1, isWritable: true as boolean, value: input.creator ?? null },
           brandAuthority: { index: 2, isWritable: false as boolean, value: input.brandAuthority ?? null },
-          bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
-          bondingCurve: { index: 4, isWritable: true as boolean, value: input.bondingCurve ?? null },
-          bondingCurveTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          global: { index: 6, isWritable: false as boolean, value: input.global ?? null },
-          metadata: { index: 7, isWritable: true as boolean, value: input.metadata ?? null },
-          systemProgram: { index: 8, isWritable: false as boolean, value: input.systemProgram ?? null },
-          tokenProgram: { index: 9, isWritable: false as boolean, value: input.tokenProgram ?? null },
-          associatedTokenProgram: { index: 10, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
-          tokenMetadataProgram: { index: 11, isWritable: false as boolean, value: input.tokenMetadataProgram ?? null },
-          rent: { index: 12, isWritable: false as boolean, value: input.rent ?? null },
-          clock: { index: 13, isWritable: false as boolean, value: input.clock ?? null },
-          eventAuthority: { index: 14, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 15, isWritable: false as boolean, value: input.program ?? null },
+          bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
+          bondingCurveAccount: { index: 4, isWritable: true as boolean, value: input.bondingCurveAccount ?? null },
+          global: { index: 5, isWritable: false as boolean, value: input.global ?? null },
+          metadata: { index: 6, isWritable: true as boolean, value: input.metadata ?? null },
+          systemProgram: { index: 7, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 8, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          associatedTokenProgram: { index: 9, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
+          tokenMetadataProgram: { index: 10, isWritable: false as boolean, value: input.tokenMetadataProgram ?? null },
+          rent: { index: 11, isWritable: false as boolean, value: input.rent ?? null },
+          clock: { index: 12, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 13, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 14, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.
     const resolvedArgs: CreateBondingCurveInstructionArgs = { ...input };
-
+  
     // Default values.
   if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
@@ -95,19 +93,19 @@ resolvedAccounts.tokenMetadataProgram.isWritable = false
       if (!resolvedAccounts.rent.value) {
         resolvedAccounts.rent.value = publicKey('SysvarRent111111111111111111111111111111111');
       }
-
+      
   // Accounts in order.
       const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
-
-
+  
+  
   // Keys and Signers.
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
       const data = getCreateBondingCurveInstructionDataSerializer().serialize(resolvedArgs as CreateBondingCurveInstructionDataArgs);
-
+  
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;
-
+  
   return transactionBuilder([{ instruction: { keys, programId, data }, signers, bytesCreatedOnChain }]);
 }

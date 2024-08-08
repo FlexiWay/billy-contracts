@@ -19,11 +19,11 @@ pub struct CurveSetAuthority<'info> {
     #[account(mut)]
     creator: Signer<'info>,
 
-    // CHECK: we dont read or write to this account
     #[account()]
+    /// CHECK: we dont read or write to this account
     brand_authority: UncheckedAccount<'info>,
-    // CHECK: we dont read or write to this account
     #[account()]
+    /// CHECK: we dont read or write to this account
     cex_authority: UncheckedAccount<'info>,
 
     #[account(

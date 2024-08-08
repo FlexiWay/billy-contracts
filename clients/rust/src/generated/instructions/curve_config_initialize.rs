@@ -5,25 +5,18 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AllocationDataParams;
-use crate::generated::types::CurveSegmentDef;
-use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct CreateBondingCurve {
-    pub mint: solana_program::pubkey::Pubkey,
-
+pub struct CurveConfigInitialize {
     pub creator: solana_program::pubkey::Pubkey,
 
-    pub brand_authority: solana_program::pubkey::Pubkey,
+    pub mint: solana_program::pubkey::Pubkey,
 
     pub bonding_curve: solana_program::pubkey::Pubkey,
-
-    pub bonding_curve_account: solana_program::pubkey::Pubkey,
 
     pub global: solana_program::pubkey::Pubkey,
 
@@ -46,37 +39,29 @@ pub struct CreateBondingCurve {
     pub program: solana_program::pubkey::Pubkey,
 }
 
-impl CreateBondingCurve {
+impl CurveConfigInitialize {
     pub fn instruction(
         &self,
-        args: CreateBondingCurveInstructionArgs,
+        args: CurveConfigInitializeInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: CreateBondingCurveInstructionArgs,
+        args: CurveConfigInitializeInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(15 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.mint, true,
-        ));
+        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.creator,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.brand_authority,
-            false,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.mint, true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.bonding_curve,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.bonding_curve_account,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -118,7 +103,7 @@ impl CreateBondingCurve {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = CreateBondingCurveInstructionData::new()
+        let mut data = CurveConfigInitializeInstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -134,14 +119,14 @@ impl CreateBondingCurve {
 
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-pub struct CreateBondingCurveInstructionData {
+pub struct CurveConfigInitializeInstructionData {
     discriminator: [u8; 8],
 }
 
-impl CreateBondingCurveInstructionData {
+impl CurveConfigInitializeInstructionData {
     pub fn new() -> Self {
         Self {
-            discriminator: [94, 139, 158, 50, 69, 95, 8, 45],
+            discriminator: [18, 206, 65, 144, 14, 39, 145, 232],
         }
     }
 }
@@ -150,46 +135,34 @@ impl CreateBondingCurveInstructionData {
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CreateBondingCurveInstructionArgs {
+pub struct CurveConfigInitializeInstructionArgs {
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    pub start_time: Option<i64>,
-    pub token_total_supply: u64,
-    pub sol_launch_threshold: u64,
-    pub virtual_token_multiplier_bps: u64,
-    pub virtual_sol_reserves: u64,
-    pub allocation: AllocationDataParams,
-    pub vesting_terms: Option<VestingTerms>,
-    pub curve_segments: Vec<CurveSegmentDef>,
 }
 
-/// Instruction builder for `CreateBondingCurve`.
+/// Instruction builder for `CurveConfigInitialize`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` mint
-///   1. `[writable, signer]` creator
-///   2. `[]` brand_authority
-///   3. `[writable]` bonding_curve
-///   4. `[writable]` bonding_curve_account
-///   5. `[]` global
-///   6. `[writable]` metadata
-///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   8. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   9. `[]` associated_token_program
-///   10. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
-///   11. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
-///   12. `[]` clock
-///   13. `[]` event_authority
-///   14. `[]` program
+///   0. `[writable, signer]` creator
+///   1. `[writable, signer]` mint
+///   2. `[writable]` bonding_curve
+///   3. `[]` global
+///   4. `[writable]` metadata
+///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   6. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   7. `[]` associated_token_program
+///   8. `[optional]` token_metadata_program (default to `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s`)
+///   9. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
+///   10. `[]` clock
+///   11. `[]` event_authority
+///   12. `[]` program
 #[derive(Default)]
-pub struct CreateBondingCurveBuilder {
-    mint: Option<solana_program::pubkey::Pubkey>,
+pub struct CurveConfigInitializeBuilder {
     creator: Option<solana_program::pubkey::Pubkey>,
-    brand_authority: Option<solana_program::pubkey::Pubkey>,
+    mint: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
-    bonding_curve_account: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
     metadata: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
@@ -203,25 +176,12 @@ pub struct CreateBondingCurveBuilder {
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
-    start_time: Option<i64>,
-    token_total_supply: Option<u64>,
-    sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier_bps: Option<u64>,
-    virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationDataParams>,
-    vesting_terms: Option<VestingTerms>,
-    curve_segments: Option<Vec<CurveSegmentDef>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl CreateBondingCurveBuilder {
+impl CurveConfigInitializeBuilder {
     pub fn new() -> Self {
         Self::default()
-    }
-    #[inline(always)]
-    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.mint = Some(mint);
-        self
     }
     #[inline(always)]
     pub fn creator(&mut self, creator: solana_program::pubkey::Pubkey) -> &mut Self {
@@ -229,24 +189,13 @@ impl CreateBondingCurveBuilder {
         self
     }
     #[inline(always)]
-    pub fn brand_authority(
-        &mut self,
-        brand_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.brand_authority = Some(brand_authority);
+    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.mint = Some(mint);
         self
     }
     #[inline(always)]
     pub fn bonding_curve(&mut self, bonding_curve: solana_program::pubkey::Pubkey) -> &mut Self {
         self.bonding_curve = Some(bonding_curve);
-        self
-    }
-    #[inline(always)]
-    pub fn bonding_curve_account(
-        &mut self,
-        bonding_curve_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.bonding_curve_account = Some(bonding_curve_account);
         self
     }
     #[inline(always)]
@@ -327,48 +276,6 @@ impl CreateBondingCurveBuilder {
         self.uri = Some(uri);
         self
     }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn start_time(&mut self, start_time: i64) -> &mut Self {
-        self.start_time = Some(start_time);
-        self
-    }
-    #[inline(always)]
-    pub fn token_total_supply(&mut self, token_total_supply: u64) -> &mut Self {
-        self.token_total_supply = Some(token_total_supply);
-        self
-    }
-    #[inline(always)]
-    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
-        self.sol_launch_threshold = Some(sol_launch_threshold);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
-        self.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
-        self.virtual_sol_reserves = Some(virtual_sol_reserves);
-        self
-    }
-    #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
-        self.allocation = Some(allocation);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn vesting_terms(&mut self, vesting_terms: VestingTerms) -> &mut Self {
-        self.vesting_terms = Some(vesting_terms);
-        self
-    }
-    #[inline(always)]
-    pub fn curve_segments(&mut self, curve_segments: Vec<CurveSegmentDef>) -> &mut Self {
-        self.curve_segments = Some(curve_segments);
-        self
-    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -390,14 +297,10 @@ impl CreateBondingCurveBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts =
-            CreateBondingCurve {
-                mint: self.mint.expect("mint is not set"),
+            CurveConfigInitialize {
                 creator: self.creator.expect("creator is not set"),
-                brand_authority: self.brand_authority.expect("brand_authority is not set"),
+                mint: self.mint.expect("mint is not set"),
                 bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
-                bonding_curve_account: self
-                    .bonding_curve_account
-                    .expect("bonding_curve_account is not set"),
                 global: self.global.expect("global is not set"),
                 metadata: self.metadata.expect("metadata is not set"),
                 system_program: self
@@ -419,50 +322,23 @@ impl CreateBondingCurveBuilder {
                 event_authority: self.event_authority.expect("event_authority is not set"),
                 program: self.program.expect("program is not set"),
             };
-        let args = CreateBondingCurveInstructionArgs {
+        let args = CurveConfigInitializeInstructionArgs {
             name: self.name.clone().expect("name is not set"),
             symbol: self.symbol.clone().expect("symbol is not set"),
             uri: self.uri.clone().expect("uri is not set"),
-            start_time: self.start_time.clone(),
-            token_total_supply: self
-                .token_total_supply
-                .clone()
-                .expect("token_total_supply is not set"),
-            sol_launch_threshold: self
-                .sol_launch_threshold
-                .clone()
-                .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier_bps: self
-                .virtual_token_multiplier_bps
-                .clone()
-                .expect("virtual_token_multiplier_bps is not set"),
-            virtual_sol_reserves: self
-                .virtual_sol_reserves
-                .clone()
-                .expect("virtual_sol_reserves is not set"),
-            allocation: self.allocation.clone().expect("allocation is not set"),
-            vesting_terms: self.vesting_terms.clone(),
-            curve_segments: self
-                .curve_segments
-                .clone()
-                .expect("curve_segments is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `create_bonding_curve` CPI accounts.
-pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
-
+/// `curve_config_initialize` CPI accounts.
+pub struct CurveConfigInitializeCpiAccounts<'a, 'b> {
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub bonding_curve_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -485,20 +361,16 @@ pub struct CreateBondingCurveCpiAccounts<'a, 'b> {
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `create_bonding_curve` CPI instruction.
-pub struct CreateBondingCurveCpi<'a, 'b> {
+/// `curve_config_initialize` CPI instruction.
+pub struct CurveConfigInitializeCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
-
     pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub bonding_curve_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -520,22 +392,20 @@ pub struct CreateBondingCurveCpi<'a, 'b> {
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
-    pub __args: CreateBondingCurveInstructionArgs,
+    pub __args: CurveConfigInitializeInstructionArgs,
 }
 
-impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
+impl<'a, 'b> CurveConfigInitializeCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: CreateBondingCurveCpiAccounts<'a, 'b>,
-        args: CreateBondingCurveInstructionArgs,
+        accounts: CurveConfigInitializeCpiAccounts<'a, 'b>,
+        args: CurveConfigInitializeInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
-            mint: accounts.mint,
             creator: accounts.creator,
-            brand_authority: accounts.brand_authority,
+            mint: accounts.mint,
             bonding_curve: accounts.bonding_curve,
-            bonding_curve_account: accounts.bonding_curve_account,
             global: accounts.global,
             metadata: accounts.metadata,
             system_program: accounts.system_program,
@@ -582,25 +452,17 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(15 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.creator.key,
+            true,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.mint.key,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.creator.key,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.brand_authority.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.bonding_curve.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.bonding_curve_account.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -650,7 +512,7 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = CreateBondingCurveInstructionData::new()
+        let mut data = CurveConfigInitializeInstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
@@ -661,13 +523,11 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(15 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(13 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.mint.clone());
         account_infos.push(self.creator.clone());
-        account_infos.push(self.brand_authority.clone());
+        account_infos.push(self.mint.clone());
         account_infos.push(self.bonding_curve.clone());
-        account_infos.push(self.bonding_curve_account.clone());
         account_infos.push(self.global.clone());
         account_infos.push(self.metadata.clone());
         account_infos.push(self.system_program.clone());
@@ -690,38 +550,34 @@ impl<'a, 'b> CreateBondingCurveCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `CreateBondingCurve` via CPI.
+/// Instruction builder for `CurveConfigInitialize` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` mint
-///   1. `[writable, signer]` creator
-///   2. `[]` brand_authority
-///   3. `[writable]` bonding_curve
-///   4. `[writable]` bonding_curve_account
-///   5. `[]` global
-///   6. `[writable]` metadata
-///   7. `[]` system_program
-///   8. `[]` token_program
-///   9. `[]` associated_token_program
-///   10. `[]` token_metadata_program
-///   11. `[]` rent
-///   12. `[]` clock
-///   13. `[]` event_authority
-///   14. `[]` program
-pub struct CreateBondingCurveCpiBuilder<'a, 'b> {
-    instruction: Box<CreateBondingCurveCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable, signer]` creator
+///   1. `[writable, signer]` mint
+///   2. `[writable]` bonding_curve
+///   3. `[]` global
+///   4. `[writable]` metadata
+///   5. `[]` system_program
+///   6. `[]` token_program
+///   7. `[]` associated_token_program
+///   8. `[]` token_metadata_program
+///   9. `[]` rent
+///   10. `[]` clock
+///   11. `[]` event_authority
+///   12. `[]` program
+pub struct CurveConfigInitializeCpiBuilder<'a, 'b> {
+    instruction: Box<CurveConfigInitializeCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
+impl<'a, 'b> CurveConfigInitializeCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(CreateBondingCurveCpiBuilderInstruction {
+        let instruction = Box::new(CurveConfigInitializeCpiBuilderInstruction {
             __program: program,
-            mint: None,
             creator: None,
-            brand_authority: None,
+            mint: None,
             bonding_curve: None,
-            bonding_curve_account: None,
             global: None,
             metadata: None,
             system_program: None,
@@ -735,22 +591,9 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
             name: None,
             symbol: None,
             uri: None,
-            start_time: None,
-            token_total_supply: None,
-            sol_launch_threshold: None,
-            virtual_token_multiplier_bps: None,
-            virtual_sol_reserves: None,
-            allocation: None,
-            vesting_terms: None,
-            curve_segments: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
-    }
-    #[inline(always)]
-    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.mint = Some(mint);
-        self
     }
     #[inline(always)]
     pub fn creator(
@@ -761,11 +604,8 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn brand_authority(
-        &mut self,
-        brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.brand_authority = Some(brand_authority);
+    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.mint = Some(mint);
         self
     }
     #[inline(always)]
@@ -774,14 +614,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.bonding_curve = Some(bonding_curve);
-        self
-    }
-    #[inline(always)]
-    pub fn bonding_curve_account(
-        &mut self,
-        bonding_curve_account: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.bonding_curve_account = Some(bonding_curve_account);
         self
     }
     #[inline(always)]
@@ -873,48 +705,6 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn start_time(&mut self, start_time: i64) -> &mut Self {
-        self.instruction.start_time = Some(start_time);
-        self
-    }
-    #[inline(always)]
-    pub fn token_total_supply(&mut self, token_total_supply: u64) -> &mut Self {
-        self.instruction.token_total_supply = Some(token_total_supply);
-        self
-    }
-    #[inline(always)]
-    pub fn sol_launch_threshold(&mut self, sol_launch_threshold: u64) -> &mut Self {
-        self.instruction.sol_launch_threshold = Some(sol_launch_threshold);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_token_multiplier_bps(&mut self, virtual_token_multiplier_bps: u64) -> &mut Self {
-        self.instruction.virtual_token_multiplier_bps = Some(virtual_token_multiplier_bps);
-        self
-    }
-    #[inline(always)]
-    pub fn virtual_sol_reserves(&mut self, virtual_sol_reserves: u64) -> &mut Self {
-        self.instruction.virtual_sol_reserves = Some(virtual_sol_reserves);
-        self
-    }
-    #[inline(always)]
-    pub fn allocation(&mut self, allocation: AllocationDataParams) -> &mut Self {
-        self.instruction.allocation = Some(allocation);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn vesting_terms(&mut self, vesting_terms: VestingTerms) -> &mut Self {
-        self.instruction.vesting_terms = Some(vesting_terms);
-        self
-    }
-    #[inline(always)]
-    pub fn curve_segments(&mut self, curve_segments: Vec<CurveSegmentDef>) -> &mut Self {
-        self.instruction.curve_segments = Some(curve_segments);
-        self
-    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -956,64 +746,22 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = CreateBondingCurveInstructionArgs {
+        let args = CurveConfigInitializeInstructionArgs {
             name: self.instruction.name.clone().expect("name is not set"),
             symbol: self.instruction.symbol.clone().expect("symbol is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
-            start_time: self.instruction.start_time.clone(),
-            token_total_supply: self
-                .instruction
-                .token_total_supply
-                .clone()
-                .expect("token_total_supply is not set"),
-            sol_launch_threshold: self
-                .instruction
-                .sol_launch_threshold
-                .clone()
-                .expect("sol_launch_threshold is not set"),
-            virtual_token_multiplier_bps: self
-                .instruction
-                .virtual_token_multiplier_bps
-                .clone()
-                .expect("virtual_token_multiplier_bps is not set"),
-            virtual_sol_reserves: self
-                .instruction
-                .virtual_sol_reserves
-                .clone()
-                .expect("virtual_sol_reserves is not set"),
-            allocation: self
-                .instruction
-                .allocation
-                .clone()
-                .expect("allocation is not set"),
-            vesting_terms: self.instruction.vesting_terms.clone(),
-            curve_segments: self
-                .instruction
-                .curve_segments
-                .clone()
-                .expect("curve_segments is not set"),
         };
-        let instruction = CreateBondingCurveCpi {
+        let instruction = CurveConfigInitializeCpi {
             __program: self.instruction.__program,
-
-            mint: self.instruction.mint.expect("mint is not set"),
 
             creator: self.instruction.creator.expect("creator is not set"),
 
-            brand_authority: self
-                .instruction
-                .brand_authority
-                .expect("brand_authority is not set"),
+            mint: self.instruction.mint.expect("mint is not set"),
 
             bonding_curve: self
                 .instruction
                 .bonding_curve
                 .expect("bonding_curve is not set"),
-
-            bonding_curve_account: self
-                .instruction
-                .bonding_curve_account
-                .expect("bonding_curve_account is not set"),
 
             global: self.instruction.global.expect("global is not set"),
 
@@ -1058,13 +806,11 @@ impl<'a, 'b> CreateBondingCurveCpiBuilder<'a, 'b> {
     }
 }
 
-struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
+struct CurveConfigInitializeCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     creator: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    brand_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    bonding_curve_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     metadata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -1078,14 +824,6 @@ struct CreateBondingCurveCpiBuilderInstruction<'a, 'b> {
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
-    start_time: Option<i64>,
-    token_total_supply: Option<u64>,
-    sol_launch_threshold: Option<u64>,
-    virtual_token_multiplier_bps: Option<u64>,
-    virtual_sol_reserves: Option<u64>,
-    allocation: Option<AllocationDataParams>,
-    vesting_terms: Option<VestingTerms>,
-    curve_segments: Option<Vec<CurveSegmentDef>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

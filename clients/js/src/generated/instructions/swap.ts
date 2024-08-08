@@ -15,9 +15,8 @@ export type SwapInstructionAccounts = {
     user: Signer;
     global: PublicKey | Pda;
     mint: PublicKey | Pda;
-    bondingCurveAuthority: PublicKey | Pda;
     bondingCurve: PublicKey | Pda;
-    bondingCurveTokenAccount: PublicKey | Pda;
+    bondingCurveAccount: PublicKey | Pda;
     userTokenAccount: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
@@ -39,11 +38,11 @@ export type SwapInstructionDataArgs = { baseIn: boolean; exactInAmount: number |
 
 
 
-
+  
   // Args.
       export type SwapInstructionArgs =           SwapInstructionDataArgs
       ;
-
+  
 // Instruction.
 export function swap(
   context: Pick<Context, "programs">,
@@ -55,23 +54,22 @@ export function swap(
   // Accounts.
   const resolvedAccounts = {
           user: { index: 0, isWritable: true as boolean, value: input.user ?? null },
-          global: { index: 1, isWritable: false as boolean, value: input.global ?? null },
+          global: { index: 1, isWritable: true as boolean, value: input.global ?? null },
           mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
-          bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
-          bondingCurve: { index: 4, isWritable: true as boolean, value: input.bondingCurve ?? null },
-          bondingCurveTokenAccount: { index: 5, isWritable: true as boolean, value: input.bondingCurveTokenAccount ?? null },
-          userTokenAccount: { index: 6, isWritable: true as boolean, value: input.userTokenAccount ?? null },
-          systemProgram: { index: 7, isWritable: false as boolean, value: input.systemProgram ?? null },
-          tokenProgram: { index: 8, isWritable: false as boolean, value: input.tokenProgram ?? null },
-          associatedTokenProgram: { index: 9, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
-          clock: { index: 10, isWritable: false as boolean, value: input.clock ?? null },
-          eventAuthority: { index: 11, isWritable: false as boolean, value: input.eventAuthority ?? null },
-          program: { index: 12, isWritable: false as boolean, value: input.program ?? null },
+          bondingCurve: { index: 3, isWritable: true as boolean, value: input.bondingCurve ?? null },
+          bondingCurveAccount: { index: 4, isWritable: true as boolean, value: input.bondingCurveAccount ?? null },
+          userTokenAccount: { index: 5, isWritable: true as boolean, value: input.userTokenAccount ?? null },
+          systemProgram: { index: 6, isWritable: false as boolean, value: input.systemProgram ?? null },
+          tokenProgram: { index: 7, isWritable: false as boolean, value: input.tokenProgram ?? null },
+          associatedTokenProgram: { index: 8, isWritable: false as boolean, value: input.associatedTokenProgram ?? null },
+          clock: { index: 9, isWritable: false as boolean, value: input.clock ?? null },
+          eventAuthority: { index: 10, isWritable: false as boolean, value: input.eventAuthority ?? null },
+          program: { index: 11, isWritable: false as boolean, value: input.program ?? null },
       } satisfies ResolvedAccountsWithIndices;
 
       // Arguments.
     const resolvedArgs: SwapInstructionArgs = { ...input };
-
+  
     // Default values.
   if (!resolvedAccounts.systemProgram.value) {
         resolvedAccounts.systemProgram.value = context.programs.getPublicKey('splSystem', '11111111111111111111111111111111');
@@ -81,19 +79,19 @@ resolvedAccounts.systemProgram.isWritable = false
         resolvedAccounts.tokenProgram.value = context.programs.getPublicKey('splToken', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 resolvedAccounts.tokenProgram.isWritable = false
       }
-
+      
   // Accounts in order.
       const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
-
-
+  
+  
   // Keys and Signers.
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
       const data = getSwapInstructionDataSerializer().serialize(resolvedArgs as SwapInstructionDataArgs);
-
+  
   // Bytes Created On Chain.
       const bytesCreatedOnChain = 0;
-
+  
   return transactionBuilder([{ instruction: { keys, programId, data }, signers, bytesCreatedOnChain }]);
 }

@@ -20,8 +20,6 @@ pub struct Swap {
 
     pub bonding_curve: solana_program::pubkey::Pubkey,
 
-    pub bonding_curve: solana_program::pubkey::Pubkey,
-
     pub bonding_curve_account: solana_program::pubkey::Pubkey,
 
     pub user_token_account: solana_program::pubkey::Pubkey,
@@ -52,20 +50,16 @@ impl Swap {
         args: SwapInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(12 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.user, true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.global,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.mint, false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.bonding_curve,
-            false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.bonding_curve,
@@ -144,24 +138,22 @@ pub struct SwapInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` user
-///   1. `[]` global
+///   1. `[writable]` global
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
-///   4. `[writable]` bonding_curve
-///   5. `[writable]` bonding_curve_account
-///   6. `[writable]` user_token_account
-///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   8. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   9. `[]` associated_token_program
-///   10. `[]` clock
-///   11. `[]` event_authority
-///   12. `[]` program
+///   4. `[writable]` bonding_curve_account
+///   5. `[writable]` user_token_account
+///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   7. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   8. `[]` associated_token_program
+///   9. `[]` clock
+///   10. `[]` event_authority
+///   11. `[]` program
 #[derive(Default)]
 pub struct SwapBuilder {
     user: Option<solana_program::pubkey::Pubkey>,
     global: Option<solana_program::pubkey::Pubkey>,
     mint: Option<solana_program::pubkey::Pubkey>,
-    bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve: Option<solana_program::pubkey::Pubkey>,
     bonding_curve_account: Option<solana_program::pubkey::Pubkey>,
     user_token_account: Option<solana_program::pubkey::Pubkey>,
@@ -194,11 +186,6 @@ impl SwapBuilder {
     #[inline(always)]
     pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
         self.mint = Some(mint);
-        self
-    }
-    #[inline(always)]
-    pub fn bonding_curve(&mut self, bonding_curve: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.bonding_curve = Some(bonding_curve);
         self
     }
     #[inline(always)]
@@ -300,7 +287,6 @@ impl SwapBuilder {
             global: self.global.expect("global is not set"),
             mint: self.mint.expect("mint is not set"),
             bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
-            bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
             bonding_curve_account: self
                 .bonding_curve_account
                 .expect("bonding_curve_account is not set"),
@@ -346,8 +332,6 @@ pub struct SwapCpiAccounts<'a, 'b> {
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
-
     pub bonding_curve_account: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub user_token_account: &'b solana_program::account_info::AccountInfo<'a>,
@@ -375,8 +359,6 @@ pub struct SwapCpi<'a, 'b> {
     pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
@@ -410,7 +392,6 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             user: accounts.user,
             global: accounts.global,
             mint: accounts.mint,
-            bonding_curve: accounts.bonding_curve,
             bonding_curve: accounts.bonding_curve,
             bonding_curve_account: accounts.bonding_curve_account,
             user_token_account: accounts.user_token_account,
@@ -456,21 +437,17 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(13 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(12 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.user.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.global.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.mint.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.bonding_curve.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
@@ -525,12 +502,11 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(13 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(12 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.user.clone());
         account_infos.push(self.global.clone());
         account_infos.push(self.mint.clone());
-        account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve.clone());
         account_infos.push(self.bonding_curve_account.clone());
         account_infos.push(self.user_token_account.clone());
@@ -557,18 +533,17 @@ impl<'a, 'b> SwapCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` user
-///   1. `[]` global
+///   1. `[writable]` global
 ///   2. `[]` mint
 ///   3. `[writable]` bonding_curve
-///   4. `[writable]` bonding_curve
-///   5. `[writable]` bonding_curve_account
-///   6. `[writable]` user_token_account
-///   7. `[]` system_program
-///   8. `[]` token_program
-///   9. `[]` associated_token_program
-///   10. `[]` clock
-///   11. `[]` event_authority
-///   12. `[]` program
+///   4. `[writable]` bonding_curve_account
+///   5. `[writable]` user_token_account
+///   6. `[]` system_program
+///   7. `[]` token_program
+///   8. `[]` associated_token_program
+///   9. `[]` clock
+///   10. `[]` event_authority
+///   11. `[]` program
 pub struct SwapCpiBuilder<'a, 'b> {
     instruction: Box<SwapCpiBuilderInstruction<'a, 'b>>,
 }
@@ -580,7 +555,6 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
             user: None,
             global: None,
             mint: None,
-            bonding_curve: None,
             bonding_curve: None,
             bonding_curve_account: None,
             user_token_account: None,
@@ -613,14 +587,6 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.mint = Some(mint);
-        self
-    }
-    #[inline(always)]
-    pub fn bonding_curve(
-        &mut self,
-        bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.bonding_curve = Some(bonding_curve);
         self
     }
     #[inline(always)]
@@ -779,11 +745,6 @@ impl<'a, 'b> SwapCpiBuilder<'a, 'b> {
                 .bonding_curve
                 .expect("bonding_curve is not set"),
 
-            bonding_curve: self
-                .instruction
-                .bonding_curve
-                .expect("bonding_curve is not set"),
-
             bonding_curve_account: self
                 .instruction
                 .bonding_curve_account
@@ -831,7 +792,6 @@ struct SwapCpiBuilderInstruction<'a, 'b> {
     user: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     bonding_curve_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     user_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,

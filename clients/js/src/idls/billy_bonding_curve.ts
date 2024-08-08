@@ -91,6 +91,130 @@ export type BillyBondingCurve = {
       ]
     },
     {
+      "name": "curveConfigInitialize",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "CurveInitializeParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "curveConfigUpdateAuthority",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "brandAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "cexAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createBondingCurve",
       "accounts": [
         {
@@ -109,17 +233,12 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -193,7 +312,7 @@ export type BillyBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -202,17 +321,12 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -356,7 +470,7 @@ export type BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -390,26 +504,6 @@ export type BillyBondingCurve = {
     }
   ],
   "accounts": [
-    {
-      "name": "bondingCurveAuthority",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": "i64"
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "bondingCurve",
       "type": {
@@ -518,6 +612,14 @@ export type BillyBondingCurve = {
             }
           },
           {
+            "name": "curveSegments",
+            "type": {
+              "vec": {
+                "defined": "CurveSegment"
+              }
+            }
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -602,6 +704,14 @@ export type BillyBondingCurve = {
           {
             "name": "lastDistribution",
             "type": "i64"
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": "i64"
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }
@@ -628,6 +738,26 @@ export type BillyBondingCurve = {
     }
   ],
   "types": [
+    {
+      "name": "CurveInitializeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "SwapParams",
       "type": {
@@ -729,6 +859,68 @@ export type BillyBondingCurve = {
       }
     },
     {
+      "name": "CurveSegmentDef",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "curveType",
+            "type": {
+              "defined": "CurveType"
+            }
+          },
+          {
+            "name": "startSupplyBps",
+            "type": "u64"
+          },
+          {
+            "name": "endSupplyBps",
+            "type": "u64"
+          },
+          {
+            "name": "params",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CurveSegment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "curveType",
+            "type": {
+              "defined": "CurveType"
+            }
+          },
+          {
+            "name": "startSupply",
+            "type": "u64"
+          },
+          {
+            "name": "endSupply",
+            "type": "u64"
+          },
+          {
+            "name": "params",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "VestingTerms",
       "type": {
         "kind": "struct",
@@ -794,6 +986,14 @@ export type BillyBondingCurve = {
             "type": {
               "option": {
                 "defined": "VestingTerms"
+              }
+            }
+          },
+          {
+            "name": "curveSegments",
+            "type": {
+              "vec": {
+                "defined": "CurveSegmentDef"
               }
             }
           }
@@ -878,6 +1078,23 @@ export type BillyBondingCurve = {
       }
     },
     {
+      "name": "CurveType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Constant"
+          },
+          {
+            "name": "Linear"
+          },
+          {
+            "name": "Exponential"
+          }
+        ]
+      }
+    },
+    {
       "name": "ProgramStatus",
       "type": {
         "kind": "enum",
@@ -900,31 +1117,121 @@ export type BillyBondingCurve = {
   ],
   "events": [
     {
-      "name": "GlobalUpdateEvent",
+      "name": "WithdrawEvent",
       "fields": [
-        {
-          "name": "globalAuthority",
-          "type": "publicKey",
-          "index": false
-        },
         {
           "name": "withdrawAuthority",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "tradeFeeBps",
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "launchFeeLamports",
+          "name": "totalWithdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "createdMintDecimals",
-          "type": "u8",
+          "name": "previousWithdrawTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "newWithdrawTime",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveInitializeEvent",
+      "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveSetAuthorityEvent",
+      "fields": [
+        {
+          "name": "prevCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "prevBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveSetParamsEvent",
+      "fields": [
+        {
+          "name": "prevCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "prevBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newBrandAuthority",
+          "type": "publicKey",
           "index": false
         }
       ]
@@ -990,46 +1297,6 @@ export type BillyBondingCurve = {
         {
           "name": "solLaunchThreshold",
           "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "WithdrawEvent",
-      "fields": [
-        {
-          "name": "withdrawAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "mint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "feeVault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "withdrawn",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "totalWithdrawn",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "previousWithdrawTime",
-          "type": "i64",
-          "index": false
-        },
-        {
-          "name": "newWithdrawTime",
-          "type": "i64",
           "index": false
         }
       ]
@@ -1133,6 +1400,36 @@ export type BillyBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "GlobalUpdateEvent",
+      "fields": [
+        {
+          "name": "globalAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tradeFeeBps",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "launchFeeLamports",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "createdMintDecimals",
+          "type": "u8",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -1168,106 +1465,116 @@ export type BillyBondingCurve = {
     },
     {
       "code": 6006,
+      "name": "BondingCurveInactive",
+      "msg": "Bonding Curve Inactive"
+    },
+    {
+      "code": 6007,
+      "name": "BondingCurveNotInactive",
+      "msg": "Bonding Curve Not Inactive"
+    },
+    {
+      "code": 6008,
       "name": "BondingCurveComplete",
       "msg": "Bonding Curve Complete"
     },
     {
-      "code": 6007,
+      "code": 6009,
       "name": "BondingCurveNotComplete",
       "msg": "Bonding Curve Not Complete"
     },
     {
-      "code": 6008,
+      "code": 6010,
       "name": "BondingCurveActive",
       "msg": "Bonding Curve Active"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "BondingCurveNotActive",
       "msg": "Bonding Curve Not Active"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InsufficientUserTokens",
       "msg": "Insufficient User Tokens"
     },
     {
-      "code": 6011,
+      "code": 6013,
       "name": "InsufficientCurveTokens",
       "msg": "Insufficient Curve Tokens"
     },
     {
-      "code": 6012,
+      "code": 6014,
       "name": "InsufficientUserSOL",
       "msg": "Insufficient user SOL"
     },
     {
-      "code": 6013,
+      "code": 6015,
       "name": "SlippageExceeded",
       "msg": "Slippage Exceeded"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "MinSwap",
       "msg": "Swap exactInAmount is 0"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "BuyFailed",
       "msg": "Buy Failed"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "SellFailed",
       "msg": "Sell Failed"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "BondingCurveInvariant",
       "msg": "Bonding Curve Invariant Failed"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "InvalidAllocation",
       "msg": "Invalid Allocation Data supplied, basis points must add up to 10000"
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "CliffNotReached",
       "msg": "Cliff not yet reached"
     },
     {
-      "code": 6025,
+      "code": 6027,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
     },
     {
-      "code": 6026,
+      "code": 6028,
       "name": "NoFeesToWithdraw",
       "msg": "Not enough fees to withdraw"
     }
@@ -1367,6 +1674,130 @@ export const IDL: BillyBondingCurve = {
       ]
     },
     {
+      "name": "curveConfigInitialize",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "CurveInitializeParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "curveConfigUpdateAuthority",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "brandAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "cexAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "global",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createBondingCurve",
       "accounts": [
         {
@@ -1385,17 +1816,12 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1469,7 +1895,7 @@ export const IDL: BillyBondingCurve = {
         },
         {
           "name": "global",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1478,17 +1904,12 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "bondingCurve",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bondingCurveTokenAccount",
+          "name": "bondingCurveAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1632,7 +2053,7 @@ export const IDL: BillyBondingCurve = {
           "isSigner": false
         },
         {
-          "name": "bondingCurveAuthority",
+          "name": "platformVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1666,26 +2087,6 @@ export const IDL: BillyBondingCurve = {
     }
   ],
   "accounts": [
-    {
-      "name": "bondingCurveAuthority",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "lastFeeWithdrawal",
-            "type": "i64"
-          },
-          {
-            "name": "feesWithdrawn",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "bondingCurve",
       "type": {
@@ -1794,6 +2195,14 @@ export const IDL: BillyBondingCurve = {
             }
           },
           {
+            "name": "curveSegments",
+            "type": {
+              "vec": {
+                "defined": "CurveSegment"
+              }
+            }
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -1878,6 +2287,14 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "lastDistribution",
             "type": "i64"
+          },
+          {
+            "name": "lastFeeWithdrawal",
+            "type": "i64"
+          },
+          {
+            "name": "feesWithdrawn",
+            "type": "u64"
           }
         ]
       }
@@ -1904,6 +2321,26 @@ export const IDL: BillyBondingCurve = {
     }
   ],
   "types": [
+    {
+      "name": "CurveInitializeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "SwapParams",
       "type": {
@@ -2005,6 +2442,68 @@ export const IDL: BillyBondingCurve = {
       }
     },
     {
+      "name": "CurveSegmentDef",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "curveType",
+            "type": {
+              "defined": "CurveType"
+            }
+          },
+          {
+            "name": "startSupplyBps",
+            "type": "u64"
+          },
+          {
+            "name": "endSupplyBps",
+            "type": "u64"
+          },
+          {
+            "name": "params",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CurveSegment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "curveType",
+            "type": {
+              "defined": "CurveType"
+            }
+          },
+          {
+            "name": "startSupply",
+            "type": "u64"
+          },
+          {
+            "name": "endSupply",
+            "type": "u64"
+          },
+          {
+            "name": "params",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "VestingTerms",
       "type": {
         "kind": "struct",
@@ -2070,6 +2569,14 @@ export const IDL: BillyBondingCurve = {
             "type": {
               "option": {
                 "defined": "VestingTerms"
+              }
+            }
+          },
+          {
+            "name": "curveSegments",
+            "type": {
+              "vec": {
+                "defined": "CurveSegmentDef"
               }
             }
           }
@@ -2154,6 +2661,23 @@ export const IDL: BillyBondingCurve = {
       }
     },
     {
+      "name": "CurveType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Constant"
+          },
+          {
+            "name": "Linear"
+          },
+          {
+            "name": "Exponential"
+          }
+        ]
+      }
+    },
+    {
       "name": "ProgramStatus",
       "type": {
         "kind": "enum",
@@ -2176,31 +2700,121 @@ export const IDL: BillyBondingCurve = {
   ],
   "events": [
     {
-      "name": "GlobalUpdateEvent",
+      "name": "WithdrawEvent",
       "fields": [
-        {
-          "name": "globalAuthority",
-          "type": "publicKey",
-          "index": false
-        },
         {
           "name": "withdrawAuthority",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "tradeFeeBps",
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "launchFeeLamports",
+          "name": "totalWithdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "createdMintDecimals",
-          "type": "u8",
+          "name": "previousWithdrawTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "newWithdrawTime",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveInitializeEvent",
+      "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveSetAuthorityEvent",
+      "fields": [
+        {
+          "name": "prevCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "prevBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "CurveSetParamsEvent",
+      "fields": [
+        {
+          "name": "prevCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "prevBrandAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newCexAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newBrandAuthority",
+          "type": "publicKey",
           "index": false
         }
       ]
@@ -2266,46 +2880,6 @@ export const IDL: BillyBondingCurve = {
         {
           "name": "solLaunchThreshold",
           "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "WithdrawEvent",
-      "fields": [
-        {
-          "name": "withdrawAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "mint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "feeVault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "withdrawn",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "totalWithdrawn",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "previousWithdrawTime",
-          "type": "i64",
-          "index": false
-        },
-        {
-          "name": "newWithdrawTime",
-          "type": "i64",
           "index": false
         }
       ]
@@ -2409,6 +2983,36 @@ export const IDL: BillyBondingCurve = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "GlobalUpdateEvent",
+      "fields": [
+        {
+          "name": "globalAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tradeFeeBps",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "launchFeeLamports",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "createdMintDecimals",
+          "type": "u8",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -2444,106 +3048,116 @@ export const IDL: BillyBondingCurve = {
     },
     {
       "code": 6006,
+      "name": "BondingCurveInactive",
+      "msg": "Bonding Curve Inactive"
+    },
+    {
+      "code": 6007,
+      "name": "BondingCurveNotInactive",
+      "msg": "Bonding Curve Not Inactive"
+    },
+    {
+      "code": 6008,
       "name": "BondingCurveComplete",
       "msg": "Bonding Curve Complete"
     },
     {
-      "code": 6007,
+      "code": 6009,
       "name": "BondingCurveNotComplete",
       "msg": "Bonding Curve Not Complete"
     },
     {
-      "code": 6008,
+      "code": 6010,
       "name": "BondingCurveActive",
       "msg": "Bonding Curve Active"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "BondingCurveNotActive",
       "msg": "Bonding Curve Not Active"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InsufficientUserTokens",
       "msg": "Insufficient User Tokens"
     },
     {
-      "code": 6011,
+      "code": 6013,
       "name": "InsufficientCurveTokens",
       "msg": "Insufficient Curve Tokens"
     },
     {
-      "code": 6012,
+      "code": 6014,
       "name": "InsufficientUserSOL",
       "msg": "Insufficient user SOL"
     },
     {
-      "code": 6013,
+      "code": 6015,
       "name": "SlippageExceeded",
       "msg": "Slippage Exceeded"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "MinSwap",
       "msg": "Swap exactInAmount is 0"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "BuyFailed",
       "msg": "Buy Failed"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "SellFailed",
       "msg": "Sell Failed"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "BondingCurveInvariant",
       "msg": "Bonding Curve Invariant Failed"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "CurveNotStarted",
       "msg": "Curve Not Started"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "InvalidAllocation",
       "msg": "Invalid Allocation Data supplied, basis points must add up to 10000"
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "InvalidStartTime",
       "msg": "Start time is in the past"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "SOLLaunchThresholdTooHigh",
       "msg": "SOL Launch threshold not attainable even if all tokens are sold"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "NoMaxAttainableSOL",
       "msg": "Cannot compute max_attainable_sol"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "InvalidCreatorAuthority",
       "msg": "Invalid Creator Authority"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "CliffNotReached",
       "msg": "Cliff not yet reached"
     },
     {
-      "code": 6025,
+      "code": 6027,
       "name": "VestingPeriodNotOver",
       "msg": "Vesting period not yet over"
     },
     {
-      "code": 6026,
+      "code": 6028,
       "name": "NoFeesToWithdraw",
       "msg": "Not enough fees to withdraw"
     }

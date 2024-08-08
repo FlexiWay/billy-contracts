@@ -73,11 +73,12 @@ pub struct CurveInitialize<'info> {
             b"metadata",
             token_metadata_program.key.as_ref(),
             mint.to_account_info().key.as_ref()
-        ],
-        seeds::program = token_metadata_program.key(),
-        bump,
-    )]
-    metadata: AccountInfo<'info>,
+            ],
+            seeds::program = token_metadata_program.key(),
+            bump,
+        )]
+    /// CHECK: we use seeds to validate metadata account
+    metadata: UncheckedAccount<'info>,
 
     system_program: Program<'info, System>,
 

@@ -15,7 +15,7 @@ export type WithdrawFeesInstructionAccounts = {
     authority?: Signer;
     global: PublicKey | Pda;
     mint: PublicKey | Pda;
-    bondingCurveAuthority: PublicKey | Pda;
+    platformVault: PublicKey | Pda;
     systemProgram?: PublicKey | Pda;
     tokenProgram?: PublicKey | Pda;
     clock: PublicKey | Pda;
@@ -49,7 +49,7 @@ export function withdrawFees(
           authority: { index: 0, isWritable: true as boolean, value: input.authority ?? null },
           global: { index: 1, isWritable: false as boolean, value: input.global ?? null },
           mint: { index: 2, isWritable: false as boolean, value: input.mint ?? null },
-          bondingCurveAuthority: { index: 3, isWritable: true as boolean, value: input.bondingCurveAuthority ?? null },
+          platformVault: { index: 3, isWritable: true as boolean, value: input.platformVault ?? null },
           systemProgram: { index: 4, isWritable: false as boolean, value: input.systemProgram ?? null },
           tokenProgram: { index: 5, isWritable: false as boolean, value: input.tokenProgram ?? null },
           clock: { index: 6, isWritable: false as boolean, value: input.clock ?? null },

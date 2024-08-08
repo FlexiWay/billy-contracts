@@ -11,27 +11,25 @@ use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct WithdrawFees {
-    pub authority: solana_program::pubkey::Pubkey,
+pub struct CurveConfigUpdateAuthority {
+    pub creator: solana_program::pubkey::Pubkey,
 
-    pub global: solana_program::pubkey::Pubkey,
+    pub brand_authority: solana_program::pubkey::Pubkey,
+
+    pub cex_authority: solana_program::pubkey::Pubkey,
 
     pub mint: solana_program::pubkey::Pubkey,
 
-    pub platform_vault: solana_program::pubkey::Pubkey,
+    pub bonding_curve: solana_program::pubkey::Pubkey,
 
-    pub system_program: solana_program::pubkey::Pubkey,
-
-    pub token_program: solana_program::pubkey::Pubkey,
-
-    pub clock: solana_program::pubkey::Pubkey,
+    pub global: solana_program::pubkey::Pubkey,
 
     pub event_authority: solana_program::pubkey::Pubkey,
 
     pub program: solana_program::pubkey::Pubkey,
 }
 
-impl WithdrawFees {
+impl CurveConfigUpdateAuthority {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
@@ -40,32 +38,29 @@ impl WithdrawFees {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.authority,
+            self.creator,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.global,
+            self.brand_authority,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.cex_authority,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.mint, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.platform_vault,
+            self.bonding_curve,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.system_program,
+            self.global,
             false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.token_program,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.clock, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.event_authority,
@@ -76,7 +71,9 @@ impl WithdrawFees {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
+        let data = CurveConfigUpdateAuthorityInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::BILLY_BONDING_CURVE_ID,
@@ -88,57 +85,63 @@ impl WithdrawFees {
 
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-pub struct WithdrawFeesInstructionData {
+pub struct CurveConfigUpdateAuthorityInstructionData {
     discriminator: [u8; 8],
 }
 
-impl WithdrawFeesInstructionData {
+impl CurveConfigUpdateAuthorityInstructionData {
     pub fn new() -> Self {
         Self {
-            discriminator: [198, 212, 171, 109, 144, 215, 174, 89],
+            discriminator: [63, 34, 177, 50, 87, 22, 186, 111],
         }
     }
 }
 
-/// Instruction builder for `WithdrawFees`.
+/// Instruction builder for `CurveConfigUpdateAuthority`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[]` global
-///   2. `[]` mint
-///   3. `[writable]` platform_vault
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-///   6. `[]` clock
-///   7. `[]` event_authority
-///   8. `[]` program
+///   0. `[writable, signer]` creator
+///   1. `[]` brand_authority
+///   2. `[]` cex_authority
+///   3. `[]` mint
+///   4. `[writable]` bonding_curve
+///   5. `[]` global
+///   6. `[]` event_authority
+///   7. `[]` program
 #[derive(Default)]
-pub struct WithdrawFeesBuilder {
-    authority: Option<solana_program::pubkey::Pubkey>,
-    global: Option<solana_program::pubkey::Pubkey>,
+pub struct CurveConfigUpdateAuthorityBuilder {
+    creator: Option<solana_program::pubkey::Pubkey>,
+    brand_authority: Option<solana_program::pubkey::Pubkey>,
+    cex_authority: Option<solana_program::pubkey::Pubkey>,
     mint: Option<solana_program::pubkey::Pubkey>,
-    platform_vault: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    clock: Option<solana_program::pubkey::Pubkey>,
+    bonding_curve: Option<solana_program::pubkey::Pubkey>,
+    global: Option<solana_program::pubkey::Pubkey>,
     event_authority: Option<solana_program::pubkey::Pubkey>,
     program: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl WithdrawFeesBuilder {
+impl CurveConfigUpdateAuthorityBuilder {
     pub fn new() -> Self {
         Self::default()
     }
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn creator(&mut self, creator: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.creator = Some(creator);
         self
     }
     #[inline(always)]
-    pub fn global(&mut self, global: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.global = Some(global);
+    pub fn brand_authority(
+        &mut self,
+        brand_authority: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.brand_authority = Some(brand_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn cex_authority(&mut self, cex_authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.cex_authority = Some(cex_authority);
         self
     }
     #[inline(always)]
@@ -147,25 +150,13 @@ impl WithdrawFeesBuilder {
         self
     }
     #[inline(always)]
-    pub fn platform_vault(&mut self, platform_vault: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.platform_vault = Some(platform_vault);
-        self
-    }
-    /// `[optional account, default to '11111111111111111111111111111111']`
-    #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.system_program = Some(system_program);
-        self
-    }
-    /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
-    #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.token_program = Some(token_program);
+    pub fn bonding_curve(&mut self, bonding_curve: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.bonding_curve = Some(bonding_curve);
         self
     }
     #[inline(always)]
-    pub fn clock(&mut self, clock: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.clock = Some(clock);
+    pub fn global(&mut self, global: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.global = Some(global);
         self
     }
     #[inline(always)]
@@ -201,18 +192,13 @@ impl WithdrawFeesBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = WithdrawFees {
-            authority: self.authority.expect("authority is not set"),
-            global: self.global.expect("global is not set"),
+        let accounts = CurveConfigUpdateAuthority {
+            creator: self.creator.expect("creator is not set"),
+            brand_authority: self.brand_authority.expect("brand_authority is not set"),
+            cex_authority: self.cex_authority.expect("cex_authority is not set"),
             mint: self.mint.expect("mint is not set"),
-            platform_vault: self.platform_vault.expect("platform_vault is not set"),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            )),
-            clock: self.clock.expect("clock is not set"),
+            bonding_curve: self.bonding_curve.expect("bonding_curve is not set"),
+            global: self.global.expect("global is not set"),
             event_authority: self.event_authority.expect("event_authority is not set"),
             program: self.program.expect("program is not set"),
         };
@@ -221,65 +207,60 @@ impl WithdrawFeesBuilder {
     }
 }
 
-/// `withdraw_fees` CPI accounts.
-pub struct WithdrawFeesCpiAccounts<'a, 'b> {
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+/// `curve_config_update_authority` CPI accounts.
+pub struct CurveConfigUpdateAuthorityCpiAccounts<'a, 'b> {
+    pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub global: &'b solana_program::account_info::AccountInfo<'a>,
+    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub cex_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
+    pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `withdraw_fees` CPI instruction.
-pub struct WithdrawFeesCpi<'a, 'b> {
+/// `curve_config_update_authority` CPI instruction.
+pub struct CurveConfigUpdateAuthorityCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub creator: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub global: &'b solana_program::account_info::AccountInfo<'a>,
+    pub brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub cex_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub mint: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
-
-    pub clock: &'b solana_program::account_info::AccountInfo<'a>,
+    pub global: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub event_authority: &'b solana_program::account_info::AccountInfo<'a>,
 
     pub program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
+impl<'a, 'b> CurveConfigUpdateAuthorityCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: WithdrawFeesCpiAccounts<'a, 'b>,
+        accounts: CurveConfigUpdateAuthorityCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
-            authority: accounts.authority,
-            global: accounts.global,
+            creator: accounts.creator,
+            brand_authority: accounts.brand_authority,
+            cex_authority: accounts.cex_authority,
             mint: accounts.mint,
-            platform_vault: accounts.platform_vault,
-            system_program: accounts.system_program,
-            token_program: accounts.token_program,
-            clock: accounts.clock,
+            bonding_curve: accounts.bonding_curve,
+            global: accounts.global,
             event_authority: accounts.event_authority,
             program: accounts.program,
         }
@@ -317,13 +298,17 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.authority.key,
+            *self.creator.key,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.global.key,
+            *self.brand_authority.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.cex_authority.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -331,19 +316,11 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.platform_vault.key,
+            *self.bonding_curve.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.system_program.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.token_program.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.clock.key,
+            *self.global.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -361,22 +338,23 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = WithdrawFeesInstructionData::new().try_to_vec().unwrap();
+        let data = CurveConfigUpdateAuthorityInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::BILLY_BONDING_CURVE_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(9 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(8 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.authority.clone());
-        account_infos.push(self.global.clone());
+        account_infos.push(self.creator.clone());
+        account_infos.push(self.brand_authority.clone());
+        account_infos.push(self.cex_authority.clone());
         account_infos.push(self.mint.clone());
-        account_infos.push(self.platform_vault.clone());
-        account_infos.push(self.system_program.clone());
-        account_infos.push(self.token_program.clone());
-        account_infos.push(self.clock.clone());
+        account_infos.push(self.bonding_curve.clone());
+        account_infos.push(self.global.clone());
         account_infos.push(self.event_authority.clone());
         account_infos.push(self.program.clone());
         remaining_accounts
@@ -391,34 +369,32 @@ impl<'a, 'b> WithdrawFeesCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `WithdrawFees` via CPI.
+/// Instruction builder for `CurveConfigUpdateAuthority` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[]` global
-///   2. `[]` mint
-///   3. `[writable]` platform_vault
-///   4. `[]` system_program
-///   5. `[]` token_program
-///   6. `[]` clock
-///   7. `[]` event_authority
-///   8. `[]` program
-pub struct WithdrawFeesCpiBuilder<'a, 'b> {
-    instruction: Box<WithdrawFeesCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable, signer]` creator
+///   1. `[]` brand_authority
+///   2. `[]` cex_authority
+///   3. `[]` mint
+///   4. `[writable]` bonding_curve
+///   5. `[]` global
+///   6. `[]` event_authority
+///   7. `[]` program
+pub struct CurveConfigUpdateAuthorityCpiBuilder<'a, 'b> {
+    instruction: Box<CurveConfigUpdateAuthorityCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
+impl<'a, 'b> CurveConfigUpdateAuthorityCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(WithdrawFeesCpiBuilderInstruction {
+        let instruction = Box::new(CurveConfigUpdateAuthorityCpiBuilderInstruction {
             __program: program,
-            authority: None,
-            global: None,
+            creator: None,
+            brand_authority: None,
+            cex_authority: None,
             mint: None,
-            platform_vault: None,
-            system_program: None,
-            token_program: None,
-            clock: None,
+            bonding_curve: None,
+            global: None,
             event_authority: None,
             program: None,
             __remaining_accounts: Vec::new(),
@@ -426,19 +402,27 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn authority(
+    pub fn creator(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        creator: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
+        self.instruction.creator = Some(creator);
         self
     }
     #[inline(always)]
-    pub fn global(
+    pub fn brand_authority(
         &mut self,
-        global: &'b solana_program::account_info::AccountInfo<'a>,
+        brand_authority: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.global = Some(global);
+        self.instruction.brand_authority = Some(brand_authority);
+        self
+    }
+    #[inline(always)]
+    pub fn cex_authority(
+        &mut self,
+        cex_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.cex_authority = Some(cex_authority);
         self
     }
     #[inline(always)]
@@ -447,32 +431,19 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn platform_vault(
+    pub fn bonding_curve(
         &mut self,
-        platform_vault: &'b solana_program::account_info::AccountInfo<'a>,
+        bonding_curve: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.platform_vault = Some(platform_vault);
+        self.instruction.bonding_curve = Some(bonding_curve);
         self
     }
     #[inline(always)]
-    pub fn system_program(
+    pub fn global(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        global: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.system_program = Some(system_program);
-        self
-    }
-    #[inline(always)]
-    pub fn token_program(
-        &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.token_program = Some(token_program);
-        self
-    }
-    #[inline(always)]
-    pub fn clock(&mut self, clock: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.clock = Some(clock);
+        self.instruction.global = Some(global);
         self
     }
     #[inline(always)]
@@ -532,31 +503,29 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = WithdrawFeesCpi {
+        let instruction = CurveConfigUpdateAuthorityCpi {
             __program: self.instruction.__program,
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            creator: self.instruction.creator.expect("creator is not set"),
 
-            global: self.instruction.global.expect("global is not set"),
+            brand_authority: self
+                .instruction
+                .brand_authority
+                .expect("brand_authority is not set"),
+
+            cex_authority: self
+                .instruction
+                .cex_authority
+                .expect("cex_authority is not set"),
 
             mint: self.instruction.mint.expect("mint is not set"),
 
-            platform_vault: self
+            bonding_curve: self
                 .instruction
-                .platform_vault
-                .expect("platform_vault is not set"),
+                .bonding_curve
+                .expect("bonding_curve is not set"),
 
-            system_program: self
-                .instruction
-                .system_program
-                .expect("system_program is not set"),
-
-            token_program: self
-                .instruction
-                .token_program
-                .expect("token_program is not set"),
-
-            clock: self.instruction.clock.expect("clock is not set"),
+            global: self.instruction.global.expect("global is not set"),
 
             event_authority: self
                 .instruction
@@ -572,15 +541,14 @@ impl<'a, 'b> WithdrawFeesCpiBuilder<'a, 'b> {
     }
 }
 
-struct WithdrawFeesCpiBuilderInstruction<'a, 'b> {
+struct CurveConfigUpdateAuthorityCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    creator: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    brand_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    cex_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    platform_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    clock: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    bonding_curve: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    global: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     event_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

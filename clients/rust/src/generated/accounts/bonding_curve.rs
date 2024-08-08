@@ -7,6 +7,7 @@
 
 use crate::generated::types::AllocationData;
 use crate::generated::types::BondingCurveStatus;
+use crate::generated::types::CurveSegment;
 use crate::generated::types::VestingTerms;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -60,12 +61,11 @@ pub struct BondingCurve {
     pub start_time: i64,
     pub vesting_terms: VestingTerms,
     pub allocation: AllocationData,
+    pub curve_segments: Vec<CurveSegment>,
     pub bump: u8,
 }
 
 impl BondingCurve {
-    pub const LEN: usize = 370;
-
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:

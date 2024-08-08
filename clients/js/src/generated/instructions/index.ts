@@ -8,6 +8,8 @@
 
 export * from './claimCreatorVesting';
 export * from './createBondingCurve';
+export * from './curveConfigInitialize';
+export * from './curveConfigUpdateAuthority';
 export * from './initialize';
 export * from './setParams';
 export * from './swap';

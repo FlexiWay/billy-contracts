@@ -28,67 +28,73 @@ pub enum BillyBondingCurveError {
     /// 6005 (0x1775) - Not in Running State
     #[error("Not in Running State")]
     ProgramNotRunning,
-    /// 6006 (0x1776) - Bonding Curve Complete
+    /// 6006 (0x1776) - Bonding Curve Inactive
+    #[error("Bonding Curve Inactive")]
+    BondingCurveInactive,
+    /// 6007 (0x1777) - Bonding Curve Not Inactive
+    #[error("Bonding Curve Not Inactive")]
+    BondingCurveNotInactive,
+    /// 6008 (0x1778) - Bonding Curve Complete
     #[error("Bonding Curve Complete")]
     BondingCurveComplete,
-    /// 6007 (0x1777) - Bonding Curve Not Complete
+    /// 6009 (0x1779) - Bonding Curve Not Complete
     #[error("Bonding Curve Not Complete")]
     BondingCurveNotComplete,
-    /// 6008 (0x1778) - Bonding Curve Active
+    /// 6010 (0x177A) - Bonding Curve Active
     #[error("Bonding Curve Active")]
     BondingCurveActive,
-    /// 6009 (0x1779) - Bonding Curve Not Active
+    /// 6011 (0x177B) - Bonding Curve Not Active
     #[error("Bonding Curve Not Active")]
     BondingCurveNotActive,
-    /// 6010 (0x177A) - Insufficient User Tokens
+    /// 6012 (0x177C) - Insufficient User Tokens
     #[error("Insufficient User Tokens")]
     InsufficientUserTokens,
-    /// 6011 (0x177B) - Insufficient Curve Tokens
+    /// 6013 (0x177D) - Insufficient Curve Tokens
     #[error("Insufficient Curve Tokens")]
     InsufficientCurveTokens,
-    /// 6012 (0x177C) - Insufficient user SOL
+    /// 6014 (0x177E) - Insufficient user SOL
     #[error("Insufficient user SOL")]
     InsufficientUserSOL,
-    /// 6013 (0x177D) - Slippage Exceeded
+    /// 6015 (0x177F) - Slippage Exceeded
     #[error("Slippage Exceeded")]
     SlippageExceeded,
-    /// 6014 (0x177E) - Swap exactInAmount is 0
+    /// 6016 (0x1780) - Swap exactInAmount is 0
     #[error("Swap exactInAmount is 0")]
     MinSwap,
-    /// 6015 (0x177F) - Buy Failed
+    /// 6017 (0x1781) - Buy Failed
     #[error("Buy Failed")]
     BuyFailed,
-    /// 6016 (0x1780) - Sell Failed
+    /// 6018 (0x1782) - Sell Failed
     #[error("Sell Failed")]
     SellFailed,
-    /// 6017 (0x1781) - Bonding Curve Invariant Failed
+    /// 6019 (0x1783) - Bonding Curve Invariant Failed
     #[error("Bonding Curve Invariant Failed")]
     BondingCurveInvariant,
-    /// 6018 (0x1782) - Curve Not Started
+    /// 6020 (0x1784) - Curve Not Started
     #[error("Curve Not Started")]
     CurveNotStarted,
-    /// 6019 (0x1783) - Invalid Allocation Data supplied, basis points must add up to 10000
+    /// 6021 (0x1785) - Invalid Allocation Data supplied, basis points must add up to 10000
     #[error("Invalid Allocation Data supplied, basis points must add up to 10000")]
     InvalidAllocation,
-    /// 6020 (0x1784) - Start time is in the past
+    /// 6022 (0x1786) - Start time is in the past
     #[error("Start time is in the past")]
     InvalidStartTime,
-    /// 6021 (0x1785) - SOL Launch threshold not attainable even if all tokens are sold
+    /// 6023 (0x1787) - SOL Launch threshold not attainable even if all tokens are sold
     #[error("SOL Launch threshold not attainable even if all tokens are sold")]
     SOLLaunchThresholdTooHigh,
-    /// 6022 (0x1786) - Cannot compute max_attainable_sol
+    /// 6024 (0x1788) - Cannot compute max_attainable_sol
     #[error("Cannot compute max_attainable_sol")]
     NoMaxAttainableSOL,
-    /// 6023 (0x1787) - Invalid Creator Authority
+    /// 6025 (0x1789) - Invalid Creator Authority
     #[error("Invalid Creator Authority")]
     InvalidCreatorAuthority,
-    /// 6024 (0x1788) - Cliff not yet reached
+    /// 6026 (0x178A) - Cliff not yet reached
     #[error("Cliff not yet reached")]
     CliffNotReached,
-    /// 6025 (0x1789) - Vesting period not yet over
+    /// 6027 (0x178B) - Vesting period not yet over
     #[error("Vesting period not yet over")]
     VestingPeriodNotOver,
-    /// 6026 (0x178A) - Not enough fees to withdraw
+    /// 6028 (0x178C) - Not enough fees to withdraw
     #[error("Not enough fees to withdraw")]
     NoFeesToWithdraw,
 }

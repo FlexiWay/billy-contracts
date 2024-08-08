@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 use crate::state::allocation::AllocationDataParams;
 
+use super::curve::{CurveSegment, CurveSegmentDef};
+
 #[derive(Debug, Clone, AnchorSerialize, InitSpace, AnchorDeserialize)]
 pub struct VestingTerms {
     pub cliff: i64,
@@ -45,4 +47,6 @@ pub struct CreateBondingCurveParams {
     pub allocation: AllocationDataParams,
 
     pub vesting_terms: Option<VestingTerms>,
+
+    pub curve_segments: Vec<CurveSegmentDef>,
 }

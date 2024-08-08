@@ -7,6 +7,8 @@
 
 pub(crate) mod r#claim_creator_vesting;
 pub(crate) mod r#create_bonding_curve;
+pub(crate) mod r#curve_config_initialize;
+pub(crate) mod r#curve_config_update_authority;
 pub(crate) mod r#initialize;
 pub(crate) mod r#set_params;
 pub(crate) mod r#swap;
@@ -14,6 +16,8 @@ pub(crate) mod r#withdraw_fees;
 
 pub use self::r#claim_creator_vesting::*;
 pub use self::r#create_bonding_curve::*;
+pub use self::r#curve_config_initialize::*;
+pub use self::r#curve_config_update_authority::*;
 pub use self::r#initialize::*;
 pub use self::r#set_params::*;
 pub use self::r#swap::*;

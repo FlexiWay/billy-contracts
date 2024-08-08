@@ -4,8 +4,8 @@ mod tests {
         state::{allocation::AllocationDataParams, bonding_curve::*},
         util::BASIS_POINTS_DIVISOR,
     };
-    use anchor_lang::prelude::{Clock, Pubkey};
-    use curve::BondingCurve;
+    use anchor_lang::prelude::{msg, Clock, Pubkey};
+    use curve::{BondingCurve, CurveSegment, CurveSegmentDef, CurveType};
     use once_cell::sync::Lazy;
     use std::{
         ops::Mul,
@@ -23,6 +23,19 @@ mod tests {
         unix_timestamp: START_TIME.clone(),
         ..Clock::default()
     });
+
+    static SIMPLE_SEGMENTS: Lazy<Vec<CurveSegmentDef>> = Lazy::new(|| {
+        vec![CurveSegmentDef {
+            curve_type: CurveType::Exponential,
+            start_supply_bps: 0,
+            end_supply_bps: BASIS_POINTS_DIVISOR,
+            params: [
+                10_000_000, // 0.01 SOL
+                2,          // quadratic growth
+                100_000_000,
+            ],
+        }]
+    });
     #[test]
     fn test_buy_and_sell_too_much() {
         let creator = Pubkey::default();
@@ -30,12 +43,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -46,9 +60,15 @@ mod tests {
         };
         let mut curve =
             BondingCurve::create_from_params(mint, creator, creator, creator, &params, &CLOCK, 0);
+
         let curve_initial = curve.clone();
+
+        println!("curve_initial: {:#?}", curve_initial);
+
         // Attempt to buy more tokens than available in reserves
         let buy_result = curve.apply_buy(2000).unwrap();
+
+        println!("buy_result: {:#?}", curve);
         println!("{:?} \n", buy_result);
         assert_eq!(buy_result.token_amount, 494); // Adjusted based on available tokens
         assert_eq!(buy_result.sol_amount, 2000);
@@ -85,12 +105,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -122,12 +143,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -159,12 +181,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -202,12 +225,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -235,12 +259,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -276,12 +301,13 @@ mod tests {
         let allocation = AllocationDataParams::default();
 
         let params = CreateBondingCurveParams {
+            curve_segments: SIMPLE_SEGMENTS.to_vec(),
             name: "test".to_string(),
             symbol: "test".to_string(),
             uri: "test".to_string(),
             start_time: Some(*START_TIME),
 
-            token_total_supply: 2000,
+            token_total_supply: 5000,
             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
             virtual_token_multiplier_bps: 730,
@@ -297,7 +323,7 @@ mod tests {
         curve.apply_buy(1000).unwrap();
 
         // Test case 1: Normal case
-        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(15));
+        assert_eq!(curve.get_tokens_for_sell_sol(100), Some(600));
 
         // Test case 2: Edge case - zero SOL
         assert_eq!(curve.get_tokens_for_sell_sol(0), None);
@@ -330,6 +356,7 @@ mod tests {
             let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
+                curve_segments:SIMPLE_SEGMENTS.to_vec(),
                 name: "test".to_string(),
                 symbol: "test".to_string(),
                 uri: "test".to_string(),
@@ -369,6 +396,7 @@ mod tests {
             let allocation = AllocationDataParams::default();
 
             let params = CreateBondingCurveParams {
+                curve_segments:SIMPLE_SEGMENTS.to_vec(),
                 name: "test".to_string(),
                 symbol: "test".to_string(),
                 uri: "test".to_string(),
