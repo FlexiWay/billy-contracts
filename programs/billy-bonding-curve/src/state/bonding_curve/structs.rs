@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::state::allocation::AllocationDataParams;
 
-use super::curve::{CurveSegment, CurveSegmentDef};
+use super::segment::*;
 
 #[derive(Debug, Clone, AnchorSerialize, InitSpace, AnchorDeserialize)]
 pub struct VestingTerms {

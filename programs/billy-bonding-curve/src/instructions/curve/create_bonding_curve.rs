@@ -32,8 +32,8 @@ pub struct CreateEvent {
     pub symbol: String,
     pub uri: String,
     pub start_time: i64,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u128,
+    // pub virtual_sol_reserves: u64,
+    // pub virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
@@ -289,9 +289,8 @@ impl CreateBondingCurve<'_> {
             mint: *ctx.accounts.mint.to_account_info().key,
             creator: *ctx.accounts.creator.to_account_info().key,
 
-            virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
-            virtual_token_reserves: bonding_curve.virtual_token_reserves,
-
+            // virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
+            // virtual_token_reserves: bonding_curve.virtual_token_reserves,
             token_total_supply: bonding_curve.token_total_supply,
             sol_launch_threshold: bonding_curve.sol_launch_threshold,
 

@@ -1,8 +1,9 @@
 use crate::errors::ContractError;
 use crate::state::allocation::AllocationData;
 use crate::state::bonding_curve::*;
-use crate::util::{bps_mul, bps_mul_raw, BASIS_POINTS_DIVISOR};
+use crate::util::{bps_mul, bps_mul_raw};
 use anchor_lang::prelude::*;
+use segment::*;
 use std::fmt::{self};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq, Default)]
@@ -15,75 +16,6 @@ pub enum BondingCurveStatus {
     Launched,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
-pub enum CurveType {
-    Constant,
-    Linear,
-    Exponential,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
-pub struct CurveSegmentDef {
-    pub curve_type: CurveType,
-    pub start_supply_bps: u64,
-    pub end_supply_bps: u64,
-    pub params: [u64; 3], // Parameters for the curve (meaning depends on curve type)
-}
-
-use std::vec::Vec;
-#[derive(AnchorSerialize, AnchorDeserialize, InitSpace, Clone, Debug)]
-pub struct CurveSegment {
-    pub curve_type: CurveType,
-    pub start_supply: u64,
-    pub end_supply: u64,
-    pub params: [u64; 3], // Parameters for the curve (meaning depends on curve type)
-}
-pub trait CurveSegmentInput {
-    fn is_valid(&self) -> bool;
-    fn into_segment_data(&self, bonding_supply: u64) -> Vec<CurveSegment>;
-}
-impl CurveSegmentInput for Vec<CurveSegmentDef> {
-    fn is_valid(&self) -> bool {
-        // Must check that all end and supply bps are in consecutive order,
-        // all add up to 10_000, there's no overlap, and no gaps
-        // First start supply must be 0
-        self.first().map(|segment| segment.start_supply_bps == 0).unwrap_or(false)
-            && // Last end supply must be 10_000
-            self.last().map(|segment| segment.end_supply_bps == BASIS_POINTS_DIVISOR).unwrap_or(false)
-            && // All segments must be valid
-            self.iter().all(|segment| {
-                segment.start_supply_bps <= segment.end_supply_bps
-                    && segment.start_supply_bps < BASIS_POINTS_DIVISOR
-                    && segment.end_supply_bps <= BASIS_POINTS_DIVISOR
-            })
-            && // No overlapping segments
-            self.iter().enumerate().all(|(i, segment)| {
-                let next_segment = self.get(i + 1);
-                if let Some(next_segment) = next_segment {
-                    segment.end_supply_bps == next_segment.start_supply_bps
-                } else {
-                    true
-                }
-            })
-    }
-
-    fn into_segment_data(&self, bonding_supply: u64) -> Vec<CurveSegment> {
-        // Map each segment def basis points to actual tokens
-        let mut segments = Vec::with_capacity(self.len());
-        for segment in self.iter() {
-            let start_supply = bps_mul(segment.start_supply_bps, bonding_supply).unwrap();
-            let end_supply = bps_mul(segment.end_supply_bps, bonding_supply).unwrap();
-            segments.push(CurveSegment {
-                curve_type: segment.curve_type.clone(),
-                start_supply,
-                end_supply,
-                params: segment.params,
-            });
-        }
-        segments
-    }
-}
-
 #[account]
 #[derive(InitSpace, Debug, Default)]
 pub struct BondingCurve {
@@ -92,10 +24,6 @@ pub struct BondingCurve {
     pub cex_authority: Pubkey,
     pub brand_authority: Pubkey,
     pub status: BondingCurveStatus,
-    pub virtual_token_multiplier_bps: u64,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u128,
-    pub initial_virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub token_total_supply: u64,
@@ -139,8 +67,6 @@ impl BondingCurve {
     ) -> Self {
         let start_time = params.start_time.unwrap_or(clock.unix_timestamp);
         let token_total_supply = params.token_total_supply;
-        let virtual_sol_reserves = params.virtual_sol_reserves;
-        let virtual_token_multiplier = params.virtual_token_multiplier_bps;
         let allocation: AllocationData = params.allocation.into();
 
         let creator_vested_supply = bps_mul(allocation.creator, token_total_supply).unwrap();
@@ -155,10 +81,7 @@ impl BondingCurve {
         let platform_supply = bps_mul(allocation.platform, token_total_supply).unwrap();
 
         let real_token_reserves = bonding_supply;
-        let virtual_token_reserves = bonding_supply as u128
-            + bps_mul_raw(params.virtual_token_multiplier_bps, bonding_supply).unwrap();
 
-        let initial_virtual_token_reserves = virtual_token_reserves;
         let real_sol_reserves = 0;
         let sol_launch_threshold = params.sol_launch_threshold;
         let vesting_terms = params.vesting_terms.clone().unwrap_or_default();
@@ -174,10 +97,6 @@ impl BondingCurve {
             brand_authority,
             cex_authority,
             status: BondingCurveStatus::default(),
-            initial_virtual_token_reserves,
-            virtual_token_multiplier_bps: virtual_token_multiplier,
-            virtual_sol_reserves,
-            virtual_token_reserves,
             real_sol_reserves,
             real_token_reserves,
             token_total_supply,
@@ -282,21 +201,13 @@ impl BondingCurve {
     pub fn apply_buy(&mut self, sol_amount: u64) -> Option<BuyResult> {
         let tokens_to_send = self.get_tokens_for_buy_sol(sol_amount)?;
         println!("apply_buy:tokens_received: {}", tokens_to_send);
-        println!(
-            "apply_buy:virtual_token_reserves: {}",
-            self.virtual_token_reserves
-        );
-        self.virtual_token_reserves = self
-            .virtual_token_reserves
-            .checked_sub(tokens_to_send as u128)?;
+
         println!("1");
         self.real_token_reserves = self.real_token_reserves.checked_sub(tokens_to_send)?;
         println!("2");
-        self.virtual_sol_reserves = self.virtual_sol_reserves.checked_add(sol_amount)?;
-        println!("3");
+
         self.real_sol_reserves = self.real_sol_reserves.checked_add(sol_amount)?;
         println!("4");
-        // self.update_current_segment();
 
         Some(BuyResult {
             token_amount: tokens_to_send,
@@ -343,14 +254,8 @@ impl BondingCurve {
     pub fn apply_sell(&mut self, token_amount: u64) -> Option<SellResult> {
         let sol_amount = self.get_sell_price(token_amount)?;
 
-        self.virtual_token_reserves = self
-            .virtual_token_reserves
-            .checked_add(token_amount as u128)?;
         self.real_token_reserves = self.real_token_reserves.checked_add(token_amount)?;
-        self.virtual_sol_reserves = self.virtual_sol_reserves.checked_sub(sol_amount)?;
         self.real_sol_reserves = self.real_sol_reserves.checked_sub(sol_amount)?;
-
-        // self.update_current_segment();
 
         Some(SellResult {
             token_amount,
@@ -531,14 +436,6 @@ impl BondingCurve {
         }
     }
 
-    // pub fn update_current_segment(&mut self) {
-    //     self.current_segment = self
-    //         .curve_segments
-    //         .iter()
-    //         .position(|segment| self.real_token_reserves < segment.end_supply)
-    //         .unwrap_or(self.curve_segments.len() - 1) as u8;
-    // }
-
     pub fn is_started(&self, clock: &Clock) -> bool {
         let now = clock.unix_timestamp;
         now >= self.start_time
@@ -574,16 +471,6 @@ impl BondingCurve {
                 bonding_curve_pool_lamports
             );
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
-            return Err(ContractError::BondingCurveInvariant.into());
-        }
-
-        // Ensure the virtual reserves are always positive
-        if bonding_curve.virtual_sol_reserves <= 0 {
-            msg!("Invariant failed: virtual_sol_reserves <= 0");
-            return Err(ContractError::BondingCurveInvariant.into());
-        }
-        if bonding_curve.virtual_token_reserves <= 0 {
-            msg!("Invariant failed: virtual_token_reserves <= 0");
             return Err(ContractError::BondingCurveInvariant.into());
         }
 
@@ -643,10 +530,9 @@ impl fmt::Display for BondingCurve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "BondingCurve {{ creator: {:?}, initial_virtual_token_reserves: {:?}, virtual_sol_reserves: {:?}, virtual_token_reserves: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, status: {:?}, allocation: \n{:?} \n}}",
+            "BondingCurve {{ creator: {:?}, real_sol_reserves: {:?}, real_token_reserves: {:?}, token_total_supply: {:?}, presale_supply: {:?}, bonding_supply: {:?}, sol_launch_threshold: {:?}, start_time: {:?}, status: {:?}, allocation: \n{:?} \n}}",
             self.creator,
-            self.initial_virtual_token_reserves,
-            self.virtual_sol_reserves, self.virtual_token_reserves, self.real_sol_reserves,
+            self.real_sol_reserves,
             self.real_token_reserves, self.token_total_supply, self.presale_supply,
             self.bonding_supply, self.sol_launch_threshold, self.start_time, self.status,
             self.allocation

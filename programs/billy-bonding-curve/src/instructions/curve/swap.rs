@@ -22,8 +22,8 @@ pub struct TradeEvent {
     pub is_buy: bool,
     pub user: Pubkey,
     pub timestamp: i64,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u128,
+    // pub virtual_sol_reserves: u64,
+    // pub virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
 }
@@ -32,8 +32,8 @@ pub struct TradeEvent {
 pub struct CompleteEvent {
     pub user: Pubkey,
     pub mint: Pubkey,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u128,
+    // pub virtual_sol_reserves: u64,
+    // pub virtual_token_reserves: u128,
     pub real_sol_reserves: u64,
     pub real_token_reserves: u64,
     pub timestamp: i64,
@@ -210,8 +210,8 @@ impl Swap<'_> {
             is_buy: !base_in,
             user: *ctx.accounts.user.to_account_info().key,
             timestamp: Clock::get()?.unix_timestamp,
-            virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
-            virtual_token_reserves: bonding_curve.virtual_token_reserves,
+            // virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
+            // virtual_token_reserves: bonding_curve.virtual_token_reserves,
             real_sol_reserves: bonding_curve.real_sol_reserves,
             real_token_reserves: bonding_curve.real_token_reserves,
         });
@@ -219,8 +219,8 @@ impl Swap<'_> {
             emit_cpi!(CompleteEvent {
                 user: *ctx.accounts.user.to_account_info().key,
                 mint: *ctx.accounts.mint.to_account_info().key,
-                virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
-                virtual_token_reserves: bonding_curve.virtual_token_reserves,
+                // virtual_sol_reserves: bonding_curve.virtual_sol_reserves,
+                // virtual_token_reserves: bonding_curve.virtual_token_reserves,
                 real_sol_reserves: bonding_curve.real_sol_reserves,
                 real_token_reserves: bonding_curve.real_token_reserves,
                 timestamp: Clock::get()?.unix_timestamp,
