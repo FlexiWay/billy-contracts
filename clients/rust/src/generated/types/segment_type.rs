@@ -16,6 +16,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SegmentType {
     Constant(u64),
-    Linear(f64, f64),
-    Exponential(f64, f64, f64),
+    Linear(u64, u64),
+    Exponential(u64, u32, u64),
 }

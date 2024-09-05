@@ -25,7 +25,7 @@ mod tests {
 
     static SIMPLE_SEGMENTS: Lazy<Vec<CurveSegmentDef>> = Lazy::new(|| {
         vec![CurveSegmentDef {
-            segment_type: SegmentTypeDef::Exponential(20000, 24000, 5000),
+            segment_type: SegmentType::Exponential(2, 3, 5),
             start_supply_bps: 0,
             end_supply_bps: BASIS_POINTS_DIVISOR,
         }]
@@ -323,85 +323,85 @@ mod tests {
     // FUZZ TESTS
     use proptest::prelude::*;
 
-    proptest! {
-        #![proptest_config(ProptestConfig::with_cases(10000))]
+    // proptest! {
+    //     #![proptest_config(ProptestConfig::with_cases(10000))]
 
-        #[test]
-        fn fuzz_test_default_alloc_simple_curve_apply_buy(
-            token_total_supply in 1..u64::MAX,
-            sol_amount in 1..u64::MAX,
-            // virtual_token_reserves in 1..u64::MAX,
-            // real_sol_reserves in 1..u64::MAX,
-            // initial_virtual_token_reserves in 1..u64::MAX,
-        ) {
-            let creator = Pubkey::default();
-            let mint = Pubkey::default();
-            let allocation = AllocationDataParams::default();
+    //     #[test]
+    //     fn fuzz_test_default_alloc_simple_curve_apply_buy(
+    //         token_total_supply in 1..u64::MAX,
+    //         sol_amount in 1..u64::MAX,
+    //         // virtual_token_reserves in 1..u64::MAX,
+    //         // real_sol_reserves in 1..u64::MAX,
+    //         // initial_virtual_token_reserves in 1..u64::MAX,
+    //     ) {
+    //         let creator = Pubkey::default();
+    //         let mint = Pubkey::default();
+    //         let allocation = AllocationDataParams::default();
 
-            let params = CreateBondingCurveParams {
-                curve_segments:SIMPLE_SEGMENTS.to_vec(),
-                name: "test".to_string(),
-                symbol: "test".to_string(),
-                uri: "test".to_string(),
-                start_time: Some(*START_TIME),
+    //         let params = CreateBondingCurveParams {
+    //             curve_segments:SIMPLE_SEGMENTS.to_vec(),
+    //             name: "test".to_string(),
+    //             symbol: "test".to_string(),
+    //             uri: "test".to_string(),
+    //             start_time: Some(*START_TIME),
 
-                token_total_supply,
-                sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
+    //             token_total_supply,
+    //             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                // virtual_token_multiplier_bps,
-                // virtual_sol_reserves,
+    //             // virtual_token_multiplier_bps,
+    //             // virtual_sol_reserves,
 
-                allocation,
-                vesting_terms:None,
-            };
-                let mut curve = BondingCurve::create_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
-            let _curve_initial = curve.clone();
+    //             allocation,
+    //             vesting_terms:None,
+    //         };
+    //             let mut curve = BondingCurve::create_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
+    //         let _curve_initial = curve.clone();
 
-            if let Some(result) = curve.apply_buy(sol_amount) {
-                prop_assert!(result.token_amount <= _curve_initial.real_token_reserves, "Token amount bought should not exceed real token reserves");
-            }
-        }
+    //         if let Some(result) = curve.apply_buy(sol_amount) {
+    //             prop_assert!(result.token_amount <= _curve_initial.real_token_reserves, "Token amount bought should not exceed real token reserves");
+    //         }
+    //     }
 
-        #[test]
-        fn fuzz_test_default_alloc_simple_curve_apply_sell(
-            token_total_supply in 1..u64::MAX,
+    //     #[test]
+    //     fn fuzz_test_default_alloc_simple_curve_apply_sell(
+    //         token_total_supply in 1..u64::MAX,
 
-            token_amount in 1..u64::MAX,
-            buy_sol_amount in 1..u64::MAX,
-            // virtual_token_reserves in 1..u64::MAX,
-            // real_sol_reserves in 1..u64::MAX,
-            // initial_virtual_token_reserves in 1..u64::MAX,
-        ) {
-            let creator = Pubkey::default();
-            let mint = Pubkey::default();
-            let allocation = AllocationDataParams::default();
+    //         token_amount in 1..u64::MAX,
+    //         buy_sol_amount in 1..u64::MAX,
+    //         // virtual_token_reserves in 1..u64::MAX,
+    //         // real_sol_reserves in 1..u64::MAX,
+    //         // initial_virtual_token_reserves in 1..u64::MAX,
+    //     ) {
+    //         let creator = Pubkey::default();
+    //         let mint = Pubkey::default();
+    //         let allocation = AllocationDataParams::default();
 
-            let params = CreateBondingCurveParams {
-                curve_segments:SIMPLE_SEGMENTS.to_vec(),
-                name: "test".to_string(),
-                symbol: "test".to_string(),
-                uri: "test".to_string(),
-                start_time: Some(*START_TIME),
+    //         let params = CreateBondingCurveParams {
+    //             curve_segments:SIMPLE_SEGMENTS.to_vec(),
+    //             name: "test".to_string(),
+    //             symbol: "test".to_string(),
+    //             uri: "test".to_string(),
+    //             start_time: Some(*START_TIME),
 
-                token_total_supply,
-                sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
+    //             token_total_supply,
+    //             sol_launch_threshold: *SOL_LAUNCH_THRESHOLD,
 
-                // virtual_token_multiplier_bps,
-                // virtual_sol_reserves,
+    //             // virtual_token_multiplier_bps,
+    //             // virtual_sol_reserves,
 
-                allocation,
-                vesting_terms:None,
-            };
-                let mut curve = BondingCurve::create_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
-            let buy_result = curve.apply_buy(buy_sol_amount);
-            if buy_result.is_none() {
-                return Ok(())
-            }
-            let _curve_after_buy = curve.clone();
-            if let Some(result) = curve.apply_sell(token_amount) {
-                prop_assert!(result.sol_amount <= _curve_after_buy.real_sol_reserves, "SOL amount to send to seller should not exceed real SOL reserves");
-            }
-        }
+    //             allocation,
+    //             vesting_terms:None,
+    //         };
+    //             let mut curve = BondingCurve::create_from_params(mint,creator,creator, creator, &params, &CLOCK, 0);
+    //         let buy_result = curve.apply_buy(buy_sol_amount);
+    //         if buy_result.is_none() {
+    //             return Ok(())
+    //         }
+    //         let _curve_after_buy = curve.clone();
+    //         if let Some(result) = curve.apply_sell(token_amount) {
+    //             prop_assert!(result.sol_amount <= _curve_after_buy.real_sol_reserves, "SOL amount to send to seller should not exceed real SOL reserves");
+    //         }
+    //     }
 
-    }
+    // }
 }

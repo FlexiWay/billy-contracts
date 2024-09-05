@@ -7,16 +7,16 @@
  */
 
 import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
-import { SegmentTypeDef, SegmentTypeDefArgs, getSegmentTypeDefSerializer } from '.';
+import { SegmentType, SegmentTypeArgs, getSegmentTypeSerializer } from '.';
 
 
-export type CurveSegmentDef = { segmentType: SegmentTypeDef; startSupplyBps: bigint; endSupplyBps: bigint;  };
+export type CurveSegmentDef = { segmentType: SegmentType; startSupplyBps: bigint; endSupplyBps: bigint;  };
 
-export type CurveSegmentDefArgs = { segmentType: SegmentTypeDefArgs; startSupplyBps: number | bigint; endSupplyBps: number | bigint;  };
+export type CurveSegmentDefArgs = { segmentType: SegmentTypeArgs; startSupplyBps: number | bigint; endSupplyBps: number | bigint;  };
 
 
 export function getCurveSegmentDefSerializer(): Serializer<CurveSegmentDefArgs, CurveSegmentDef> {
-  return struct<CurveSegmentDef>([['segmentType', getSegmentTypeDefSerializer()], ['startSupplyBps', u64()], ['endSupplyBps', u64()]], { description: 'CurveSegmentDef' }) as Serializer<CurveSegmentDefArgs, CurveSegmentDef>;
+  return struct<CurveSegmentDef>([['segmentType', getSegmentTypeSerializer()], ['startSupplyBps', u64()], ['endSupplyBps', u64()]], { description: 'CurveSegmentDef' }) as Serializer<CurveSegmentDefArgs, CurveSegmentDef>;
 }
 
 

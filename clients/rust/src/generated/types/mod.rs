@@ -15,7 +15,6 @@ pub(crate) mod r#global_authority_input;
 pub(crate) mod r#global_settings_input;
 pub(crate) mod r#program_status;
 pub(crate) mod r#segment_type;
-pub(crate) mod r#segment_type_def;
 pub(crate) mod r#vesting_terms;
 
 pub use self::r#allocation_data::*;
@@ -28,5 +27,4 @@ pub use self::r#global_authority_input::*;
 pub use self::r#global_settings_input::*;
 pub use self::r#program_status::*;
 pub use self::r#segment_type::*;
-pub use self::r#segment_type_def::*;
 pub use self::r#vesting_terms::*;

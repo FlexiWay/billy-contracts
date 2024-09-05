@@ -1,10 +1,11 @@
-use crate::errors::ContractError;
 use crate::state::bonding_curve::*;
 use crate::util::bps_mul;
+use crate::{errors::ContractError, util::BASIS_POINTS_DIVISOR};
 use allocation::AllocationData;
 use anchor_lang::prelude::*;
 use segment::*;
 use std::fmt::{self};
+use std::ops::{Add, Div, Mul};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace, Debug, PartialEq, Default)]
 pub enum BondingCurveStatus {
@@ -331,6 +332,7 @@ impl BondingCurve {
     }
 
     pub fn get_tokens_for_buy_sol(&self, sol_amount: u64) -> Option<u64> {
+        println!("get_tokens_for_buy_sol:sol_amount: {}", sol_amount);
         if sol_amount == 0 {
             return None;
         }
@@ -345,6 +347,10 @@ impl BondingCurve {
                 remaining_sol
             );
             if current_supply > segment.end_supply {
+                println!(
+                    "current_supply({}) > segment.end_supply({})",
+                    current_supply, segment.end_supply
+                );
                 continue;
             }
 
@@ -392,6 +398,7 @@ impl BondingCurve {
                 segment.start_supply,
                 current_supply - segment.start_supply,
             )?;
+            println!("segment_sol: {}", segment_sol);
             let segment_tokens = if segment_sol <= remaining_sol {
                 remaining_sol = remaining_sol.checked_sub(segment_sol)?;
                 current_supply - segment.start_supply
@@ -425,62 +432,70 @@ impl fmt::Display for BondingCurve {
 }
 
 fn calculate_linear_price(
-    slope: f64,
-    intercept: f64,
+    slope: u64,
+    intercept: u64,
     tokens: u64,
     start_supply: u64,
 ) -> Option<u64> {
+    // let slope = (slope).div(BASIS_POINTS_DIVISOR);
+    // let intercept = (intercept).div(BASIS_POINTS_DIVISOR);
     println!(
-        "slope: {}, intercept: {}, tokens: {}, start_supply: {}",
-        slope, intercept, tokens, start_supply
+        "slope: {}, intercept: {}, tokens: {}, start_supply: {}, slope: {}, intercept: {}",
+        slope, intercept, tokens, start_supply, slope, intercept
     );
 
-    let part1 = start_supply as u128;
+    let part1 = start_supply;
     println!("part1 (start_supply as u128): {}", part1);
 
-    let part2 = part1.checked_mul(slope as u128)?;
+    let part2 = part1.mul(slope);
     println!("part2 (start_supply * slope): {}", part2);
 
-    let part3 = part2.checked_add(intercept as u128)?;
+    let part3 = part2.add(intercept);
     println!("part3 (part2 + intercept): {}", part3);
 
-    let part4 = (tokens as u128).checked_mul(slope as u128)?;
+    let part4 = (tokens).mul(slope);
     println!("part4 (tokens * slope): {}", part4);
 
-    let part5 = part4.checked_div(2)?;
+    let part5 = part4.div(2);
     println!("part5 (part4 / 2): {}", part5);
 
-    let part6 = part3.checked_add(part5)?;
+    let part6 = part3.add(part5);
     println!("part6 (part3 + part5): {}", part6);
 
-    let part7 = part6.checked_mul(tokens as u128)?;
+    let part7 = part6.mul(tokens);
     println!("part7 (part6 * tokens): {}", part7);
 
-    let result = part7.checked_div(10000)? as u64;
+    let result = part7.div(10000);
     println!("result: {}", result);
 
     Some(result)
 }
 
-fn calculate_exponential_price(base: f64, exponent: f64, scale: f64, tokens: u64) -> Option<u64> {
+// TODO TEST
+fn calculate_exponential_price(base: u64, exponent: u32, scale: u64, tokens: u64) -> Option<u64> {
+    // println!("scale: {}", scale);
     println!(
         "base: {}, exponent: {}, scale: {}, tokens: {}",
         base, exponent, scale, tokens
     );
 
-    let powed = base.powf(exponent);
+    let powed = base.pow(exponent);
     println!("powed (base^exponent): {}", powed);
 
-    let tokens_price = powed * tokens as f64;
+    let tokens_price = powed as u128 * tokens as u128;
     println!("tokens_price (powed * tokens): {}", tokens_price);
 
-    let scaled = tokens_price / scale;
+    let scaled = tokens_price / scale as u128;
     println!("scaled (tokens_price / scale): {}", scaled);
 
-    let result = scaled.floor() as u64;
+    let result = scaled;
     println!("result: {}", result);
 
-    Some(result)
+    if result > u64::MAX as u128 {
+        println!("result > u64::MAX, {}", result);
+        return None;
+    }
+    Some(result as u64)
 }
 
 pub fn calculate_segment_price(
@@ -489,7 +504,7 @@ pub fn calculate_segment_price(
     tokens: u64,
 ) -> Option<u64> {
     println!(
-        "SegmentType: {:?}, start_supply: {}, tokens: {}",
+        "calculate_segment_price:SegmentType: {:?}, start_supply: {}, tokens: {}",
         segment.segment_type, start_supply, tokens
     );
 
@@ -561,28 +576,24 @@ pub fn calculate_tokens_for_segment(
                 // Solve the equation: sol_amount = base^exponent * tokens / scale
                 // Rearranging to solve for tokens:
                 // tokens = sol_amount * scale / (base^exponent)
-                let powered = base.powf(exponent);
+                let powered = (base as u128).pow(exponent);
                 println!("powered (base^exponent): {}", powered);
 
-                let tokens = (sol_amount as f64) * scale / powered;
-                let floored = tokens.floor() as u64;
-                println!("tokens: {}", tokens);
-                println!("floored: {}", floored);
+                let tokens = sol_amount as u128 * scale as u128 / powered;
+                println!("tokens: {}", tokens as u64);
 
-                return Some(floored);
+                return Some(tokens as u64);
             } else {
                 // Solve the equation: sol_amount = base^exponent * tokens / scale
                 // Rearranging to solve for tokens:
                 // tokens = sol_amount * scale / (base^exponent)
-                let powered = base.powf(exponent);
+                let powered = (base as u128).pow(exponent);
                 println!("powered (base^exponent): {}", powered);
 
-                let tokens = (sol_amount as f64) * scale / powered;
-                let floored = tokens.floor() as u64;
-                println!("tokens: {}", tokens);
-                println!("floored: {}", floored);
+                let tokens = sol_amount as u128 * scale as u128 / powered;
+                println!("tokens: {}", tokens as u64);
 
-                return Some(floored);
+                return Some(tokens as u64);
             };
         }
     }

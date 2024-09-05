@@ -6,16 +6,16 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { GetDataEnumKind, GetDataEnumKindContent, Serializer, dataEnum, f64, struct, tuple, u64 } from '@metaplex-foundation/umi/serializers';
+import { GetDataEnumKind, GetDataEnumKindContent, Serializer, dataEnum, struct, tuple, u32, u64 } from '@metaplex-foundation/umi/serializers';
 
 
-export type SegmentType = { __kind: "Constant", fields: [bigint];  } | { __kind: "Linear", fields: [number, number];  } | { __kind: "Exponential", fields: [number, number, number];  };
+export type SegmentType = { __kind: "Constant", fields: [bigint];  } | { __kind: "Linear", fields: [bigint, bigint];  } | { __kind: "Exponential", fields: [bigint, number, bigint];  };
 
-export type SegmentTypeArgs = { __kind: "Constant", fields: [number | bigint];  } | { __kind: "Linear", fields: [number, number];  } | { __kind: "Exponential", fields: [number, number, number];  };
+export type SegmentTypeArgs = { __kind: "Constant", fields: [number | bigint];  } | { __kind: "Linear", fields: [number | bigint, number | bigint];  } | { __kind: "Exponential", fields: [number | bigint, number, number | bigint];  };
 
 
 export function getSegmentTypeSerializer(): Serializer<SegmentTypeArgs, SegmentType> {
-  return dataEnum<SegmentType>([['Constant', struct<GetDataEnumKindContent<SegmentType, 'Constant'>>([['fields', tuple([u64()])]])], ['Linear', struct<GetDataEnumKindContent<SegmentType, 'Linear'>>([['fields', tuple([f64(), f64()])]])], ['Exponential', struct<GetDataEnumKindContent<SegmentType, 'Exponential'>>([['fields', tuple([f64(), f64(), f64()])]])]], { description: 'SegmentType' }) as Serializer<SegmentTypeArgs, SegmentType>;
+  return dataEnum<SegmentType>([['Constant', struct<GetDataEnumKindContent<SegmentType, 'Constant'>>([['fields', tuple([u64()])]])], ['Linear', struct<GetDataEnumKindContent<SegmentType, 'Linear'>>([['fields', tuple([u64(), u64()])]])], ['Exponential', struct<GetDataEnumKindContent<SegmentType, 'Exponential'>>([['fields', tuple([u64(), u32(), u64()])]])]], { description: 'SegmentType' }) as Serializer<SegmentTypeArgs, SegmentType>;
 }
 
 

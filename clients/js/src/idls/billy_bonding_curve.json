@@ -864,7 +864,7 @@
           {
             "name": "segmentType",
             "type": {
-              "defined": "SegmentTypeDef"
+              "defined": "SegmentType"
             }
           },
           {
@@ -1063,35 +1063,6 @@
           {
             "name": "Linear",
             "fields": [
-              "f64",
-              "f64"
-            ]
-          },
-          {
-            "name": "Exponential",
-            "fields": [
-              "f64",
-              "f64",
-              "f64"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "SegmentTypeDef",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Constant",
-            "fields": [
-              "u64"
-            ]
-          },
-          {
-            "name": "Linear",
-            "fields": [
               "u64",
               "u64"
             ]
@@ -1100,7 +1071,7 @@
             "name": "Exponential",
             "fields": [
               "u64",
-              "u64",
+              "u32",
               "u64"
             ]
           }

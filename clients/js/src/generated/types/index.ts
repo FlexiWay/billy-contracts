@@ -16,5 +16,4 @@ export * from './globalAuthorityInput';
 export * from './globalSettingsInput';
 export * from './programStatus';
 export * from './segmentType';
-export * from './segmentTypeDef';
 export * from './vestingTerms';

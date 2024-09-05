@@ -864,7 +864,7 @@ export type BillyBondingCurve = {
           {
             "name": "segmentType",
             "type": {
-              "defined": "SegmentTypeDef"
+              "defined": "SegmentType"
             }
           },
           {
@@ -1063,35 +1063,6 @@ export type BillyBondingCurve = {
           {
             "name": "Linear",
             "fields": [
-              "f64",
-              "f64"
-            ]
-          },
-          {
-            "name": "Exponential",
-            "fields": [
-              "f64",
-              "f64",
-              "f64"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "SegmentTypeDef",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Constant",
-            "fields": [
-              "u64"
-            ]
-          },
-          {
-            "name": "Linear",
-            "fields": [
               "u64",
               "u64"
             ]
@@ -1100,7 +1071,7 @@ export type BillyBondingCurve = {
             "name": "Exponential",
             "fields": [
               "u64",
-              "u64",
+              "u32",
               "u64"
             ]
           }
@@ -2430,7 +2401,7 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "segmentType",
             "type": {
-              "defined": "SegmentTypeDef"
+              "defined": "SegmentType"
             }
           },
           {
@@ -2629,35 +2600,6 @@ export const IDL: BillyBondingCurve = {
           {
             "name": "Linear",
             "fields": [
-              "f64",
-              "f64"
-            ]
-          },
-          {
-            "name": "Exponential",
-            "fields": [
-              "f64",
-              "f64",
-              "f64"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "SegmentTypeDef",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Constant",
-            "fields": [
-              "u64"
-            ]
-          },
-          {
-            "name": "Linear",
-            "fields": [
               "u64",
               "u64"
             ]
@@ -2666,7 +2608,7 @@ export const IDL: BillyBondingCurve = {
             "name": "Exponential",
             "fields": [
               "u64",
-              "u64",
+              "u32",
               "u64"
             ]
           }
